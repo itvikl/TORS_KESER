@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  /* Jerusalem Gold — PRD section 10 */
+  --color-navy: #1b3a5c;
+  --color-navy-light: #2a5080;
+  --color-terracotta: #c1622d;
+  --color-terracotta-dark: #a34f22;
+  --color-sand: #f7f1e6;
+  --color-sand-warm: #f0e6d2;
+  --color-olive: #6b7a4f;
+  --color-gold: #c9a24b;
+
+  --color-ink: #241f18;
+  --color-ink-muted: #5a5245;
+  --color-line: #e4d9c2;
+
+  --background: var(--color-sand);
+  --foreground: var(--color-ink);
+
+  --font-display: var(--font-source-serif);
+  --font-body: var(--font-inter);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-navy: var(--color-navy);
+  --color-navy-light: var(--color-navy-light);
+  --color-terracotta: var(--color-terracotta);
+  --color-terracotta-dark: var(--color-terracotta-dark);
+  --color-sand: var(--color-sand);
+  --color-sand-warm: var(--color-sand-warm);
+  --color-olive: var(--color-olive);
+  --color-gold: var(--color-gold);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-line: var(--color-line);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), Georgia, serif;
+  text-wrap: balance;
+}
+
+/* Visible focus state for accessibility (WCAG target, PRD section 11) */
+:focus-visible {
+  outline: 3px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
