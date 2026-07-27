@@ -1,47 +1,52 @@
 import Link from "next/link";
+import BrandLogo from "@/components/marketing/BrandLogo";
 
 const NAV_LINKS = [
-  { href: "/tours", label: "Tours" },
+  { href: "/#featured-tours", label: "Tours" },
   { href: "/about", label: "About" },
   { href: "/custom-made-tours", label: "Custom Tours" },
   { href: "/special-offers", label: "Special Offers" },
   { href: "/testimonials", label: "Testimonials" },
-  { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Header() {
   return (
-    <header className="border-b border-line bg-sand/95 backdrop-blur supports-[backdrop-filter]:bg-sand/80 sticky top-0 z-40">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
-        <Link href="/" className="shrink-0">
-          <span className="font-display text-2xl font-semibold text-navy">
-            Kesher<span className="text-terracotta">tours</span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(15,21,36,0.85)] backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(15,21,36,0.9)]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:gap-6 lg:px-8">
+        <BrandLogo className="h-11 w-auto object-contain sm:h-12 lg:h-14" />
 
         <nav
           aria-label="Main navigation"
-          className="hidden lg:flex items-center gap-6 text-[15px] font-medium text-ink-muted"
+          className="hidden items-center gap-7 lg:flex"
         >
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-terracotta"
+              className="text-[15px] font-medium text-white/80 transition-colors hover:text-[#7dd3fc]"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <a
-          href="tel:18008470700"
-          className="flex shrink-0 items-center gap-2 rounded-full bg-navy px-4 py-2.5 text-[15px] font-semibold text-sand transition-colors hover:bg-navy-light"
-        >
-          <span aria-hidden="true">☎</span>
-          <span className="hidden sm:inline">1-800-847-0700</span>
-          <span className="sm:hidden">Call Now</span>
-        </a>
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-shai-header-fial.jpg"
+            alt="Shai Bar Ilan Geographical Tours"
+            className="h-9 w-auto rounded-md object-contain sm:h-10 lg:h-11"
+          />
+          <a
+            href="tel:18008470700"
+            className="flex shrink-0 items-center gap-2 rounded-full bg-[#7dd3fc] px-3 py-2 text-[14px] font-bold text-[#001f2e] transition-all hover:brightness-110 active:scale-95 sm:px-4 sm:py-2.5 sm:text-[15px]"
+          >
+            <span aria-hidden="true">☎</span>
+            <span className="hidden sm:inline">1-800-847-0700</span>
+            <span className="sm:hidden">Call</span>
+          </a>
+        </div>
       </div>
     </header>
   );
