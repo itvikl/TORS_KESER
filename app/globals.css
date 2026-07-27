@@ -18,7 +18,7 @@
   --background: var(--color-sand);
   --foreground: var(--color-ink);
 
-  --font-display: var(--font-source-serif);
+  --font-display: var(--font-inter);
   --font-body: var(--font-inter);
 }
 
@@ -43,15 +43,23 @@
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(201, 162, 75, 0.16), transparent 28%),
+    linear-gradient(135deg, var(--color-sand-warm) 0%, var(--color-sand) 100%);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.6;
 }
 
+::selection {
+  background: rgba(193, 98, 45, 0.24);
+  color: var(--color-navy);
+}
+
 h1, h2, h3, h4 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   text-wrap: balance;
 }
 
@@ -59,6 +67,143 @@ h1, h2, h3, h4 {
 :focus-visible {
   outline: 3px solid var(--color-terracotta);
   outline-offset: 2px;
+}
+
+/* Dark search bar — no terracotta focus ring on interactive controls */
+.destination-search :is(button, input, select):focus,
+.destination-search :is(button, input, select):focus-visible,
+.destination-search :is(button, input, select):active {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Customizable select (Chrome/Edge): style the real dropdown panel
+ * via ::picker(select). Falls back to native OS picker elsewhere.
+ */
+.destination-search-select,
+.destination-search-select::picker(select) {
+  appearance: base-select;
+  -webkit-appearance: base-select;
+}
+
+.destination-search-select {
+  color-scheme: dark;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #e0e8f0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.destination-search-select:focus,
+.destination-search-select:focus-visible {
+  outline: none;
+}
+
+.destination-search-select::picker-icon {
+  color: #7dd3fc;
+  opacity: 1;
+}
+
+/* Closed-state button (base-select) */
+.destination-search-select > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.destination-search-select selectedcontent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.destination-search-select selectedcontent .option-tag {
+  display: none;
+}
+
+/* The actual dropdown container (top-layer — not clipped by sections) */
+.destination-search-select::picker(select) {
+  color-scheme: dark;
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(125, 211, 252, 0.15);
+  border-radius: 1rem;
+  background: #141c2e;
+  color: #e0e8f0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.destination-search-select option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin: 0 0 0.15rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: #e0e8f0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.destination-search-select option:last-child {
+  margin-bottom: 0;
+}
+
+.destination-search-select option:checked,
+.destination-search-select option:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #7dd3fc;
+}
+
+.destination-search-select option:disabled {
+  color: #6b7c8a;
+  cursor: not-allowed;
+}
+
+.destination-search-select option::checkmark {
+  order: -1;
+  margin-inline-end: 0.5rem;
+  color: #7dd3fc;
+}
+
+.destination-search-select .option-label {
+  min-width: 0;
+  flex: 1;
+}
+
+.destination-search-select .option-tag {
+  flex-shrink: 0;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0b4c4;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 @media (prefers-reduced-motion: reduce) {
