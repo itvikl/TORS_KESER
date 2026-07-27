@@ -1,48 +1,35 @@
-const REGIONS = [
-  "Asia & Far East",
-  "South America",
-  "Europe",
-  "Africa",
-  "North America",
-  "South Pacific",
-];
+"use client";
+
+import { useEffect, useState } from "react";
+import RegionSelect from "@/components/marketing/RegionSelect";
+import { useTourFilter } from "@/components/marketing/TourFilterProvider";
 
 /**
- * Destination search widget — a native GET form (works without JS,
- * keyboard-operable by default). Mirrors the "Where do you want to
- * travel?" widget already proven on the existing site (PRD 7.2).
+ * Client-side destination search — filters in-memory tours (multi-region)
+ * and updates the URL query for deep links / SEO without a full reload.
  */
 export default function DestinationSearch() {
+  const { selectedRegions, setSelectedRegions, regions } = useTourFilter();
+  const [draft, setDraft] = useState(selectedRegions);
+
+  useEffect(() => {
+    setDraft(selectedRegions);
+  }, [selectedRegions]);
+
   return (
     <form
-      action="/tours"
-      method="get"
-      className="mx-auto flex w-full max-w-3xl flex-col gap-3 rounded-2xl border border-line bg-white/90 p-4 shadow-lg sm:flex-row sm:items-end"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSelectedRegions(draft);
+      }}
+      className="destination-search relative mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] p-2 shadow-2xl backdrop-blur-lg sm:flex-row sm:items-stretch sm:rounded-full"
     >
-      <div className="flex-1">
-        <label
-          htmlFor="region"
-          className="block text-xs font-semibold uppercase tracking-wider text-ink-muted"
-        >
-          Where do you want to travel?
-        </label>
-        <select
-          id="region"
-          name="region"
-          className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[15px] text-ink"
-          defaultValue=""
-        >
-          <option value="">Any destination</option>
-          {REGIONS.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-1 items-center gap-3 rounded-full px-5 py-3 transition-colors hover:bg-white/5">
+        <RegionSelect regions={regions} value={draft} onChange={setDraft} />
       </div>
       <button
         type="submit"
-        className="rounded-lg bg-terracotta px-6 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-terracotta-dark"
+        className="rounded-full bg-[#7dd3fc] px-10 py-3.5 text-[15px] font-bold text-[#001f2e] shadow-lg transition-all hover:brightness-110 active:scale-95 sm:px-12"
       >
         Search Tours
       </button>
