@@ -53,6 +53,20 @@ body {
   line-height: 1.6;
 }
 
+/* Glacier glass — Stitch DESIGN.md */
+.glass-panel {
+  background: rgba(15, 21, 36, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(125, 211, 252, 0.1);
+}
+
+.glass-panel-elevated {
+  background: rgba(15, 21, 36, 0.75);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(125, 211, 252, 0.15);
+  box-shadow: 0 0 30px rgba(125, 211, 252, 0.05);
+}
+
 ::selection {
   background: rgba(193, 98, 45, 0.24);
   color: var(--color-navy);

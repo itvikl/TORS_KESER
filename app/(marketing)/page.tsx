@@ -60,9 +60,9 @@ export default async function HomePage({
               <img
                 src={HERO_IMAGE}
                 alt="Luxury travel destination with dramatic coastal views"
-                className="h-full w-full object-cover"
+                className="h-full w-full scale-125 object-cover object-center"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(8,15,26,0.85),rgba(27,58,92,0.7))]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(10,14,26,0.25)] to-[rgba(10,14,26,0.85)]" />
             </div>
 
             <div className="relative mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 lg:px-8">
@@ -70,16 +70,14 @@ export default async function HomePage({
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#7dd3fc]">
                   Travel the World the Jewish Way
                 </p>
-                <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-7xl">
-                  Kosher tours to the places you&apos;ve always{" "}
-                  <span className="text-[#7dd3fc] [text-shadow:0_0_15px_rgba(125,211,252,0.3)]">
+                <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-7xl">
+                  Kosher tours to places you&apos;ve
+                  <span className="mt-2 block text-[#7dd3fc] [text-shadow:0_0_15px_rgba(125,211,252,0.3)]">
                     wanted to see
                   </span>
                 </h1>
-                <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#a0b4c4] sm:text-xl">
-                  Fully escorted, fully kosher journeys across six continents —
-                  with a guide and kashrut supervisor traveling with you every
-                  step of the way.
+                <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-[#a0b4c4] sm:text-xl">
+                  Fully escorted, fully kosher journeys worldwide.
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
                   <a
