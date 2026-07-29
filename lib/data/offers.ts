@@ -1,10 +1,13 @@
+import "server-only";
 import type { SpecialOffer } from "@/lib/types";
+import { adminDb } from "@/lib/firebase/admin";
 
-// Empty on purpose: the existing site's Special Offers page is stale
-// (last updated 2018). The new admin panel (PRD FR-31) lets staff
-// publish offers without a developer — this stays empty until they do.
-const OFFERS: SpecialOffer[] = [];
+const OFFERS_COLLECTION = "specialOffers";
 
 export async function getSpecialOffers(): Promise<SpecialOffer[]> {
-  return OFFERS.filter((o) => o.status === "published");
+  const snapshot = await adminDb()
+    .collection(OFFERS_COLLECTION)
+    .where("status", "==", "published")
+    .get();
+  return snapshot.docs.map((doc) => doc.data() as SpecialOffer);
 }
