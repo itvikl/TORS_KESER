@@ -1,0 +1,48 @@
+# Deploy Next.js to Firebase App Hosting on push to main.
+# One-time setup (see comments at bottom of this file / reply in chat):
+# 1. Create App Hosting backend "kesher-tours" in Firebase console (Blaze plan).
+# 2. Add GitHub secret FIREBASE_SERVICE_ACCOUNT (service account JSON).
+# 3. Create Secret Manager secrets referenced in apphosting.yaml.
+#
+# Do NOT also enable App Hosting "automatic rollouts from GitHub" on the same
+# branch, or you will get double deploys.
+
+name: Deploy App Hosting
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: apphosting-kesher-tours
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Firebase App Hosting
+        run: npx firebase-tools@latest deploy --only apphosting --project kesertors --non-interactive

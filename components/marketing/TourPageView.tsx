@@ -4,6 +4,18 @@ import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 
 /**
+ * KashrutDetails.patYisrael/chalavYisrael are each a 3-way value
+ * (true | false | "not_guaranteed"), not a boolean — a naive `=== "not_guaranteed"
+ * ? ... : "Guaranteed"` ternary silently renders `false` ("Not offered", a
+ * real option in the admin editor) as "Guaranteed".
+ */
+function kashrutStatusLabel(value: boolean | "not_guaranteed"): string {
+  if (value === true) return "Guaranteed";
+  if (value === "not_guaranteed") return "Not guaranteed at every destination";
+  return "Not offered";
+}
+
+/**
  * Pure presentational tour page — props only, no data-fetching.
  *
  * This is the component referenced throughout the PRD (section 9, FR-25):
@@ -155,12 +167,18 @@ export default function TourPageView({
               </div>
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
-                  Pat &amp; Chalav Yisrael
+                  Pat Yisrael
                 </dt>
                 <dd className="mt-1 text-[15px] text-[#e0e8f0]">
-                  {tour.kashrutDetails.patYisrael === "not_guaranteed"
-                    ? "Not guaranteed at every destination"
-                    : "Guaranteed"}
+                  {kashrutStatusLabel(tour.kashrutDetails.patYisrael)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+                  Chalav Yisrael
+                </dt>
+                <dd className="mt-1 text-[15px] text-[#e0e8f0]">
+                  {kashrutStatusLabel(tour.kashrutDetails.chalavYisrael)}
                 </dd>
               </div>
             </dl>

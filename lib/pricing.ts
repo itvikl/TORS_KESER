@@ -12,18 +12,24 @@ export function calculatePriceBreakdown(
   childCount = 0
 ): PriceBreakdown {
   const doubleTravelers = room.doubleRooms * 2;
-  const tripleTravelers = room.triples * 3;
   const singleTravelers = room.singleRooms;
+  const tripleTravelers = room.triples * 3;
+  const tripleRate = pricing.pricePerPersonTriple ?? pricing.pricePerPersonDouble;
 
+  // Adults only — children are priced separately below, not folded into
+  // this base (they were previously included here at the adult rate and
+  // then "corrected" via a subtraction in childAdjustments, which meant a
+  // booking with children was never actually charged for them: the
+  // subtraction had nothing added to offset).
   const baseTotal =
-    (doubleTravelers + singleTravelers + tripleTravelers) *
-    pricing.pricePerPersonDouble;
+    (doubleTravelers + singleTravelers) * pricing.pricePerPersonDouble +
+    tripleTravelers * tripleRate;
 
   const singleSupplementsTotal = room.singleRooms * pricing.singleSupplement;
 
-  const childAdjustments = pricing.childPrice
-    ? childCount * (pricing.childPrice - pricing.pricePerPersonDouble)
-    : 0;
+  // The full child charge (not a delta) — falls back to the adult rate
+  // when no separate child price is configured for the tour.
+  const childAdjustments = childCount * (pricing.childPrice ?? pricing.pricePerPersonDouble);
 
   const grandTotal = baseTotal + singleSupplementsTotal + childAdjustments;
 

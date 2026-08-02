@@ -24,6 +24,12 @@ export async function getAllTours(): Promise<Tour[]> {
   return snapshot.docs.map((doc) => doc.data() as Tour);
 }
 
+/**
+ * Public lookup by slug — used by the tour detail page and the booking
+ * page. Draft tours are excluded (they're work-in-progress and shouldn't
+ * be reachable by a guessed/shared URL before publish); archived tours are
+ * still returned so old links keep resolving instead of 404ing.
+ */
 export async function getTourBySlug(slug: string): Promise<Tour | null> {
   const snapshot = await adminDb()
     .collection(TOURS_COLLECTION)
@@ -31,7 +37,9 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
     .limit(1)
     .get();
   const doc = snapshot.docs[0];
-  return doc ? (doc.data() as Tour) : null;
+  if (!doc) return null;
+  const tour = doc.data() as Tour;
+  return tour.status === "draft" ? null : tour;
 }
 
 export async function getDeparturesForTour(tourId: string): Promise<Departure[]> {
