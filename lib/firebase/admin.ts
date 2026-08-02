@@ -28,10 +28,25 @@ function getAdminApp(): App {
     );
   }
 
-  return initializeApp({
+  const app = initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   });
+
+  // Applied here (synchronously, immediately after the app is created —
+  // the `getApps().length` guard above means this branch runs exactly
+  // once per process) rather than lazily inside adminDb(). Next.js can run
+  // a page's generateMetadata and the page component concurrently for the
+  // same request; both call adminDb(), and a "call settings() once, lazily,
+  // on first use" flag there is a TOCTOU race — both calls can see the flag
+  // unset and one throws "Firestore has already been initialized."
+  //
+  // Lets callers build write payloads with optional fields left as
+  // `undefined` (e.g. Booking.contactPhone) instead of having to strip them
+  // by hand — Firestore otherwise rejects `undefined` values.
+  getFirestore(app).settings({ ignoreUndefinedProperties: true });
+
+  return app;
 }
 
 export function adminAuth() {

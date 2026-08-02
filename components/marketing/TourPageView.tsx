@@ -276,7 +276,7 @@ export default function TourPageView({
             </ul>
 
             <a
-              href="#book"
+              href={tour.slug ? `/tours/${tour.slug}/book` : "#"}
               className="mb-3 block rounded-xl bg-[#10b981] px-4 py-4 text-center text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all hover:bg-[#059669] active:scale-[0.98]"
             >
               Book This Trip

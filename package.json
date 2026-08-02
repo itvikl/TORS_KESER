@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed-firestore.ts",
-    "set-role": "tsx scripts/set-user-role.ts"
+    "set-role": "tsx scripts/set-user-role.ts",
+    "clear-broken-seed-images": "tsx scripts/clear-broken-seed-images.ts"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.12.0",

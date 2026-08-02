@@ -10,7 +10,7 @@ const NAV_SECTIONS: {
     title: "Catalog",
     items: [
       { label: "Tours", href: "/admin/tours" },
-      { label: "Bookings", href: "#", comingSoon: true },
+      { label: "Bookings", href: "/admin/bookings" },
       { label: "Leads", href: "#", comingSoon: true },
       { label: "Reviews", href: "#", comingSoon: true },
     ],
