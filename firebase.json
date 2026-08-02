@@ -1,7 +1,7 @@
 {
   "apphosting": [
     {
-      "backendId": "kesher-tours",
+      "backendId": "mainprod",
       "rootDir": "/",
       "ignore": [
         "node_modules",

@@ -48,7 +48,7 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_SITE_URL
-    value: https://kesher-tours--kesertors.us-central1.hosted.app
+    value: https://mainprod--kesertors.us-east4.hosted.app
     availability:
       - BUILD
       - RUNTIME
