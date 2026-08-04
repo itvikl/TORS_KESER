@@ -1,7 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  /* Jerusalem Gold — PRD section 10 */
+  /* Glacier — lumina-travel / Stitch prototype */
+  --color-glacier: #0a0e1a;
+  --color-glacier-elevated: #0f1524;
+  --color-ice: #7dd3fc;
+  --color-ice-ink: #001f2e;
+  --color-mist: #e0e8f0;
+  --color-slate: #a0b4c4;
+  --color-lilac: #c8a0f0;
+
+  /* Admin / legacy aliases (kept for admin chrome only) */
   --color-navy: #1b3a5c;
   --color-navy-light: #2a5080;
   --color-terracotta: #c1622d;
@@ -10,13 +19,12 @@
   --color-sand-warm: #f0e6d2;
   --color-olive: #6b7a4f;
   --color-gold: #c9a24b;
-
   --color-ink: #241f18;
   --color-ink-muted: #5a5245;
   --color-line: #e4d9c2;
 
-  --background: var(--color-sand);
-  --foreground: var(--color-ink);
+  --background: var(--color-glacier);
+  --foreground: var(--color-mist);
 
   --font-display: var(--font-inter);
   --font-body: var(--font-inter);
@@ -25,6 +33,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-glacier: var(--color-glacier);
+  --color-glacier-elevated: var(--color-glacier-elevated);
+  --color-ice: var(--color-ice);
+  --color-ice-ink: var(--color-ice-ink);
+  --color-mist: var(--color-mist);
+  --color-slate: var(--color-slate);
+  --color-lilac: var(--color-lilac);
 
   --color-navy: var(--color-navy);
   --color-navy-light: var(--color-navy-light);
@@ -44,32 +60,66 @@
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(201, 162, 75, 0.16), transparent 28%),
-    linear-gradient(135deg, var(--color-sand-warm) 0%, var(--color-sand) 100%);
+  background-color: var(--color-glacier);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
-/* Glacier glass — Stitch DESIGN.md */
+/* Glacier glass — lumina-travel / Stitch */
 .glass-panel {
   background: rgba(15, 21, 36, 0.6);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(125, 211, 252, 0.1);
 }
 
 .glass-panel-elevated {
   background: rgba(15, 21, 36, 0.75);
   backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(125, 211, 252, 0.15);
   box-shadow: 0 0 30px rgba(125, 211, 252, 0.05);
 }
 
+.glass-input,
+.glacier-field {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(125, 211, 252, 0.15);
+  background: rgba(20, 28, 46, 0.4);
+  padding: 0.625rem 0.75rem;
+  font-size: 15px;
+  color: #e0e8f0;
+  color-scheme: dark;
+  outline: none;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-input::placeholder,
+.glacier-field::placeholder {
+  color: #6b7c8a;
+}
+
+.glass-input:hover,
+.glacier-field:hover {
+  border-color: rgba(125, 211, 252, 0.25);
+}
+
+.glass-input:focus,
+.glass-input:focus-visible,
+.glacier-field:focus,
+.glacier-field:focus-visible {
+  background: rgba(20, 28, 46, 0.6);
+  border-color: #7dd3fc;
+  outline: none;
+  box-shadow: 0 0 15px rgba(125, 211, 252, 0.15);
+}
+
 ::selection {
-  background: rgba(193, 98, 45, 0.24);
-  color: var(--color-navy);
+  background: rgba(125, 211, 252, 0.3);
+  color: #7dd3fc;
 }
 
 h1, h2, h3, h4 {
@@ -77,13 +127,13 @@ h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
-/* Visible focus state for accessibility (WCAG target, PRD section 11) */
+/* Visible focus state for accessibility */
 :focus-visible {
-  outline: 3px solid var(--color-terracotta);
+  outline: 3px solid #7dd3fc;
   outline-offset: 2px;
 }
 
-/* Dark search bar — no terracotta focus ring on interactive controls */
+/* Dark search bar — no outer focus ring on interactive controls */
 .destination-search :is(button, input, select):focus,
 .destination-search :is(button, input, select):focus-visible,
 .destination-search :is(button, input, select):active {

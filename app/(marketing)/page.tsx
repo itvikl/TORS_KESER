@@ -56,7 +56,7 @@ export default async function HomePage({
         tours={toursWithDepartures}
         initialRegions={initialRegions}
       >
-        <div className="overflow-x-hidden bg-[var(--color-sand)] text-[var(--color-ink)]">
+        <div className="overflow-x-hidden bg-[#0a0e1a] text-[#e0e8f0]">
           <section className="relative isolate overflow-hidden">
             <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -38,13 +38,20 @@ export default async function BookTourPage({
 
   return (
     <div>
-      <PageHeader eyebrow="Register" title={tour.title} />
-      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+      <PageHeader
+        eyebrow="Register"
+        title={tour.title}
+        lede="Reserve your place — choose dates, party size, and traveler details below."
+      />
+      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
         {bookable.length === 0 ? (
-          <div className="rounded-2xl border border-line bg-white p-8 text-center">
-            <p className="text-ink-muted">
+          <div className="glass-panel rounded-3xl p-8 text-center sm:p-10">
+            <p className="text-lg leading-8 text-[#a0b4c4]">
               There are no open departure dates for this tour right now. Call us at{" "}
-              <a href="tel:18008470700" className="font-semibold text-terracotta">
+              <a
+                href="tel:18008470700"
+                className="font-bold text-[#7dd3fc] transition hover:brightness-110"
+              >
                 1-800-847-0700
               </a>{" "}
               and we&apos;ll help you find the right trip.

@@ -36,6 +36,11 @@ function buildOccupancySlots(room: RoomConfiguration, childCount: number): Occup
 
 const STEP_LABELS = ["Dates", "Party size", "Travelers", "Contact", "Review"];
 
+const SELECTED_OPTION =
+  "border-[#7dd3fc] bg-[#7dd3fc]/10";
+const IDLE_OPTION =
+  "border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] hover:border-[rgba(125,211,252,0.25)]";
+
 export default function BookingForm({
   tour,
   departures,
@@ -123,279 +128,310 @@ export default function BookingForm({
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-white/70 p-6 sm:p-8">
+    <div className="glass-panel-elevated overflow-hidden rounded-3xl shadow-2xl">
       <StepIndicator step={step} />
 
-      {step === 1 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-navy">Choose a departure</h2>
-          <div className="space-y-2">
-            {departures.map((d) => (
+      <div className="p-6 sm:p-8">
+        {step === 1 && (
+          <div className="space-y-5">
+            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+              Choose a departure
+            </h2>
+            <div className="space-y-3">
+              {departures.map((d) => (
+                <label
+                  key={d.departureId}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-4 text-[15px] transition-all ${
+                    departureId === d.departureId ? SELECTED_OPTION : IDLE_OPTION
+                  }`}
+                >
+                  <span className="flex items-center gap-3 text-[#e0e8f0]">
+                    <input
+                      type="radio"
+                      name="departure"
+                      checked={departureId === d.departureId}
+                      onChange={() => setDepartureId(d.departureId)}
+                      className="accent-[#7dd3fc]"
+                    />
+                    {new Date(d.startDate).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-[#a0b4c4]">
+                    {d.capacityTotal - d.capacityBooked - d.capacityHeld} spots left
+                  </span>
+                </label>
+              ))}
+            </div>
+            <StepNav onNext={() => setStep(2)} nextDisabled={!departureId} />
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-5">
+            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+              Party size &amp; rooms
+            </h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <NumberField
+                label="Double rooms"
+                hint="2 adults each"
+                value={room.doubleRooms}
+                onChange={(v) => setRoom((r) => ({ ...r, doubleRooms: v }))}
+              />
+              <NumberField
+                label="Single rooms"
+                hint="1 adult each"
+                value={room.singleRooms}
+                onChange={(v) => setRoom((r) => ({ ...r, singleRooms: v }))}
+              />
+              <NumberField
+                label="Triple rooms"
+                hint="3 adults each"
+                value={room.triples}
+                onChange={(v) => setRoom((r) => ({ ...r, triples: v }))}
+              />
+              <NumberField label="Children" value={childCount} onChange={setChildCount} />
+            </div>
+
+            <div className="rounded-xl border border-[rgba(125,211,252,0.15)] bg-[#7dd3fc]/10 p-4 text-[15px]">
+              <p className="font-semibold text-[#e0e8f0]">
+                {totalTravelers} traveler{totalTravelers === 1 ? "" : "s"} · Estimated total{" "}
+                <span className="text-[#7dd3fc]">{formatUsd(priceBreakdown.grandTotal)}</span>
+              </p>
+              <p className="mt-1 text-[#a0b4c4]">
+                Deposit due to register: {formatUsd(depositAmount)}
+              </p>
+            </div>
+
+            <StepNav
+              onBack={() => setStep(1)}
+              onNext={goToTravelerStep}
+              nextDisabled={totalTravelers === 0}
+            />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-5">
+            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+              Traveler details
+            </h2>
+            {travelers.map((traveler, index) => (
+              <div
+                key={index}
+                className="rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] p-4 sm:p-5"
+              >
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#7dd3fc]">
+                  Traveler {index + 1} · {traveler.occupancy}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <TextField
+                    label="First name"
+                    value={traveler.firstName}
+                    onChange={(v) => updateTraveler(index, { firstName: v })}
+                  />
+                  <TextField
+                    label="Last name"
+                    value={traveler.lastName}
+                    onChange={(v) => updateTraveler(index, { lastName: v })}
+                  />
+                  <TextField
+                    label="Date of birth"
+                    type="date"
+                    value={traveler.dob}
+                    onChange={(v) => updateTraveler(index, { dob: v })}
+                  />
+                  <TextField
+                    label="Passport number"
+                    value={traveler.passport}
+                    onChange={(v) => updateTraveler(index, { passport: v })}
+                  />
+                  {(traveler.occupancy === "double" || traveler.occupancy === "triple") && (
+                    <TextField
+                      label="Rooming with"
+                      value={traveler.roomWith}
+                      onChange={(v) => updateTraveler(index, { roomWith: v })}
+                    />
+                  )}
+                  <TextField
+                    label="Dietary needs"
+                    value={traveler.dietary}
+                    onChange={(v) => updateTraveler(index, { dietary: v })}
+                  />
+                </div>
+              </div>
+            ))}
+            <StepNav
+              onBack={() => setStep(2)}
+              onNext={() => setStep(4)}
+              nextDisabled={!travelersValid}
+            />
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-5">
+            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+              Contact information
+            </h2>
+            <TextField label="Your name" value={contactName} onChange={setContactName} />
+            <TextField
+              label="Email"
+              type="email"
+              value={contactEmail}
+              onChange={setContactEmail}
+            />
+            <TextField label="Phone" type="tel" value={contactPhone} onChange={setContactPhone} />
+            <StepNav
+              onBack={() => setStep(3)}
+              onNext={() => setStep(5)}
+              nextDisabled={!contactName.trim() || !contactEmail.trim()}
+            />
+          </div>
+        )}
+
+        {step === 5 && departure && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+              Review &amp; submit
+            </h2>
+
+            <dl className="grid gap-3 rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.5)] p-5 text-[15px]">
+              <Row
+                label="Departure"
+                value={new Date(departure.startDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              />
+              <Row label="Travelers" value={String(totalTravelers)} />
+              <Row label="Estimated total" value={formatUsd(priceBreakdown.grandTotal)} accent />
+              <Row label="Deposit due to register" value={formatUsd(depositAmount)} />
+              <Row
+                label="Balance due"
+                value={`${tour.pricing.balanceDueDaysBeforeDeparture} days before departure`}
+              />
+            </dl>
+
+            <div className="rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] p-4 text-sm text-[#a0b4c4]">
+              <p className="mb-2 font-semibold text-[#e0e8f0]">Cancellation policy</p>
+              <ul className="space-y-1">
+                {DEFAULT_CANCELLATION_TIERS.map((tier) => (
+                  <li key={tier.minWorkingDaysBefore}>
+                    {tier.minWorkingDaysBefore}+ working days before departure: {tier.chargePercent}
+                    % charge
+                  </li>
+                ))}
+                <li>Plus a ${DEFAULT_ADMIN_FEE} admin fee.</li>
+              </ul>
+            </div>
+
+            <fieldset className="space-y-3">
+              <legend className="mb-1 text-sm font-semibold text-[#e0e8f0]">
+                How would you like to complete payment?
+              </legend>
               <label
-                key={d.departureId}
-                className={`flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 text-[15px] ${
-                  departureId === d.departureId
-                    ? "border-navy bg-sand-warm"
-                    : "border-line bg-white"
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-[15px] transition-all ${
+                  contactPreference === "callback" ? SELECTED_OPTION : IDLE_OPTION
                 }`}
               >
-                <span className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="departure"
-                    checked={departureId === d.departureId}
-                    onChange={() => setDepartureId(d.departureId)}
-                  />
-                  {new Date(d.startDate).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  {d.capacityTotal - d.capacityBooked - d.capacityHeld} spots left
+                <input
+                  type="radio"
+                  className="mt-1 accent-[#7dd3fc]"
+                  checked={contactPreference === "callback"}
+                  onChange={() => setContactPreference("callback")}
+                />
+                <span>
+                  <span className="block font-semibold text-[#e0e8f0]">
+                    A representative will call me
+                  </span>
+                  <span className="text-[#a0b4c4]">
+                    We&apos;ll reach out within one business day to arrange your deposit.
+                  </span>
                 </span>
               </label>
-            ))}
-          </div>
-          <StepNav onNext={() => setStep(2)} nextDisabled={!departureId} />
-        </div>
-      )}
+              <label
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-[15px] transition-all ${
+                  contactPreference === "pay_online" ? SELECTED_OPTION : IDLE_OPTION
+                }`}
+              >
+                <input
+                  type="radio"
+                  className="mt-1 accent-[#7dd3fc]"
+                  checked={contactPreference === "pay_online"}
+                  onChange={() => setContactPreference("pay_online")}
+                />
+                <span>
+                  <span className="block font-semibold text-[#e0e8f0]">
+                    I&apos;d like to pay online
+                  </span>
+                  <span className="text-[#a0b4c4]">
+                    Online payment is being set up — we&apos;ll email you a secure payment link
+                    shortly.
+                  </span>
+                </span>
+              </label>
+            </fieldset>
 
-      {step === 2 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-navy">Party size &amp; rooms</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <NumberField
-              label="Double rooms"
-              hint="2 adults each"
-              value={room.doubleRooms}
-              onChange={(v) => setRoom((r) => ({ ...r, doubleRooms: v }))}
-            />
-            <NumberField
-              label="Single rooms"
-              hint="1 adult each"
-              value={room.singleRooms}
-              onChange={(v) => setRoom((r) => ({ ...r, singleRooms: v }))}
-            />
-            <NumberField
-              label="Triple rooms"
-              hint="3 adults each"
-              value={room.triples}
-              onChange={(v) => setRoom((r) => ({ ...r, triples: v }))}
-            />
-            <NumberField label="Children" value={childCount} onChange={setChildCount} />
-          </div>
-
-          <div className="rounded-lg bg-sand-warm p-4 text-[15px]">
-            <p className="font-semibold text-ink">
-              {totalTravelers} traveler{totalTravelers === 1 ? "" : "s"} · Estimated total{" "}
-              {formatUsd(priceBreakdown.grandTotal)}
-            </p>
-            <p className="mt-1 text-ink-muted">
-              Deposit due to register: {formatUsd(depositAmount)}
-            </p>
-          </div>
-
-          <StepNav
-            onBack={() => setStep(1)}
-            onNext={goToTravelerStep}
-            nextDisabled={totalTravelers === 0}
-          />
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-navy">Traveler details</h2>
-          {travelers.map((traveler, index) => (
-            <div key={index} className="rounded-lg border border-line p-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-olive">
-                Traveler {index + 1} · {traveler.occupancy}
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <TextField
-                  label="First name"
-                  value={traveler.firstName}
-                  onChange={(v) => updateTraveler(index, { firstName: v })}
-                />
-                <TextField
-                  label="Last name"
-                  value={traveler.lastName}
-                  onChange={(v) => updateTraveler(index, { lastName: v })}
-                />
-                <TextField
-                  label="Date of birth"
-                  type="date"
-                  value={traveler.dob}
-                  onChange={(v) => updateTraveler(index, { dob: v })}
-                />
-                <TextField
-                  label="Passport number"
-                  value={traveler.passport}
-                  onChange={(v) => updateTraveler(index, { passport: v })}
-                />
-                {(traveler.occupancy === "double" || traveler.occupancy === "triple") && (
-                  <TextField
-                    label="Rooming with"
-                    value={traveler.roomWith}
-                    onChange={(v) => updateTraveler(index, { roomWith: v })}
-                  />
-                )}
-                <TextField
-                  label="Dietary needs"
-                  value={traveler.dietary}
-                  onChange={(v) => updateTraveler(index, { dietary: v })}
-                />
+            {Object.values(errors).flat().filter(Boolean).length > 0 && (
+              <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+                {Object.values(errors)
+                  .flat()
+                  .filter(Boolean)
+                  .map((message) => (
+                    <p key={message}>{message}</p>
+                  ))}
               </div>
+            )}
+
+            <div className="flex items-center justify-between border-t border-white/10 pt-6">
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className="text-sm font-semibold text-[#a0b4c4] transition hover:text-[#7dd3fc]"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={handleSubmit}
+                className="rounded-full bg-[#7dd3fc] px-8 py-3.5 text-sm font-bold text-[#001f2e] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+              >
+                {submitting ? "Submitting…" : "Submit Registration"}
+              </button>
             </div>
-          ))}
-          <StepNav
-            onBack={() => setStep(2)}
-            onNext={() => setStep(4)}
-            nextDisabled={!travelersValid}
-          />
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-navy">Contact information</h2>
-          <TextField label="Your name" value={contactName} onChange={setContactName} />
-          <TextField
-            label="Email"
-            type="email"
-            value={contactEmail}
-            onChange={setContactEmail}
-          />
-          <TextField label="Phone" type="tel" value={contactPhone} onChange={setContactPhone} />
-          <StepNav
-            onBack={() => setStep(3)}
-            onNext={() => setStep(5)}
-            nextDisabled={!contactName.trim() || !contactEmail.trim()}
-          />
-        </div>
-      )}
-
-      {step === 5 && departure && (
-        <div className="space-y-6">
-          <h2 className="font-display text-xl font-semibold text-navy">Review &amp; submit</h2>
-
-          <dl className="grid gap-2 rounded-lg bg-sand-warm p-4 text-[15px]">
-            <Row
-              label="Departure"
-              value={new Date(departure.startDate).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            />
-            <Row label="Travelers" value={String(totalTravelers)} />
-            <Row label="Estimated total" value={formatUsd(priceBreakdown.grandTotal)} />
-            <Row label="Deposit due to register" value={formatUsd(depositAmount)} />
-            <Row
-              label="Balance due"
-              value={`${tour.pricing.balanceDueDaysBeforeDeparture} days before departure`}
-            />
-          </dl>
-
-          <div className="rounded-lg border border-line p-4 text-sm text-ink-muted">
-            <p className="mb-2 font-semibold text-ink">Cancellation policy</p>
-            <ul className="space-y-1">
-              {DEFAULT_CANCELLATION_TIERS.map((tier) => (
-                <li key={tier.minWorkingDaysBefore}>
-                  {tier.minWorkingDaysBefore}+ working days before departure: {tier.chargePercent}
-                  % charge
-                </li>
-              ))}
-              <li>Plus a ${DEFAULT_ADMIN_FEE} admin fee.</li>
-            </ul>
           </div>
-
-          <fieldset className="space-y-2">
-            <legend className="mb-1 text-sm font-semibold text-ink">
-              How would you like to complete payment?
-            </legend>
-            <label className="flex items-start gap-3 rounded-lg border border-line p-4 text-[15px] has-[:checked]:border-navy has-[:checked]:bg-sand-warm">
-              <input
-                type="radio"
-                className="mt-1"
-                checked={contactPreference === "callback"}
-                onChange={() => setContactPreference("callback")}
-              />
-              <span>
-                <span className="block font-semibold text-ink">A representative will call me</span>
-                <span className="text-ink-muted">
-                  We&apos;ll reach out within one business day to arrange your deposit.
-                </span>
-              </span>
-            </label>
-            <label className="flex items-start gap-3 rounded-lg border border-line p-4 text-[15px] has-[:checked]:border-navy has-[:checked]:bg-sand-warm">
-              <input
-                type="radio"
-                className="mt-1"
-                checked={contactPreference === "pay_online"}
-                onChange={() => setContactPreference("pay_online")}
-              />
-              <span>
-                <span className="block font-semibold text-ink">I&apos;d like to pay online</span>
-                <span className="text-ink-muted">
-                  Online payment is being set up — we&apos;ll email you a secure payment link
-                  shortly.
-                </span>
-              </span>
-            </label>
-          </fieldset>
-
-          {Object.values(errors).flat().filter(Boolean).length > 0 && (
-            <div className="rounded-lg bg-terracotta/10 p-3 text-sm text-terracotta-dark">
-              {Object.values(errors)
-                .flat()
-                .filter(Boolean)
-                .map((message) => (
-                  <p key={message}>{message}</p>
-                ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setStep(4)}
-              className="text-sm font-medium text-ink-muted hover:text-ink"
-            >
-              ← Back
-            </button>
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={handleSubmit}
-              className="rounded-lg bg-terracotta px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-terracotta-dark disabled:opacity-60"
-            >
-              {submitting ? "Submitting…" : "Submit Registration"}
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
 function Confirmation({ contactPreference }: { contactPreference: "callback" | "pay_online" }) {
   return (
-    <div className="rounded-2xl border border-line bg-white/70 p-8 text-center">
-      <p className="mb-2 text-2xl">✓</p>
-      <h2 className="font-display text-xl font-semibold text-navy">
+    <div className="glass-panel-elevated rounded-3xl p-8 text-center shadow-2xl sm:p-10">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#7dd3fc]/40 bg-[#7dd3fc]/20 text-4xl text-[#7dd3fc]">
+        ✓
+      </div>
+      <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[#7dd3fc]">
         Registration received
+      </p>
+      <h2 className="mt-2 font-display text-2xl font-bold text-[#e0e8f0] sm:text-3xl">
+        We look forward to welcoming you
       </h2>
-      <p className="mx-auto mt-3 max-w-md text-[15px] text-ink-muted">
+      <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[#a0b4c4]">
         {contactPreference === "callback"
           ? "Thank you! A member of our team will call you within one business day to confirm details and arrange your deposit."
           : "Thank you! We're finishing setup for online payments — we'll email you a secure payment link shortly, or you're welcome to call us in the meantime."}
       </p>
       <a
         href="tel:18008470700"
-        className="mt-6 inline-block text-sm font-semibold text-terracotta"
+        className="mt-8 inline-block text-sm font-bold text-[#7dd3fc] transition hover:brightness-110"
       >
         Questions? Call 1-800-847-0700
       </a>
@@ -405,15 +441,32 @@ function Confirmation({ contactPreference }: { contactPreference: "callback" | "
 
 function StepIndicator({ step }: { step: number }) {
   return (
-    <ol className="mb-8 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold uppercase tracking-wide">
-      {STEP_LABELS.map((label, index) => (
-        <li
-          key={label}
-          className={index + 1 === step ? "text-navy" : "text-ink-muted/50"}
-        >
-          {index + 1}. {label}
-        </li>
-      ))}
+    <ol className="grid grid-cols-2 gap-2 border-b border-white/5 bg-[#0a0e1a]/80 px-4 py-4 text-center text-xs sm:grid-cols-5 sm:gap-0 sm:px-6">
+      {STEP_LABELS.map((label, index) => {
+        const active = index + 1 <= step;
+        const current = index + 1 === step;
+        return (
+          <li
+            key={label}
+            className={`flex items-center justify-center gap-2 ${
+              active ? "font-bold text-[#7dd3fc]" : "text-[#a0b4c4]/50"
+            }`}
+          >
+            <span
+              className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+                current
+                  ? "bg-[#7dd3fc] text-[#001f2e]"
+                  : active
+                    ? "bg-[#7dd3fc]/20 text-[#7dd3fc]"
+                    : "bg-white/10 text-[#a0b4c4]/50"
+              }`}
+            >
+              {index + 1}
+            </span>
+            <span className="hidden sm:inline">{label}</span>
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -428,12 +481,12 @@ function StepNav({
   nextDisabled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between pt-2">
+    <div className="flex items-center justify-between border-t border-white/10 pt-6">
       {onBack ? (
         <button
           type="button"
           onClick={onBack}
-          className="text-sm font-medium text-ink-muted hover:text-ink"
+          className="text-sm font-semibold text-[#a0b4c4] transition hover:text-[#7dd3fc]"
         >
           ← Back
         </button>
@@ -444,7 +497,7 @@ function StepNav({
         type="button"
         disabled={nextDisabled}
         onClick={onNext}
-        className="rounded-lg bg-navy px-5 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-40"
+        className="rounded-full bg-[#7dd3fc] px-8 py-3.5 text-sm font-bold text-[#001f2e] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40"
       >
         Continue
       </button>
@@ -452,11 +505,21 @@ function StepNav({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between">
-      <dt className="text-ink-muted">{label}</dt>
-      <dd className="font-semibold text-ink">{value}</dd>
+    <div className="flex items-center justify-between gap-4">
+      <dt className="text-[#a0b4c4]">{label}</dt>
+      <dd className={`font-semibold ${accent ? "text-[#7dd3fc]" : "text-[#e0e8f0]"}`}>
+        {value}
+      </dd>
     </div>
   );
 }
@@ -473,17 +536,19 @@ function NumberField({
   onChange: (value: number) => void;
 }) {
   return (
-    <div>
-      <label className="mb-1.5 block text-sm font-medium text-ink">
-        {label}
-        {hint && <span className="ms-1 text-xs font-normal text-ink-muted">({hint})</span>}
+    <div className="flex h-full flex-col">
+      <label className="mb-1.5 block min-h-[2.5rem] text-xs font-bold uppercase tracking-widest text-[#a0b4c4]">
+        <span className="block">{label}</span>
+        <span className="block font-normal normal-case tracking-normal opacity-80">
+          {hint ? `(${hint})` : "\u00A0"}
+        </span>
       </label>
       <input
         type="number"
         min={0}
         value={value}
         onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px]"
+        className="glacier-field mt-auto w-full"
       />
     </div>
   );
@@ -502,12 +567,14 @@ function TextField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-ink">{label}</label>
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[#a0b4c4]">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px]"
+        className="glacier-field w-full"
       />
     </div>
   );

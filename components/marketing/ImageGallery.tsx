@@ -12,7 +12,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
 
   return (
     <div>
-      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-sand-warm">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-[#0f1524]">
         {/* eslint-disable-next-line @next/next/no-img-element -- placeholder photography until real assets land */}
         <img
           src={safeImages[index]}
@@ -28,7 +28,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
               type="button"
               onClick={() => setIndex((i) => (i - 1 + safeImages.length) % safeImages.length)}
               aria-label="Previous photo"
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-navy shadow hover:bg-white"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-[rgba(125,211,252,0.15)] bg-[rgba(15,21,36,0.75)] p-2.5 text-[#e0e8f0] shadow-lg backdrop-blur-lg transition hover:border-[rgba(125,211,252,0.3)] hover:text-[#7dd3fc]"
             >
               ‹
             </button>
@@ -36,7 +36,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
               type="button"
               onClick={() => setIndex((i) => (i + 1) % safeImages.length)}
               aria-label="Next photo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-navy shadow hover:bg-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-[rgba(125,211,252,0.15)] bg-[rgba(15,21,36,0.75)] p-2.5 text-[#e0e8f0] shadow-lg backdrop-blur-lg transition hover:border-[rgba(125,211,252,0.3)] hover:text-[#7dd3fc]"
             >
               ›
             </button>
@@ -53,7 +53,9 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index}
               className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${
-                i === index ? "border-terracotta" : "border-transparent"
+                i === index
+                  ? "border-[#7dd3fc]"
+                  : "border-transparent opacity-70 hover:opacity-100"
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
