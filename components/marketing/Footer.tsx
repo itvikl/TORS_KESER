@@ -70,8 +70,16 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/5 pt-6 text-xs text-[#a0b4c4]/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Keshertours. All rights reserved.</p>
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/5 pt-6 text-xs text-[#a0b4c4]/60 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+            <p>&copy; {new Date().getFullYear()} Keshertours. All rights reserved.</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-shai-header-fial.jpg"
+              alt="Shai Bar Ilan Geographical Tours"
+              className="h-8 w-auto rounded-md object-contain opacity-90"
+            />
+          </div>
           <div className="flex gap-4">
             <Link href="/legal/terms-conditions" className="transition-colors hover:text-[#7dd3fc]">
               Terms &amp; Conditions

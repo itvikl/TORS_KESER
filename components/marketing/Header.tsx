@@ -31,22 +31,14 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo-shai-header-fial.jpg"
-            alt="Shai Bar Ilan Geographical Tours"
-            className="h-9 w-auto rounded-md object-contain sm:h-10 lg:h-11"
-          />
-          <a
-            href="tel:18008470700"
-            className="flex shrink-0 items-center gap-2 rounded-full bg-[#7dd3fc] px-3 py-2 text-[14px] font-bold text-[#001f2e] transition-all hover:brightness-110 active:scale-95 sm:px-4 sm:py-2.5 sm:text-[15px]"
-          >
-            <span aria-hidden="true">☎</span>
-            <span className="hidden sm:inline">1-800-847-0700</span>
-            <span className="sm:hidden">Call</span>
-          </a>
-        </div>
+        <a
+          href="tel:18008470700"
+          className="flex shrink-0 items-center gap-2 rounded-full bg-[#7dd3fc] px-3 py-2 text-[14px] font-bold text-[#001f2e] transition-all hover:brightness-110 active:scale-95 sm:px-4 sm:py-2.5 sm:text-[15px]"
+        >
+          <span aria-hidden="true">☎</span>
+          <span className="hidden sm:inline">1-800-847-0700</span>
+          <span className="sm:hidden">Call</span>
+        </a>
       </div>
     </header>
   );
