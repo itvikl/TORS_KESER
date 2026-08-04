@@ -42,7 +42,10 @@ export default async function HomePage({
     allTours.map(async (tour, index) => ({
       tour,
       nextDeparture: (await getDeparturesForTour(tour.tourId))[0],
-      image: FEATURED_IMAGES[index % FEATURED_IMAGES.length],
+      // Real tour photo first (set in the admin editor) — the stock photo
+      // array is only a last-resort placeholder for tours with no image at
+      // all yet (old seed data, or a brand-new draft).
+      image: tour.heroImage || tour.gallery[0] || FEATURED_IMAGES[index % FEATURED_IMAGES.length],
     }))
   );
 

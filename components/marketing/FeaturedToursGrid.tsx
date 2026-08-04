@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTourFilter } from "@/components/marketing/TourFilterProvider";
+import SafeImage from "@/components/ui/SafeImage";
 
 const INITIAL_VISIBLE = 12;
 
@@ -71,8 +72,7 @@ export default function FeaturedToursGrid() {
               className="group flex flex-col overflow-hidden rounded-3xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] shadow-2xl backdrop-blur-lg transition-all duration-500 hover:border-[rgba(125,211,252,0.2)] hover:bg-[rgba(15,21,36,0.75)]"
             >
               <div className="relative h-72 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <SafeImage
                   src={image}
                   alt={tour.title}
                   className="h-full w-full object-cover transition duration-700 group-hover:scale-110"

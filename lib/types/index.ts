@@ -135,9 +135,13 @@ export interface Traveler {
   dietary?: string;
 }
 
+/** How the customer wants to complete payment (chosen at the end of the registration form). */
+export type ContactPreference = "callback" | "pay_online";
+
 export interface Booking {
   bookingId: string;
-  userId: string;
+  /** Optional — there's no customer account system yet, so most bookings are guest submissions. */
+  userId?: string;
   departureId: string;
   tourId: string;
   travelerCount: number;
@@ -147,8 +151,10 @@ export interface Booking {
   balanceAmount: number;
   amountPaid: number;
   status: BookingStatus;
+  contactPreference: ContactPreference;
   paymentProvider?: "stripe";
   paymentIntentId?: string;
+  contactName: string;
   contactEmail: string;
   contactPhone?: string;
   createdAt: string;

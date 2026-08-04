@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx scripts/seed-firestore.ts",
+    "set-role": "tsx scripts/set-user-role.ts",
+    "clear-broken-seed-images": "tsx scripts/clear-broken-seed-images.ts",
+    "deploy:apphosting": "firebase deploy --only apphosting --project kesertors"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.12.0",
@@ -25,9 +29,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "firebase-tools": "^14.4.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
