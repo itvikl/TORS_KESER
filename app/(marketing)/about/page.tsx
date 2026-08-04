@@ -15,10 +15,12 @@ export default function AboutPage() {
         lede="Every Keshertours departure is planned so you never have to choose between seeing the world and keeping the standards you keep at home."
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <section>
-          <h2 className="font-display text-2xl font-semibold text-navy">Our Approach</h2>
-          <p className="mt-3 text-[17px] text-ink-muted">
+      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+        <section className="glass-panel rounded-2xl p-6 sm:p-8">
+          <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc]">
+            Our Approach
+          </h2>
+          <p className="mt-4 text-lg leading-relaxed text-[#a0b4c4]">
             Every tour is escorted by a Shomer Shabbat, English-speaking
             guide, and travels with a company mashgiach in addition to
             local rabbinic or Chabad supervision — kashrut isn&apos;t an
@@ -27,11 +29,11 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section className="mt-10">
-          <h2 className="font-display text-2xl font-semibold text-navy">
+        <section className="mt-8 glass-panel rounded-2xl p-6 sm:p-8">
+          <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc]">
             [Company history — years in business, licensing]
           </h2>
-          <p className="mt-3 rounded-xl border border-dashed border-line bg-sand-warm p-4 text-[15px] text-ink-muted">
+          <p className="mt-4 rounded-xl border border-dashed border-[rgba(125,211,252,0.2)] bg-white/5 p-4 text-[15px] leading-7 text-[#a0b4c4]">
             This section needs real content from the client: founding
             year, Seller of Travel registration numbers (see PRD Q4),
             and any industry affiliations — these are trust signals that
@@ -40,11 +42,11 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section className="mt-10">
-          <h2 className="font-display text-2xl font-semibold text-navy">
+        <section className="mt-8 glass-panel rounded-2xl p-6 sm:p-8">
+          <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc]">
             [Leadership — Shai Bar Ilan / guide bios]
           </h2>
-          <p className="mt-3 rounded-xl border border-dashed border-line bg-sand-warm p-4 text-[15px] text-ink-muted">
+          <p className="mt-4 rounded-xl border border-dashed border-[rgba(125,211,252,0.2)] bg-white/5 p-4 text-[15px] leading-7 text-[#a0b4c4]">
             Placeholder for a short bio and photo — testimonials on the
             existing site reference trips personally led by Shai Bar
             Ilan, which is exactly the kind of detail that builds trust

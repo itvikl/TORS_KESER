@@ -14,24 +14,30 @@ export default function CustomMadeToursPage() {
         title="A tour built entirely around your group"
         lede="Traveling only with your family, close friends, or community members? We'll design an itinerary just for you — including Roots Tours to your family's ancestral homeland."
       />
-      <div className="mx-auto max-w-2xl px-4 py-14 sm:px-6">
-        <form className="grid gap-4 rounded-2xl border border-line bg-white/60 p-6">
-          <h2 className="font-display text-xl font-semibold text-navy">
+      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+        <form className="glass-panel grid gap-5 rounded-2xl p-6 sm:p-8">
+          <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
             Tell us about your group
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-ink" htmlFor="destination">
+              <label
+                className="block text-sm font-medium text-[#a0b4c4]"
+                htmlFor="destination"
+              >
                 Destination
               </label>
               <input
                 id="destination"
                 name="destination"
-                className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[15px]"
+                className="glacier-field mt-1.5 w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink" htmlFor="groupSize">
+              <label
+                className="block text-sm font-medium text-[#a0b4c4]"
+                htmlFor="groupSize"
+              >
                 Approximate group size
               </label>
               <input
@@ -39,12 +45,15 @@ export default function CustomMadeToursPage() {
                 name="groupSize"
                 type="number"
                 min={1}
-                className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[15px]"
+                className="glacier-field mt-1.5 w-full"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-ink" htmlFor="phone">
+            <label
+              className="block text-sm font-medium text-[#a0b4c4]"
+              htmlFor="phone"
+            >
               Phone
             </label>
             <input
@@ -52,12 +61,12 @@ export default function CustomMadeToursPage() {
               name="phone"
               type="tel"
               required
-              className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[15px]"
+              className="glacier-field mt-1.5 w-full"
             />
           </div>
           <button
             type="submit"
-            className="justify-self-start rounded-lg bg-terracotta px-6 py-2.5 text-[15px] font-semibold text-white hover:bg-terracotta-dark"
+            className="justify-self-start rounded-full bg-[#7dd3fc] px-7 py-3 text-sm font-bold text-[#001f2e] transition hover:brightness-110 active:scale-95"
           >
             Request a Custom Tour
           </button>

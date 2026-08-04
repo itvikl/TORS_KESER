@@ -32,17 +32,25 @@ export default function FaqPage() {
   return (
     <div>
       <PageHeader title="Frequently Asked Questions" />
-      <div className="mx-auto max-w-2xl px-4 py-14 sm:px-6">
+      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-3">
           {FAQS.map((item) => (
             <details
               key={item.q}
-              className="group rounded-xl border border-line bg-white/60 px-5 py-4"
+              className="glass-panel group overflow-hidden rounded-xl"
             >
-              <summary className="cursor-pointer list-none font-display text-lg font-semibold text-navy">
-                {item.q}
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left text-lg font-semibold text-[#e0e8f0] transition-colors hover:bg-white/5 sm:p-6 [&::-webkit-details-marker]:hidden">
+                <span>{item.q}</span>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-[#7dd3fc] transition group-open:rotate-45"
+                >
+                  +
+                </span>
               </summary>
-              <p className="mt-3 text-[15px] text-ink-muted">{item.a}</p>
+              <p className="border-t border-[rgba(125,211,252,0.1)] px-5 pb-5 pt-4 text-[15px] leading-7 text-[#a0b4c4] sm:px-6 sm:pb-6">
+                {item.a}
+              </p>
             </details>
           ))}
         </div>

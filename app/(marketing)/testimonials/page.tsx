@@ -47,14 +47,16 @@ export default function TestimonialsPage() {
         title="Testimonials"
         lede="Real feedback from recent Keshertours departures."
       />
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
         {TESTIMONIALS.map((t) => (
           <figure
             key={t.destination + t.quote.slice(0, 10)}
-            className="rounded-2xl border border-line bg-white/60 p-6"
+            className="rounded-3xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] p-6 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-[rgba(125,211,252,0.2)] hover:bg-[rgba(15,21,36,0.75)] sm:p-8"
           >
-            <blockquote className="text-[15px] text-ink">&ldquo;{t.quote}&rdquo;</blockquote>
-            <figcaption className="mt-4 text-xs font-semibold uppercase tracking-wider text-olive">
+            <blockquote className="text-[15px] leading-7 text-[#e0e8f0]">
+              &ldquo;{t.quote}&rdquo;
+            </blockquote>
+            <figcaption className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#7dd3fc]">
               {t.destination}
             </figcaption>
           </figure>
