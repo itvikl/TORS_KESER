@@ -1,15 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadTourImage } from "@/lib/actions/uploads";
+import { uploadImage } from "@/lib/actions/uploads";
 
 export default function ImageUploadButton({
   label,
   multiple = false,
+  folder = "tours",
   onUploaded,
 }: {
   label: string;
   multiple?: boolean;
+  folder?: string;
   onUploaded: (urls: string[]) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +29,7 @@ export default function ImageUploadButton({
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
-      const result = await uploadTourImage(formData);
+      const result = await uploadImage(formData, folder);
       if (result.ok) {
         urls.push(result.url);
       } else {

@@ -38,3 +38,15 @@ export const BookingInputSchema = z.object({
 });
 
 export type BookingInput = z.infer<typeof BookingInputSchema>;
+
+/**
+ * Same shape as BookingInputSchema plus an admin-chosen initial status —
+ * used by createManualBooking (e.g. a phone registration) where there's no
+ * Stripe leg to determine status, so staff set it directly.
+ */
+export const ManualBookingInputSchema = BookingInputSchema.extend({
+  status: z.enum(["pending_payment", "deposit_paid", "paid_in_full"], {
+    error: "Choose a status.",
+  }),
+});
+export type ManualBookingInput = z.infer<typeof ManualBookingInputSchema>;

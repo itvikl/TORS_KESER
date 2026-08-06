@@ -16,7 +16,7 @@ export type BookingStatus =
   | "cancelled"
   | "refunded";
 export type PaymentType = "deposit" | "balance" | "full" | "refund";
-export type LeadSource = "contact" | "custom" | "evergreen";
+export type LeadSource = "contact" | "custom" | "evergreen" | "manual";
 export type UserRole = "customer" | "staff" | "admin";
 export type StaffRole = "guide" | "kashrutSupervisor";
 
@@ -173,10 +173,14 @@ export interface Payment {
 export interface Lead {
   leadId: string;
   tourId?: string;
-  name: string;
-  email: string;
+  /** Not every intake form collects all contact fields (e.g. the custom-tour form only takes a phone number). */
+  name?: string;
+  email?: string;
   phone?: string;
+  country?: string;
   message?: string;
+  destination?: string;
+  groupSize?: number;
   source: LeadSource;
   status: "new" | "contacted" | "converted" | "closed";
   createdAt: string;
@@ -202,6 +206,17 @@ export interface SpecialOffer {
   image?: string;
   tourId?: string;
   validUntil?: string;
+  status: "draft" | "published";
+}
+
+export interface SeoLandingPage {
+  pageId: string;
+  slug: string;
+  title: string;
+  body: string;
+  tourIds: string[];
+  seoTitle?: string;
+  seoDescription?: string;
   status: "draft" | "published";
 }
 

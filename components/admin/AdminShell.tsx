@@ -11,23 +11,24 @@ const NAV_SECTIONS: {
     items: [
       { label: "Tours", href: "/admin/tours" },
       { label: "Bookings", href: "/admin/bookings" },
-      { label: "Leads", href: "#", comingSoon: true },
-      { label: "Reviews", href: "#", comingSoon: true },
+      { label: "Leads", href: "/admin/leads" },
+      { label: "Reviews", href: "/admin/reviews" },
     ],
   },
   {
     title: "Content",
     items: [
-      { label: "Blog", href: "#", comingSoon: true },
-      { label: "Special Offers", href: "#", comingSoon: true },
-      { label: "SEO Landing Pages", href: "#", comingSoon: true },
+      { label: "Blog", href: "/admin/blog" },
+      { label: "Special Offers", href: "/admin/offers" },
+      { label: "SEO Landing Pages", href: "/admin/seo-pages" },
     ],
   },
   {
     title: "Admin",
     items: [
-      { label: "Staff & Permissions", href: "#", comingSoon: true },
-      { label: "Settings", href: "#", comingSoon: true },
+      { label: "Team", href: "/admin/staff/team" },
+      { label: "Admin accounts", href: "/admin/staff/accounts" },
+      { label: "Settings", href: "/admin/settings" },
     ],
   },
 ];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Departure, Occupancy, RoomConfiguration, Tour } from "@/lib/types";
+import { availableSeats, type Departure, type Occupancy, type RoomConfiguration, type Tour } from "@/lib/types";
 import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
 import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellationPolicy";
 import { createBooking } from "@/lib/actions/bookings";
@@ -119,6 +119,13 @@ export default function BookingForm({
       return;
     }
 
+    if (result.checkoutUrl) {
+      // Leaving the page for Stripe Checkout — keep the button disabled
+      // and skip setSubmitting(false) so there's no flash of re-enabled UI.
+      window.location.href = result.checkoutUrl;
+      return;
+    }
+
     setConfirmedId(result.bookingId);
     setSubmitting(false);
   }
@@ -160,7 +167,7 @@ export default function BookingForm({
                     })}
                   </span>
                   <span className="text-xs font-semibold uppercase tracking-wide text-[#a0b4c4]">
-                    {d.capacityTotal - d.capacityBooked - d.capacityHeld} spots left
+                    {availableSeats(d)} spots left
                   </span>
                 </label>
               ))}
@@ -370,8 +377,8 @@ export default function BookingForm({
                     I&apos;d like to pay online
                   </span>
                   <span className="text-[#a0b4c4]">
-                    Online payment is being set up — we&apos;ll email you a secure payment link
-                    shortly.
+                    You&apos;ll be taken to our secure payment page to pay your deposit right
+                    after submitting.
                   </span>
                 </span>
               </label>

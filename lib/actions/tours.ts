@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { TourInputSchema } from "@/lib/validation/tour";
+import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import {
   archiveTourDoc,
   createTourDoc,
@@ -28,15 +29,7 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
 
   const parsed = TourInputSchema.safeParse(input);
   if (!parsed.success) {
-    // Built from `issues` (not `.flatten()`) so nested paths like
-    // "kashrutDetails.supervisionLevel" come through as a single dotted
-    // key — that's what TourEditorForm's Field components look up.
-    const errors: Record<string, string[]> = {};
-    for (const issue of parsed.error.issues) {
-      const key = issue.path.join(".");
-      (errors[key] ??= []).push(issue.message);
-    }
-    return { ok: false, errors };
+    return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   }
   const data = parsed.data;
 

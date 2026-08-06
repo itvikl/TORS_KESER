@@ -3,15 +3,28 @@ import type { Metadata } from "next";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import { getDeparturesForTour } from "@/lib/data/tours";
 import { formatUsd } from "@/lib/pricing";
-import type { Departure, Tour, TourStatus } from "@/lib/types";
+import { availableSeats, type Departure, type Tour, type TourStatus } from "@/lib/types";
 import ArchiveTourButton from "@/components/admin/ArchiveTourButton";
 
 export const metadata: Metadata = { title: "Tours" };
 
+interface UpcomingCapacity {
+  departureCount: number;
+  totalCapacity: number;
+  totalAvailable: number;
+}
+
 /** Plain helper (not the page component) so the Date.now() read doesn't trip the component-purity lint rule. */
-function hasFutureDeparture(departures: Departure[]): boolean {
+function upcomingCapacity(departures: Departure[]): UpcomingCapacity {
   const now = Date.now();
-  return departures.some((d) => d.status !== "cancelled" && new Date(d.startDate).getTime() >= now);
+  const upcoming = departures.filter(
+    (d) => d.status !== "cancelled" && new Date(d.startDate).getTime() >= now
+  );
+  return {
+    departureCount: upcoming.length,
+    totalCapacity: upcoming.reduce((sum, d) => sum + d.capacityTotal, 0),
+    totalAvailable: upcoming.reduce((sum, d) => sum + availableSeats(d), 0),
+  };
 }
 
 export default async function AdminToursPage() {
@@ -21,7 +34,7 @@ export default async function AdminToursPage() {
   const rows = await Promise.all(
     tours.map(async (tour) => {
       const departures = await getDeparturesForTour(tour.tourId);
-      return { tour, hasFutureDeparture: hasFutureDeparture(departures) };
+      return { tour, capacity: upcomingCapacity(departures) };
     })
   );
 
@@ -55,13 +68,13 @@ export default async function AdminToursPage() {
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Region</th>
                 <th className="px-4 py-3">From</th>
-                <th className="px-4 py-3">Departures</th>
+                <th className="px-4 py-3">Capacity</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {rows.map(({ tour, hasFutureDeparture }) => (
-                <TourRow key={tour.tourId} tour={tour} hasFutureDeparture={hasFutureDeparture} />
+              {rows.map(({ tour, capacity }) => (
+                <TourRow key={tour.tourId} tour={tour} capacity={capacity} />
               ))}
             </tbody>
           </table>
@@ -71,7 +84,7 @@ export default async function AdminToursPage() {
   );
 }
 
-function TourRow({ tour, hasFutureDeparture }: { tour: Tour; hasFutureDeparture: boolean }) {
+function TourRow({ tour, capacity }: { tour: Tour; capacity: UpcomingCapacity }) {
   return (
     <tr className="align-middle">
       <td className="px-4 py-3">
@@ -86,12 +99,19 @@ function TourRow({ tour, hasFutureDeparture }: { tour: Tour; hasFutureDeparture:
         {formatUsd(tour.pricing.pricePerPersonDouble)}
       </td>
       <td className="px-4 py-3">
-        {hasFutureDeparture ? (
-          <span className="text-ink-muted">Has upcoming</span>
-        ) : (
+        {capacity.departureCount === 0 ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-terracotta/10 px-2.5 py-0.5 text-xs font-semibold text-terracotta-dark">
             No future dates
           </span>
+        ) : (
+          <div>
+            <p className="font-medium text-ink">
+              {capacity.totalAvailable} / {capacity.totalCapacity} left
+            </p>
+            <p className="text-xs text-ink-muted">
+              {capacity.departureCount} upcoming departure{capacity.departureCount === 1 ? "" : "s"}
+            </p>
+          </div>
         )}
       </td>
       <td className="px-4 py-3 text-right">

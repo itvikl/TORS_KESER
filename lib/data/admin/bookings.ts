@@ -37,3 +37,9 @@ export async function getAllBookingsAdmin(): Promise<AdminBookingRow[]> {
   rows.sort((a, b) => b.booking.createdAt.localeCompare(a.booking.createdAt));
   return rows;
 }
+
+/** All departures across every tour — used by the manual-booking form's tour→departure picker. */
+export async function getAllDeparturesAdmin(): Promise<Departure[]> {
+  const snapshot = await adminDb().collection("departures").get();
+  return snapshot.docs.map((doc) => doc.data() as Departure);
+}

@@ -15,12 +15,13 @@ const ALLOWED_TYPES: Record<string, string> = {
 export type UploadImageResult = { ok: true; url: string } | { ok: false; error: string };
 
 /**
- * Uploads a tour photo to Firebase Storage via the Admin SDK (server-only —
+ * Uploads an image to Firebase Storage via the Admin SDK (server-only —
  * consistent with the rest of the admin write path, and avoids needing
  * public Storage security rules for client uploads). Called directly from
- * ImageUploadButton with a FormData containing one "file" entry.
+ * ImageUploadButton with a FormData containing one "file" entry; `folder`
+ * namespaces the storage path per admin category (tours, reviews, blog, ...).
  */
-export async function uploadTourImage(formData: FormData): Promise<UploadImageResult> {
+export async function uploadImage(formData: FormData, folder = "tours"): Promise<UploadImageResult> {
   await requireAdminSession();
 
   const file = formData.get("file");
@@ -37,7 +38,7 @@ export async function uploadTourImage(formData: FormData): Promise<UploadImageRe
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const path = `tours/${randomUUID()}.${extension}`;
+  const path = `${folder}/${randomUUID()}.${extension}`;
   const downloadToken = randomUUID();
 
   const bucket = adminStorage().bucket();

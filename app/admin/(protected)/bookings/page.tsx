@@ -1,7 +1,8 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllBookingsAdmin } from "@/lib/data/admin/bookings";
 import { formatUsd } from "@/lib/pricing";
-import type { BookingStatus, ContactPreference } from "@/lib/types";
+import { availableSeats, type BookingStatus, type ContactPreference } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Bookings" };
 
@@ -10,11 +11,19 @@ export default async function AdminBookingsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-ink">Bookings</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          {rows.length} registration{rows.length === 1 ? "" : "s"} submitted
-        </p>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Bookings</h1>
+          <p className="mt-1 text-sm text-ink-muted">
+            {rows.length} registration{rows.length === 1 ? "" : "s"} submitted
+          </p>
+        </div>
+        <Link
+          href="/admin/bookings/new"
+          className="shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+        >
+          + New booking
+        </Link>
       </div>
 
       {rows.length === 0 ? (
@@ -30,6 +39,7 @@ export default async function AdminBookingsPage() {
                 <th className="px-4 py-3">Tour</th>
                 <th className="px-4 py-3">Departure</th>
                 <th className="px-4 py-3">Travelers</th>
+                <th className="px-4 py-3">Capacity</th>
                 <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Wants</th>
@@ -57,6 +67,9 @@ export default async function AdminBookingsPage() {
                       : "—"}
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{booking.travelerCount}</td>
+                  <td className="px-4 py-3 text-ink-muted">
+                    {departure ? `${availableSeats(departure)} / ${departure.capacityTotal} left` : "—"}
+                  </td>
                   <td className="px-4 py-3 text-ink-muted">
                     {formatUsd(booking.priceBreakdown.grandTotal)}
                   </td>

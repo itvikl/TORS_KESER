@@ -1,11 +1,20 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
+import { requireAdminSession } from "@/lib/auth/dal";
 import { calculatePriceBreakdown } from "@/lib/pricing";
-import { BookingInputSchema } from "@/lib/validation/booking";
-import type { Booking, Departure, Tour, Traveler } from "@/lib/types";
+import { BookingInputSchema, ManualBookingInputSchema } from "@/lib/validation/booking";
+import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
+import { stripeServer } from "@/lib/stripe/server";
+import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
+import type { BookingInput } from "@/lib/validation/booking";
 
 export type CreateBookingResult =
+  | { ok: true; bookingId: string; checkoutUrl?: string }
+  | { ok: false; errors: Record<string, string[]> };
+
+export type CreateManualBookingResult =
   | { ok: true; bookingId: string }
   | { ok: false; errors: Record<string, string[]> };
 
@@ -20,31 +29,22 @@ class BookingError extends Error {
 }
 
 /**
- * Public, unauthenticated action — anyone can submit a registration (no
- * customer account system exists yet). No payment happens here: every
- * booking is written as `pending_payment` regardless of the customer's
- * chosen contactPreference (callback vs. pay online), since Stripe isn't
- * wired up. Staff follow up from /admin/bookings either way.
- *
- * Capacity is enforced with a Firestore transaction: unlike a Stripe
- * checkout hold (which needs an expiry + cleanup job because a customer
- * can abandon it mid-payment), a submitted registration here is a durable
- * commitment the moment it's saved — payment is deferred, not the booking
- * itself — so incrementing departures.capacityBooked directly, atomically
- * with the booking write, is correct with no companion cleanup job needed.
+ * Shared by the public registration flow and the admin "manual booking"
+ * form: looks up the tour/departure, recomputes price server-side (PRD
+ * FR-13 — never trust a total from the client), and atomically checks
+ * capacity + writes the booking and its travelers subcollection in one
+ * Firestore transaction. `status` is the caller's choice — the public flow
+ * always passes "pending_payment" (no Stripe leg has run yet at this
+ * point); the admin flow lets staff set it directly since a manually
+ * entered booking may already be paid (phone/check).
  */
-export async function createBooking(input: unknown): Promise<CreateBookingResult> {
-  const parsed = BookingInputSchema.safeParse(input);
-  if (!parsed.success) {
-    const errors: Record<string, string[]> = {};
-    for (const issue of parsed.error.issues) {
-      const key = issue.path.join(".");
-      (errors[key] ??= []).push(issue.message);
-    }
-    return { ok: false, errors };
-  }
-  const data = parsed.data;
-
+async function createBookingCore(
+  data: BookingInput,
+  status: BookingStatus
+): Promise<
+  | { ok: true; bookingId: string; tour: Tour; depositAmount: number }
+  | { ok: false; errors: Record<string, string[]> }
+> {
   const departureRef = adminDb().collection("departures").doc(data.departureId);
   const departurePreviewSnap = await departureRef.get();
   if (!departurePreviewSnap.exists) {
@@ -58,8 +58,6 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
   }
   const tour = tourSnap.data() as Tour;
 
-  // Price is always recomputed server-side from the tour's own pricing —
-  // never trusted from the client.
   const priceBreakdown = calculatePriceBreakdown(
     tour.pricing,
     data.roomConfiguration,
@@ -81,8 +79,8 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
     priceBreakdown,
     depositAmount,
     balanceAmount,
-    amountPaid: 0,
-    status: "pending_payment",
+    amountPaid: status === "paid_in_full" ? priceBreakdown.grandTotal : status === "deposit_paid" ? depositAmount : 0,
+    status,
     contactPreference: data.contactPreference,
     contactName: data.contactName,
     contactEmail: data.contactEmail,
@@ -109,7 +107,7 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
           "departureId",
           seatsLeft <= 0
             ? "This departure is sold out."
-            : `Only ${seatsLeft} spot${seatsLeft === 1 ? "" : "s"} left on this departure — reduce your party size or choose another date.`
+            : `Only ${seatsLeft} spot${seatsLeft === 1 ? "" : "s"} left on this departure — reduce the party size or choose another date.`
         );
       }
 
@@ -128,5 +126,94 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
     throw err;
   }
 
-  return { ok: true, bookingId: bookingRef.id };
+  return { ok: true, bookingId: bookingRef.id, tour, depositAmount };
+}
+
+/**
+ * Public, unauthenticated action — anyone can submit a registration (no
+ * customer account system exists yet). No payment happens here: every
+ * booking is written as `pending_payment` regardless of the customer's
+ * chosen contactPreference (callback vs. pay online), since Stripe isn't
+ * wired up. Staff follow up from /admin/bookings either way.
+ */
+export async function createBooking(input: unknown): Promise<CreateBookingResult> {
+  const parsed = BookingInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
+  }
+
+  const core = await createBookingCore(parsed.data, "pending_payment");
+  if (!core.ok) return core;
+
+  const checkoutUrl =
+    parsed.data.contactPreference === "pay_online" && core.depositAmount > 0
+      ? await tryCreateCheckoutSession(core.bookingId, core.tour, core.depositAmount)
+      : undefined;
+
+  return { ok: true, bookingId: core.bookingId, checkoutUrl };
+}
+
+/**
+ * Admin-only counterpart of createBooking, for registrations staff enter on
+ * a customer's behalf (e.g. a phone booking) — same capacity/price
+ * enforcement, but skips Stripe entirely and lets staff pick the initial
+ * status since payment may already have happened off-platform.
+ */
+export async function createManualBooking(input: unknown): Promise<CreateManualBookingResult> {
+  await requireAdminSession();
+
+  const parsed = ManualBookingInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
+  }
+
+  const { status, ...bookingInput } = parsed.data;
+  const core = await createBookingCore(bookingInput, status);
+  if (!core.ok) return core;
+
+  revalidatePath("/admin/bookings");
+  return { ok: true, bookingId: core.bookingId };
+}
+
+/**
+ * Best-effort: the booking above has already been saved successfully by
+ * the time this runs. If Stripe isn't configured yet (no
+ * STRIPE_SECRET_KEY) or the API call fails, we just skip the redirect —
+ * the registration itself still went through and staff follow up from
+ * /admin/bookings, same as the "callback" path.
+ */
+async function tryCreateCheckoutSession(
+  bookingId: string,
+  tour: Tour,
+  depositAmount: number
+): Promise<string | undefined> {
+  if (!process.env.STRIPE_SECRET_KEY) return undefined;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  try {
+    const session = await stripeServer().checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: `Deposit — ${tour.title}` },
+            unit_amount: Math.round(depositAmount * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      // The webhook (app/api/webhooks/stripe/route.ts) reads this back off
+      // the completed session to know which booking to mark paid — it's
+      // the only link between the Stripe side and our booking doc.
+      metadata: { bookingId },
+      success_url: `${siteUrl}/tours/${tour.slug}/book/success?booking=${bookingId}`,
+      cancel_url: `${siteUrl}/tours/${tour.slug}/book`,
+    });
+    return session.url ?? undefined;
+  } catch (err) {
+    console.error("Stripe Checkout session creation failed:", err);
+    return undefined;
+  }
 }

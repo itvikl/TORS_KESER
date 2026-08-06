@@ -39,3 +39,15 @@ export async function requireAdminSession(): Promise<AdminSession> {
   if (!session) redirect("/admin/login");
   return session;
 }
+
+/**
+ * Stricter than requireAdminSession(): also requires role === "admin", not
+ * just "staff". Reserved for sensitive actions that affect other users'
+ * access (e.g. managing admin/staff accounts) — everything else stays open
+ * to both roles.
+ */
+export async function requireAdminRole(): Promise<AdminSession> {
+  const session = await requireAdminSession();
+  if (session.role !== "admin") redirect("/admin");
+  return session;
+}

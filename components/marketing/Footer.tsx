@@ -1,23 +1,16 @@
 import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
 
+// Region names must match lib/data/tours.ts's SEARCH_REGIONS exactly — these
+// deep-link into the homepage's existing region filter (TourFilterProvider).
 const COLUMNS = [
   {
     title: "Destinations",
     links: [
-      { href: "/tours-destinations/south-america", label: "South America" },
-      { href: "/tours-destinations/europe", label: "Europe" },
-      { href: "/tours-destinations/asia", label: "Asia" },
-      { href: "/tours-destinations/africa", label: "Africa" },
-    ],
-  },
-  {
-    title: "Travel Style",
-    links: [
-      { href: "/tours-types/land-tours", label: "Land Tours" },
-      { href: "/tours-types/luxury-tours", label: "Luxury Tours" },
-      { href: "/tours-types/cruises-premium", label: "Premium & Cruises" },
-      { href: "/tours-types/seminars", label: "Seminars" },
+      { href: "/?region=South%20America#featured-tours", label: "South America" },
+      { href: "/?region=Europe#featured-tours", label: "Europe" },
+      { href: "/?region=Asia%20%26%20Far%20East#featured-tours", label: "Asia & Far East" },
+      { href: "/?region=Africa#featured-tours", label: "Africa" },
     ],
   },
   {
@@ -25,7 +18,7 @@ const COLUMNS = [
     links: [
       { href: "/about", label: "About Us" },
       { href: "/testimonials", label: "Testimonials" },
-      { href: "/blog", label: "Blog" },
+      { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact Us" },
     ],
   },
@@ -35,7 +28,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-white/5 bg-[#0a0e1a]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
           <div className="col-span-2 sm:col-span-1">
             <BrandLogo className="h-12 w-auto object-contain" />
             <p className="mt-3 text-sm text-[#a0b4c4]">
