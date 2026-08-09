@@ -24,6 +24,7 @@ const BLANK_TOUR: Tour = {
   durationDays: 7,
   minGroupSize: 10,
   flightsIncluded: false,
+  isSpecialOffer: false,
   inclusions: [],
   exclusions: [],
   pricing: {
@@ -62,6 +63,7 @@ function cleanTour(tour: Tour): Tour {
       ...day,
       dayNumber: index + 1,
       meals: clean(day.meals),
+      attractions: clean(day.attractions ?? []),
     })),
   };
 }
@@ -155,6 +157,7 @@ export default function TourEditorForm({
       title: "",
       description: "",
       meals: [],
+      attractions: [],
     };
     set("itineraryDays", [...draft.itineraryDays, day]);
   }
@@ -302,6 +305,14 @@ export default function TourEditorForm({
                 onChange={(e) => set("flightsIncluded", e.target.checked)}
               />
               Flights included
+            </label>
+            <label className="flex items-center gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={draft.isSpecialOffer ?? false}
+                onChange={(e) => set("isSpecialOffer", e.target.checked)}
+              />
+              Special Offer — feature this tour on the Special Offers page
             </label>
           </Section>
 
@@ -719,6 +730,14 @@ function ItineraryDayEditor({
           placeholder="Description"
           value={day.description}
           onChange={(e) => onChange({ description: e.target.value })}
+        />
+        <input
+          className={inputClass}
+          placeholder="Attractions (comma-separated)"
+          value={(day.attractions ?? []).join(", ")}
+          onChange={(e) =>
+            onChange({ attractions: e.target.value.split(",").map((s) => s.trim()) })
+          }
         />
         <div className="grid grid-cols-2 gap-3">
           <input

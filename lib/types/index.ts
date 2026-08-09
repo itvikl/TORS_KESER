@@ -43,6 +43,7 @@ export interface ItineraryDay {
   description: string;
   meals: string[];
   accommodation?: string;
+  attractions?: string[];
   images?: string[];
 }
 
@@ -61,6 +62,7 @@ export interface Tour {
   durationDays: number;
   minGroupSize: number;
   flightsIncluded: boolean;
+  isSpecialOffer?: boolean;
   inclusions: string[];
   exclusions: string[];
   pricing: TourPricing;
