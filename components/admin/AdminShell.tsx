@@ -11,6 +11,7 @@ const NAV_SECTIONS: {
     items: [
       { label: "Tours", href: "/admin/tours" },
       { label: "Bookings", href: "/admin/bookings" },
+      { label: "History", href: "/admin/history" },
       { label: "Leads", href: "/admin/leads" },
       { label: "Reviews", href: "/admin/reviews" },
     ],

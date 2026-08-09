@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     serverActions: {
       // Default is 1MB — too small for the admin tour editor's image
