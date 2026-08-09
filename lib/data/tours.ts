@@ -54,6 +54,12 @@ export async function getDeparturesForTour(tourId: string): Promise<Departure[]>
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 }
 
+/** Published tours flagged as a special offer in the admin tour editor. */
+export async function getSpecialOfferTours(): Promise<Tour[]> {
+  const tours = await getAllTours();
+  return tours.filter((tour) => tour.isSpecialOffer);
+}
+
 export async function getFeaturedTours(limit = 4): Promise<Tour[]> {
   const snapshot = await adminDb()
     .collection(TOURS_COLLECTION)

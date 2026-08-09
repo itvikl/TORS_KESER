@@ -10,6 +10,10 @@ import { stripeServer } from "@/lib/stripe/server";
 import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
 import type { BookingInput } from "@/lib/validation/booking";
 
+export type GetBookingTravelersResult =
+  | { ok: true; travelers: Traveler[] }
+  | { ok: false; error: string };
+
 export type CreateBookingResult =
   | { ok: true; bookingId: string; checkoutUrl?: string }
   | { ok: false; errors: Record<string, string[]> };
@@ -173,6 +177,32 @@ export async function createManualBooking(input: unknown): Promise<CreateManualB
 
   revalidatePath("/admin/bookings");
   return { ok: true, bookingId: core.bookingId };
+}
+
+/**
+ * Fetches a booking's travelers subcollection on demand (e.g. when staff
+ * expand a booking's detail card in /admin/bookings) rather than joining it
+ * into every row of the list — the list itself already carries every other
+ * field the customer entered directly on the Booking doc.
+ */
+export async function getBookingTravelers(bookingId: string): Promise<GetBookingTravelersResult> {
+  await requireAdminSession();
+
+  const snapshot = await adminDb()
+    .collection("bookings")
+    .doc(bookingId)
+    .collection("travelers")
+    .get();
+
+  if (snapshot.empty) {
+    const bookingSnap = await adminDb().collection("bookings").doc(bookingId).get();
+    if (!bookingSnap.exists) {
+      return { ok: false, error: "This booking no longer exists." };
+    }
+  }
+
+  const travelers = snapshot.docs.map((doc) => doc.data() as Traveler);
+  return { ok: true, travelers };
 }
 
 /**

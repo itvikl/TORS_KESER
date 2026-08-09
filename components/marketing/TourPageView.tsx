@@ -134,8 +134,11 @@ export default function TourPageView({
                       <p className="leading-relaxed text-[#a0b4c4]">
                         {day.description}
                       </p>
-                      {(day.meals.length > 0 || day.accommodation) && (
+                      {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (
                         <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[#7dd3fc]/80">
+                          {day.attractions && day.attractions.length > 0 && (
+                            <li>Attractions: {day.attractions.join(", ")}</li>
+                          )}
                           {day.meals.length > 0 && (
                             <li>Meals: {day.meals.join(", ")}</li>
                           )}

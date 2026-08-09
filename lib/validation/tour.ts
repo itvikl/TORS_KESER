@@ -19,6 +19,7 @@ export const ItineraryDayInputSchema = z.object({
   description: z.string(),
   meals: z.array(z.string()),
   accommodation: z.string().optional(),
+  attractions: z.array(z.string()).optional(),
 });
 
 /**
@@ -43,6 +44,7 @@ export const TourInputSchema = z.object({
   durationDays: z.number().int().min(1, { error: "Duration must be at least 1 day." }),
   minGroupSize: z.number().int().min(0),
   flightsIncluded: z.boolean(),
+  isSpecialOffer: z.boolean().optional(),
   inclusions: z.array(z.string()),
   exclusions: z.array(z.string()),
   pricing: z.object({
