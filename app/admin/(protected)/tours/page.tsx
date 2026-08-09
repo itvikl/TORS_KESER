@@ -124,6 +124,12 @@ function TourRow({ tour, capacity }: { tour: Tour; capacity: UpcomingCapacity })
             Preview
           </Link>
           <Link
+            href={`/admin/tours/${tour.tourId}/departures`}
+            className="text-sm font-medium text-navy hover:text-navy-light"
+          >
+            Departures
+          </Link>
+          <Link
             href={`/admin/tours/${tour.tourId}`}
             className="text-sm font-medium text-navy hover:text-navy-light"
           >

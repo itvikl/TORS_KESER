@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourEditorForm from "@/components/admin/TourEditorForm";
@@ -26,6 +27,16 @@ export default async function EditTourPage({
   const departures = await getDeparturesForTour(tourId);
 
   return (
-    <TourEditorForm mode="edit" tourId={tourId} initialTour={tour} departures={departures} />
+    <div>
+      <div className="mb-4">
+        <Link
+          href={`/admin/tours/${tourId}/departures`}
+          className="text-sm font-medium text-navy hover:text-navy-light"
+        >
+          Manage departures →
+        </Link>
+      </div>
+      <TourEditorForm mode="edit" tourId={tourId} initialTour={tour} departures={departures} />
+    </div>
   );
 }
