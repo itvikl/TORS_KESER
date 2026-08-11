@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { saveSiteContent } from "@/lib/data/siteContent";
+import { HOME_CONTENT_CACHE_TAG } from "@/lib/data/homeCacheTags";
 import {
   SiteContentAboutInputSchema,
   SiteContentContactInputSchema,
@@ -31,6 +32,7 @@ export async function saveHomeContent(input: unknown): Promise<SaveSiteContentRe
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("home", parsed.data as SiteContentHome);
   revalidatePath("/");
+  updateTag(HOME_CONTENT_CACHE_TAG);
   return { ok: true };
 }
 

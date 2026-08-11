@@ -37,7 +37,7 @@ export default function BookingPageBackground({ images }: { images: string[] }) 
           key={src}
           src={src}
           alt=""
-          className={`absolute inset-0 h-full w-full scale-105 object-cover blur-md transition-opacity duration-[2000ms] ${
+          className={`scale-105 object-cover blur-md transition-opacity duration-[2000ms] ${
             i === index ? "opacity-100" : "opacity-0"
           }`}
         />

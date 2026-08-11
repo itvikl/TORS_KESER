@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  images: {
+    remotePatterns: [
+      // Admin-uploaded tour photos (lib/actions/uploads.ts).
+      { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: "/v0/b/**" },
+      // Placeholder stock photography used when a tour has no uploaded image yet.
+      { protocol: "https", hostname: "lh3.googleusercontent.com", pathname: "/**" },
+    ],
+  },
 };
 
 export default nextConfig;

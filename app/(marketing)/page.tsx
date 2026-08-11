@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import DestinationSearch from "@/components/marketing/DestinationSearch";
 import FeaturedToursGrid from "@/components/marketing/FeaturedToursGrid";
 import HomeHeroContent from "@/components/marketing/HomeHeroContent";
@@ -13,6 +14,7 @@ import {
 import { getSiteContent } from "@/lib/data/siteContent";
 import { hasPlannedDeparture } from "@/lib/departureAvailability";
 import { bySortOrder } from "@/lib/tourSort";
+import { HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG } from "@/lib/data/homeCacheTags";
 
 const HERO_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC43Nqq9_0gg6kRS_GIKae0tEB10U5ZlAJjEuQHGrs8j0H7ht2uc37RlfwfEKlREJPzoVwsZKOZ4MiPdxls__wOWt67DM5260igbf_nDkLeJMMJLj92m75BfBj6IO_uNEvaCEUKhrmR5vpXp698p6HQhfoA3dImkRz7ad4-7OVfVIR3pM0882ENZZpbqCTRNoa_VnhoJv4VtUPYaZRIe1DPlg10VFrPE9OvEJKPY-pVxYoMXZTJT1KNPccdWa4XpN5v_ShhrQTfNA";
@@ -23,6 +25,51 @@ const FEATURED_IMAGES = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCqYOxjJyRnKqt2oX-Y4WUfShhMXp5B73snPXKXFTy9h4a-em52vyyh45koyNmpGdHvCTdNCIDG5mwMNHjvvxwW-id9ZSJTDv2JwbonB_QLg0JiG8FW5i8GCIYYjVpNliOUYefN3Vxtm-xQbW8jyTiSCkE5FwYwr79iZvOqp1ScfIxy6MhikFf8Ee9wqKE3Rg0A6F4vev5zM6o43iz3gtbS8xXev2JgA8ml77LzeYdgvNmccqrAyh_q35e4PA5aN4BPQMuAxPKeNw",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCmwAwQFGrN_WnvmuAkHWrOQxpOkGZGJF7DMzBoZoaIjVevsSWszJJ596yhKQBpcAt7-JNqUNpVbfPceqWjPfZ2YPSLV1GUCsbA7TMibnCnmqeDHUFaxfFch9MAbuZWGzOet_VKaDNe7w6EZtUSuzgcplWs4sxUl9sjSyp5M0HrkMtA9dy0jFqMaOhqmrQozwPbE7pYho9UIWpKf51UrV_2LixExCNK-AJ55D8sOElPVPxGZ87tPlgo7t5TsnjLm4MTshm8-ceIHA",
 ];
+
+/**
+ * The home page's tours/departures/site-content reads don't depend on
+ * `searchParams` (only the client-side region filter does), but were
+ * re-run from scratch — including one Firestore read per tour for its
+ * departures — on every navigation to "/", including the header's "Tours"
+ * link. That round trip was the multi-second delay on that click. Caching
+ * it here means only the first hit after a revalidation pays for it;
+ * admin writes bust the cache immediately via `revalidateTag` (see
+ * lib/data/homeCacheTags.ts), so this doesn't go stale between edits.
+ */
+const getHomeData = unstable_cache(
+  async () => {
+    const [allTours, regions, content] = await Promise.all([
+      getAllTours(),
+      getRegionSearchOptions(),
+      getSiteContent("home"),
+    ]);
+
+    const toursWithAllDepartures = await Promise.all(
+      allTours.map(async (tour) => ({
+        tour,
+        departures: await getDeparturesForTour(tour.tourId),
+      }))
+    );
+
+    // Tours with no departure planned at all are hidden from the listing/search
+    // (but their page stays reachable by direct URL — see /tours/[slug]).
+    const toursWithDepartures = toursWithAllDepartures
+      .filter(({ departures }) => hasPlannedDeparture(departures))
+      .sort((a, b) => bySortOrder(a.tour, b.tour))
+      .map(({ tour, departures }, index) => ({
+        tour,
+        nextDeparture: departures[0],
+        // Real tour photo first (set in the admin editor) — the stock photo
+        // array is only a last-resort placeholder for tours with no image at
+        // all yet (old seed data, or a brand-new draft).
+        image: tour.heroImage || tour.gallery[0] || FEATURED_IMAGES[index % FEATURED_IMAGES.length],
+      }));
+
+    return { regions, content, toursWithDepartures };
+  },
+  ["home-page-data"],
+  { revalidate: 60, tags: [HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG] }
+);
 
 export default async function HomePage({
   searchParams,
@@ -38,32 +85,7 @@ export default async function HomePage({
         : []
   ).filter(Boolean);
 
-  const [allTours, regions, content] = await Promise.all([
-    getAllTours(),
-    getRegionSearchOptions(),
-    getSiteContent("home"),
-  ]);
-
-  const toursWithAllDepartures = await Promise.all(
-    allTours.map(async (tour) => ({
-      tour,
-      departures: await getDeparturesForTour(tour.tourId),
-    }))
-  );
-
-  // Tours with no departure planned at all are hidden from the listing/search
-  // (but their page stays reachable by direct URL — see /tours/[slug]).
-  const toursWithDepartures = toursWithAllDepartures
-    .filter(({ departures }) => hasPlannedDeparture(departures))
-    .sort((a, b) => bySortOrder(a.tour, b.tour))
-    .map(({ tour, departures }, index) => ({
-      tour,
-      nextDeparture: departures[0],
-      // Real tour photo first (set in the admin editor) — the stock photo
-      // array is only a last-resort placeholder for tours with no image at
-      // all yet (old seed data, or a brand-new draft).
-      image: tour.heroImage || tour.gallery[0] || FEATURED_IMAGES[index % FEATURED_IMAGES.length],
-    }));
+  const { regions, content, toursWithDepartures } = await getHomeData();
 
   return (
     <Suspense fallback={null}>

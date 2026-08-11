@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { TourInputSchema } from "@/lib/validation/tour";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -13,6 +13,7 @@ import {
   updateTourDoc,
 } from "@/lib/data/admin/tours";
 import type { TourStatus } from "@/lib/types";
+import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
 
 export type SaveTourResult =
   | { ok: true; tourId: string }
@@ -43,6 +44,7 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${savedId}`);
   revalidatePath(`/tours/${data.slug}`);
+  updateTag(HOME_TOURS_CACHE_TAG);
 
   return { ok: true, tourId: savedId };
 }
@@ -51,6 +53,7 @@ export async function archiveTour(tourId: string): Promise<void> {
   await requireAdminSession();
   await archiveTourDoc(tourId);
   revalidatePath("/admin/tours");
+  updateTag(HOME_TOURS_CACHE_TAG);
 }
 
 export async function setTourStatus(tourId: string, status: TourStatus): Promise<void> {
@@ -58,6 +61,7 @@ export async function setTourStatus(tourId: string, status: TourStatus): Promise
   await setTourStatusDoc(tourId, status);
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${tourId}`);
+  updateTag(HOME_TOURS_CACHE_TAG);
 }
 
 export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: boolean }> {
@@ -65,5 +69,6 @@ export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: bool
   await setTourSortOrders(orderedTourIds);
   revalidatePath("/admin/tours");
   revalidatePath("/");
+  updateTag(HOME_TOURS_CACHE_TAG);
   return { ok: true };
 }

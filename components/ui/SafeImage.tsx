@@ -1,28 +1,37 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
+
 /**
- * Plain <img> that hides itself on load failure, so pages don't show a
- * broken-image icon while real photography (PRD Q10) isn't wired up yet.
- * A client component because Server Components can't pass event handlers.
+ * next/image-backed photo that hides itself on load failure, so pages don't
+ * show a broken-image icon while real photography (PRD Q10) isn't wired up
+ * yet. Always rendered with `fill` — every call site already positions its
+ * parent as the sizing container (`relative h-*` or `absolute inset-0`).
  */
 export default function SafeImage({
   src,
   alt,
   className,
+  sizes = "100vw",
 }: {
   src: string;
   alt: string;
   className?: string;
+  sizes?: string;
 }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) return null;
+
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- placeholder photography until real assets land
-    <img
+    <Image
       src={src}
       alt={alt}
+      fill
+      sizes={sizes}
       className={className}
-      onError={(e) => {
-        e.currentTarget.style.display = "none";
-      }}
+      onError={() => setFailed(true)}
     />
   );
 }

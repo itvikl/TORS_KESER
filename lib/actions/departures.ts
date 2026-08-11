@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { DepartureInputSchema } from "@/lib/validation/departure";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -11,6 +11,7 @@ import {
   updateDepartureDoc,
 } from "@/lib/data/admin/departures";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
+import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
 
 export type SaveDepartureResult =
   | { ok: true; departureId: string }
@@ -70,6 +71,7 @@ export async function saveDeparture(
   revalidatePath("/admin/tours");
   revalidatePath(`/tours/${tour.slug}`);
   revalidatePath(`/tours/${tour.slug}/book`);
+  updateTag(HOME_TOURS_CACHE_TAG);
 
   return { ok: true, departureId: savedId };
 }
@@ -79,4 +81,5 @@ export async function cancelDeparture(departureId: string, tourId: string): Prom
   await cancelDepartureDoc(departureId);
   revalidatePath(`/admin/tours/${tourId}/departures`);
   revalidatePath("/admin/tours");
+  updateTag(HOME_TOURS_CACHE_TAG);
 }

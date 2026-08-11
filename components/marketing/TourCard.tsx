@@ -17,7 +17,8 @@ export default function TourCard({
         <SafeImage
           src={image}
           alt={tour.title}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+          className="object-cover transition duration-700 group-hover:scale-110"
         />
         <div className="absolute left-4 top-4 rounded-full border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[#e0e8f0] backdrop-blur-lg">
           {tour.region}

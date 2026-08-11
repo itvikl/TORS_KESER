@@ -363,7 +363,8 @@ function TourHeroGallery({
         <SafeImage
           src={main}
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          sizes="(min-width: 768px) 66vw, 100vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e1a]/80 via-transparent to-transparent" />
         <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-8">
@@ -394,7 +395,8 @@ function TourHeroGallery({
               <SafeImage
                 src={src}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                sizes="33vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
               {isLast && extraCount > 0 && (
                 <div className="absolute inset-0 flex cursor-default items-center justify-center bg-black/40 transition-all hover:bg-black/25">
@@ -415,11 +417,7 @@ function TourHeroGallery({
             key={`m-${src}-${i}`}
             className="relative h-24 flex-1 overflow-hidden rounded-lg"
           >
-            <SafeImage
-              src={src}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <SafeImage src={src} alt="" sizes="33vw" className="object-cover" />
           </div>
         ))}
       </div>
