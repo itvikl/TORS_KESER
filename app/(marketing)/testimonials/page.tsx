@@ -19,7 +19,7 @@ export default async function TestimonialsPage() {
       <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
       {reviews.length === 0 ? (
         <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:px-8">
-          <p className="text-lg leading-8 text-[#a0b4c4]">
+          <p className="text-lg leading-8 text-[var(--color-slate)]">
             No approved reviews yet — approve one from /admin/reviews to have it appear here.
           </p>
         </div>
@@ -28,12 +28,12 @@ export default async function TestimonialsPage() {
           {reviews.map(({ review, tour }) => (
             <figure
               key={review.reviewId}
-              className="rounded-3xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] p-6 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-[rgba(125,211,252,0.2)] hover:bg-[rgba(15,21,36,0.75)] sm:p-8"
+              className="glass-card rounded-3xl p-6 shadow-2xl backdrop-blur-lg duration-300 sm:p-8"
             >
-              <blockquote className="text-[15px] leading-7 text-[#e0e8f0]">
+              <blockquote className="text-[15px] leading-7 text-[var(--color-mist)]">
                 &ldquo;{review.body}&rdquo;
               </blockquote>
-              <figcaption className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#7dd3fc]">
+              <figcaption className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-ice)]">
                 {tour?.title ?? review.customerName}
               </figcaption>
             </figure>

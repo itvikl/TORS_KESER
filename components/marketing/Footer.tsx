@@ -26,17 +26,17 @@ const COLUMNS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[#0a0e1a]">
+    <footer className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)] transition-colors">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
           <div className="col-span-2 sm:col-span-1">
             <BrandLogo className="h-12 w-auto object-contain" />
-            <p className="mt-3 text-sm text-[#a0b4c4]">
+            <p className="mt-3 text-sm text-[var(--color-slate)]">
               Travel the world the Jewish way.
             </p>
             <a
               href="tel:18008470700"
-              className="mt-4 inline-block text-sm font-semibold text-[#7dd3fc] transition-colors hover:brightness-110"
+              className="mt-4 inline-block text-sm font-semibold text-[var(--color-ice)] transition-colors hover:brightness-110"
             >
               1-800-847-0700
             </a>
@@ -44,7 +44,7 @@ export default function Footer() {
 
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#a0b4c4]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-slate)]">
                 {col.title}
               </h3>
               <ul className="mt-3 space-y-2">
@@ -52,7 +52,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#e0e8f0]/80 transition-colors hover:text-[#7dd3fc]"
+                      className="text-sm text-[var(--color-mist)]/80 transition-colors hover:text-[var(--color-ice)]"
                     >
                       {link.label}
                     </Link>
@@ -63,7 +63,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/5 pt-6 text-xs text-[#a0b4c4]/60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-[var(--color-border-hairline-faint)] pt-6 text-xs text-[var(--color-slate)]/60 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
             <p>&copy; {new Date().getFullYear()} Keshertours. All rights reserved.</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -74,10 +74,10 @@ export default function Footer() {
             />
           </div>
           <div className="flex gap-4">
-            <Link href="/legal/terms-conditions" className="transition-colors hover:text-[#7dd3fc]">
+            <Link href="/legal/terms-conditions" className="transition-colors hover:text-[var(--color-ice)]">
               Terms &amp; Conditions
             </Link>
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#7dd3fc]">
+            <Link href="/legal/privacy" className="transition-colors hover:text-[var(--color-ice)]">
               Privacy
             </Link>
           </div>

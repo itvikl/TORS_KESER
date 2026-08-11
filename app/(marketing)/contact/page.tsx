@@ -18,19 +18,19 @@ export default async function ContactPage() {
       <PageHeader title={content.title} lede={content.lede} />
       <div className="mx-auto grid max-w-3xl gap-8 px-4 py-16 sm:px-6 lg:px-8">
         <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl p-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7dd3fc]">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-ice)]">
             Prefer to talk?
           </p>
           <a
             href={`tel:${settings.phone.replace(/\D/g, "")}`}
-            className="font-display text-3xl font-bold text-[#e0e8f0] transition hover:text-[#7dd3fc]"
+            className="font-display text-3xl font-bold text-[var(--color-mist)] transition hover:text-[var(--color-ice)]"
           >
             {settings.phone}
           </a>
           {settings.phoneAlt && (
             <a
               href={`tel:${settings.phoneAlt.replace(/\D/g, "")}`}
-              className="text-sm text-[#a0b4c4] transition hover:text-[#7dd3fc]"
+              className="text-sm text-[var(--color-slate)] transition hover:text-[var(--color-ice)]"
             >
               or {settings.phoneAlt}
             </a>

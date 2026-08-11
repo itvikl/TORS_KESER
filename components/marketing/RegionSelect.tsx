@@ -131,7 +131,7 @@ export default function RegionSelect({
             aria-multiselectable="true"
             aria-labelledby={`${listId}-label`}
             style={menuStyle}
-            className="rounded-2xl border border-[rgba(125,211,252,0.15)] bg-[#141c2e] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
+            className="rounded-2xl border border-[var(--color-border-ice-strong)] bg-[var(--color-popover-bg)] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
           >
             <button
               type="button"
@@ -141,8 +141,8 @@ export default function RegionSelect({
               className={[
                 "flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition-colors",
                 value.length === 0
-                  ? "bg-white/5 text-[#7dd3fc]"
-                  : "text-[#e0e8f0] hover:bg-white/5",
+                  ? "bg-[var(--color-surface-hover-a)] text-[var(--color-ice)]"
+                  : "text-[var(--color-mist)] hover:bg-[var(--color-surface-hover-a)]",
               ].join(" ")}
             >
               <span className="font-medium">Any destination</span>
@@ -155,7 +155,7 @@ export default function RegionSelect({
 
               return (
                 <div key={name}>
-                  <div className="mx-3 border-t border-white/10" aria-hidden="true" />
+                  <div className="mx-3 border-t border-[var(--color-border-hairline)]" aria-hidden="true" />
                   <button
                     type="button"
                     role="option"
@@ -166,10 +166,10 @@ export default function RegionSelect({
                     className={[
                       "mt-0.5 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition-colors",
                       disabled
-                        ? "cursor-not-allowed text-[#a0b4c4]/55"
+                        ? "cursor-not-allowed text-[var(--color-slate)]/55"
                         : isSelected
-                          ? "bg-white/5 text-[#7dd3fc]"
-                          : "text-[#e0e8f0] hover:bg-white/5",
+                          ? "bg-[var(--color-surface-hover-a)] text-[var(--color-ice)]"
+                          : "text-[var(--color-mist)] hover:bg-[var(--color-surface-hover-a)]",
                     ].join(" ")}
                   >
                     <span
@@ -177,8 +177,8 @@ export default function RegionSelect({
                       className={[
                         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
                         isSelected
-                          ? "border-[#7dd3fc] bg-[#7dd3fc] text-[#001f2e]"
-                          : "border-white/25 bg-transparent",
+                          ? "border-[var(--color-ice)] bg-[var(--color-ice)] text-[var(--color-ice-ink)]"
+                          : "border-[var(--color-border-ice-strong)] bg-transparent",
                       ].join(" ")}
                     >
                       {isSelected ? (
@@ -189,7 +189,7 @@ export default function RegionSelect({
                     </span>
                     <span className="min-w-0 flex-1 font-medium">{name}</span>
                     {tag ? (
-                      <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#a0b4c4]">
+                      <span className="shrink-0 rounded-full border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-slate)]">
                         {tag}
                       </span>
                     ) : null}
@@ -207,7 +207,7 @@ export default function RegionSelect({
       {hiddenInputs}
       <label
         id={`${listId}-label`}
-        className="block text-[10px] font-bold uppercase tracking-widest text-[#a0b4c4]"
+        className="block text-[10px] font-bold uppercase tracking-widest text-[var(--color-slate)]"
       >
         Where do you want to travel?
       </label>
@@ -220,13 +220,13 @@ export default function RegionSelect({
         title={summary}
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onTriggerKeyDown}
-        className="mt-0.5 flex w-full min-w-0 items-center justify-between gap-3 bg-transparent p-0 text-left text-[15px] font-medium text-[#e0e8f0] outline-none focus-visible:outline-none"
+        className="mt-0.5 flex w-full min-w-0 items-center justify-between gap-3 bg-transparent p-0 text-left text-[15px] font-medium text-[var(--color-mist)] outline-none focus-visible:outline-none"
       >
         <span className="block min-w-0 flex-1 truncate">{summary}</span>
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"
-          className={`h-4 w-4 shrink-0 text-[#7dd3fc] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 text-[var(--color-ice)] transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="2"

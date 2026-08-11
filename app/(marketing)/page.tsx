@@ -72,7 +72,7 @@ export default async function HomePage({
         tours={toursWithDepartures}
         initialRegions={initialRegions}
       >
-        <div className="overflow-x-hidden bg-[#0a0e1a] text-[#e0e8f0]">
+        <div className="overflow-x-hidden bg-[var(--color-glacier)] text-[var(--color-mist)] transition-colors">
           <section className="relative isolate overflow-hidden">
             <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -95,18 +95,18 @@ export default async function HomePage({
 
           <section
             id="featured-tours"
-            className="scroll-mt-24 bg-[#0a0e1a] px-4 py-20 text-[#e0e8f0] sm:px-6 lg:px-8"
+            className="scroll-mt-24 bg-[var(--color-glacier)] px-4 py-20 text-[var(--color-mist)] sm:px-6 lg:px-8 transition-colors"
           >
             <div className="mx-auto max-w-7xl">
               <FeaturedToursGrid />
             </div>
           </section>
 
-          <section className="bg-[#0f1524] px-4 py-20 sm:px-6 lg:px-8">
+          <section className="bg-[var(--color-glacier-elevated)] px-4 py-20 sm:px-6 lg:px-8 transition-colors">
             <HomeTrustSignals signals={content.trustSignals} />
           </section>
 
-          <section className="bg-[#0a0e1a] px-4 py-24 sm:px-6 lg:px-8">
+          <section className="bg-[var(--color-glacier)] px-4 py-24 sm:px-6 lg:px-8 transition-colors">
             <HomeCtaSection content={content} />
           </section>
         </div>

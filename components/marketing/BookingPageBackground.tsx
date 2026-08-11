@@ -42,7 +42,7 @@ export default function BookingPageBackground({ images }: { images: string[] }) 
           }`}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0e1a]/50 via-[#0a0e1a]/60 to-[#0a0e1a]/85" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-scrim)]/50 via-[var(--color-scrim)]/60 to-[var(--color-scrim)]/85 transition-colors" />
     </div>
   );
 }

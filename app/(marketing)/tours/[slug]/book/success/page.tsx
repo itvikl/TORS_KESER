@@ -31,37 +31,37 @@ export default async function BookingSuccessPage({
       />
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="glass-panel-elevated rounded-3xl p-8 text-center shadow-2xl sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#7dd3fc]/40 bg-[#7dd3fc]/20 text-4xl text-[#7dd3fc]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[var(--color-ice)]/40 bg-[var(--color-ice)]/20 text-4xl text-[var(--color-ice)]">
             ✓
           </div>
-          <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[#7dd3fc]">
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[var(--color-ice)]">
             Deposit received
           </p>
-          <h2 className="mt-2 font-display text-2xl font-bold text-[#e0e8f0] sm:text-3xl">
+          <h2 className="mt-2 font-display text-2xl font-bold text-[var(--color-mist)] sm:text-3xl">
             We look forward to welcoming you
           </h2>
 
           <dl className="mx-auto mt-8 grid max-w-sm gap-3 text-left text-[15px]">
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-[#a0b4c4]">Paid so far</dt>
-              <dd className="font-semibold text-[#e0e8f0]">{formatUsd(summary.amountPaid)}</dd>
+              <dt className="text-[var(--color-slate)]">Paid so far</dt>
+              <dd className="font-semibold text-[var(--color-mist)]">{formatUsd(summary.amountPaid)}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-[#a0b4c4]">Trip total</dt>
-              <dd className="font-semibold text-[#e0e8f0]">{formatUsd(summary.grandTotal)}</dd>
+              <dt className="text-[var(--color-slate)]">Trip total</dt>
+              <dd className="font-semibold text-[var(--color-mist)]">{formatUsd(summary.grandTotal)}</dd>
             </div>
           </dl>
 
           <a
             href="tel:18008470700"
-            className="mt-8 inline-block text-sm font-bold text-[#7dd3fc] transition hover:brightness-110"
+            className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
           >
             Questions? Call 1-800-847-0700
           </a>
         </div>
 
-        <p className="mt-6 text-center text-sm text-[#a0b4c4]">
-          <Link href="/" className="font-semibold text-[#7dd3fc] transition hover:brightness-110">
+        <p className="mt-6 text-center text-sm text-[var(--color-slate)]">
+          <Link href="/" className="font-semibold text-[var(--color-ice)] transition hover:brightness-110">
             Back to homepage
           </Link>
         </p>
