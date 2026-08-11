@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { calculatePriceBreakdown } from "@/lib/pricing";
+import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { BookingInputSchema, ManualBookingInputSchema } from "@/lib/validation/booking";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
@@ -128,6 +129,8 @@ async function createBookingCore(
     }
     throw err;
   }
+
+  await sendBookingConfirmationEmail(booking);
 
   return { ok: true, bookingId: bookingRef.id };
 }
