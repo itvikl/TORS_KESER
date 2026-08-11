@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllBookingsAdmin } from "@/lib/data/admin/bookings";
-import BookingsTable from "@/components/admin/BookingsTable";
+import { getBookingCountsByTourAdmin } from "@/lib/data/admin/bookings";
+import BookingsTourList from "@/components/admin/BookingsTourList";
 
 export const metadata: Metadata = { title: "Bookings" };
 
 export default async function AdminBookingsPage() {
-  const rows = await getAllBookingsAdmin();
+  const rows = await getBookingCountsByTourAdmin();
+  const totalRegistrants = rows.reduce((sum, r) => sum + r.registrantCount, 0);
 
   return (
     <div>
@@ -14,7 +15,8 @@ export default async function AdminBookingsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Bookings</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            {rows.length} registration{rows.length === 1 ? "" : "s"} submitted — click a row for full details
+            {totalRegistrants} registration{totalRegistrants === 1 ? "" : "s"} across{" "}
+            {rows.length} tour{rows.length === 1 ? "" : "s"} — select a tour to see its registrants
           </p>
         </div>
         <Link
@@ -30,7 +32,7 @@ export default async function AdminBookingsPage() {
           No registrations yet.
         </p>
       ) : (
-        <BookingsTable rows={rows} />
+        <BookingsTourList rows={rows} />
       )}
     </div>
   );

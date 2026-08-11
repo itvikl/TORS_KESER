@@ -16,6 +16,7 @@ export const SiteSettingsInputSchema = z.object({
   defaultMinGroupSize: z.coerce.number().int().min(0),
   defaultBalanceDueDays: z.coerce.number().int().min(0),
   defaultCompanyCancelDeadlineDays: z.coerce.number().int().min(0),
+  lowSeatsThreshold: z.coerce.number().int().min(1),
 });
 
 export type SiteSettingsInput = z.infer<typeof SiteSettingsInputSchema>;

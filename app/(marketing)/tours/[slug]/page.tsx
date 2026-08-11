@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
 import { getAllTours, getDeparturesForTour, getTourBySlug } from "@/lib/data/tours";
+import { getSiteSettings } from "@/lib/data/admin/settings";
 
 export async function generateStaticParams() {
   const tours = await getAllTours();
@@ -32,7 +33,16 @@ export default async function TourDetailPage({
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
-  const departures = await getDeparturesForTour(tour.tourId);
+  const [departures, settings] = await Promise.all([
+    getDeparturesForTour(tour.tourId),
+    getSiteSettings(),
+  ]);
 
-  return <TourPageView tour={tour} departures={departures} />;
+  return (
+    <TourPageView
+      tour={tour}
+      departures={departures}
+      lowSeatsThreshold={settings.lowSeatsThreshold}
+    />
+  );
 }

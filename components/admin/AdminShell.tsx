@@ -19,6 +19,7 @@ const NAV_SECTIONS: {
   {
     title: "Content",
     items: [
+      { label: "Site Content", href: "/admin/site-content" },
       { label: "Blog", href: "/admin/blog" },
       { label: "Special Offers", href: "/admin/offers" },
       { label: "SEO Landing Pages", href: "/admin/seo-pages" },

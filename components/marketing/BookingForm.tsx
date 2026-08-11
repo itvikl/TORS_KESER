@@ -46,9 +46,12 @@ const IDLE_OPTION =
 export default function BookingForm({
   tour,
   departures,
+  lowSeatsThreshold,
 }: {
   tour: Tour;
   departures: Departure[];
+  /** At/below this remaining-seats count, the exact number + a "last spots" badge are shown; above it, only a vague "plenty available" message. */
+  lowSeatsThreshold: number;
 }) {
   const [step, setStep] = useState(1);
   const [departureId, setDepartureId] = useState(departures[0]?.departureId ?? "");
@@ -180,6 +183,7 @@ export default function BookingForm({
             <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
               Choose a departure
             </h2>
+            <BookingAssuranceNote assurance={tour.bookingAssurance ?? "conditional"} />
             <div className="space-y-3">
               {departures.map((d) => (
                 <label
@@ -202,9 +206,10 @@ export default function BookingForm({
                       year: "numeric",
                     })}
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-[#a0b4c4]">
-                    {availableSeats(d)} spots left
-                  </span>
+                  <SeatAvailabilityBadge
+                    seats={availableSeats(d)}
+                    threshold={lowSeatsThreshold}
+                  />
                 </label>
               ))}
             </div>
@@ -626,6 +631,48 @@ function TextField({
         onChange={(e) => onChange(e.target.value)}
         className="glacier-field w-full"
       />
+    </div>
+  );
+}
+
+/** Exact number + "last spots" only at/below threshold — otherwise a vague, non-numeric message. */
+function SeatAvailabilityBadge({
+  seats,
+  threshold,
+}: {
+  seats: number;
+  threshold: number;
+}) {
+  if (seats <= threshold) {
+    return (
+      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+        <span className="rounded-full bg-[#c8a0f0]/20 px-2 py-0.5 text-[#c8a0f0]">
+          Last spots
+        </span>
+        <span className="text-[#a0b4c4]">{seats} spots left</span>
+      </span>
+    );
+  }
+  return (
+    <span className="text-xs font-semibold uppercase tracking-wide text-[#a0b4c4]">
+      Plenty of spots available
+    </span>
+  );
+}
+
+/** Tour-level trust badge — constant across every departure, shown once above the date picker. */
+function BookingAssuranceNote({ assurance }: { assurance: "conditional" | "guaranteed" }) {
+  if (assurance === "guaranteed") {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-sm font-medium text-[#10b981]">
+        <span aria-hidden="true">✓</span>
+        Guaranteed to run — this tour is confirmed regardless of group size.
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[#a0b4c4]">
+      Subject to registration — this tour departs once enough travelers have joined.
     </div>
   );
 }

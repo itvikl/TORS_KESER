@@ -51,6 +51,13 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
           defaultValue={String(settings.defaultCompanyCancelDeadlineDays)}
           error={errors.defaultCompanyCancelDeadlineDays}
         />
+        <Field
+          label="Low seats threshold (customer-facing)"
+          name="lowSeatsThreshold"
+          type="number"
+          defaultValue={String(settings.lowSeatsThreshold)}
+          error={errors.lowSeatsThreshold}
+        />
       </div>
 
       <button

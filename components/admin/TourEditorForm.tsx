@@ -40,6 +40,7 @@ const BLANK_TOUR: Tour = {
   },
   itineraryDays: [],
   status: "draft",
+  bookingAssurance: "conditional",
 };
 
 function slugify(value: string): string {
@@ -314,6 +315,21 @@ export default function TourEditorForm({
               />
               Special Offer — feature this tour on the Special Offers page
             </label>
+            <Field
+              label="Booking assurance"
+              hint="Shown to customers on the booking page — a manual editorial call, independent of the actual minimum-group-size numbers."
+            >
+              <select
+                className={inputClass}
+                value={draft.bookingAssurance ?? "conditional"}
+                onChange={(e) =>
+                  set("bookingAssurance", e.target.value as Tour["bookingAssurance"])
+                }
+              >
+                <option value="conditional">Conditional — requires minimum group size</option>
+                <option value="guaranteed">Guaranteed to run</option>
+              </select>
+            </Field>
           </Section>
 
           <Section title="Photos">

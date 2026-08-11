@@ -12,7 +12,8 @@
         "!.env*.example",
         ".next",
         "stich_files"
-      ]
+      ],
+      "alwaysDeployFromSource": true
     }
   ]
 }
