@@ -8,6 +8,7 @@ import {
   archiveTourDoc,
   createTourDoc,
   isSlugTaken,
+  setTourSortOrders,
   setTourStatusDoc,
   updateTourDoc,
 } from "@/lib/data/admin/tours";
@@ -57,4 +58,12 @@ export async function setTourStatus(tourId: string, status: TourStatus): Promise
   await setTourStatusDoc(tourId, status);
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${tourId}`);
+}
+
+export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: boolean }> {
+  await requireAdminSession();
+  await setTourSortOrders(orderedTourIds);
+  revalidatePath("/admin/tours");
+  revalidatePath("/");
+  return { ok: true };
 }

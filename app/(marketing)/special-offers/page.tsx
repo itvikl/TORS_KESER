@@ -3,15 +3,17 @@ import PageHeader from "@/components/marketing/PageHeader";
 import TourCard from "@/components/marketing/TourCard";
 import { getSpecialOffers } from "@/lib/data/offers";
 import { getDeparturesForTour, getSpecialOfferTours } from "@/lib/data/tours";
+import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
   title: "Special Offers",
 };
 
 export default async function SpecialOffersPage() {
-  const [offers, specialOfferTours] = await Promise.all([
+  const [offers, specialOfferTours, content] = await Promise.all([
     getSpecialOffers(),
     getSpecialOfferTours(),
+    getSiteContent("special-offers"),
   ]);
 
   const tours = await Promise.all(
@@ -26,11 +28,7 @@ export default async function SpecialOffersPage() {
 
   return (
     <div>
-      <PageHeader
-        eyebrow="Limited Time"
-        title="Special Offers"
-        lede="Seasonal deals and early-booking discounts, published straight from the admin panel — no developer required."
-      />
+      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         {isEmpty ? (
           <div className="glass-panel rounded-2xl border-dashed p-10 text-center">

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BookingForm from "@/components/marketing/BookingForm";
+import BookingPageBackground from "@/components/marketing/BookingPageBackground";
 import PageHeader from "@/components/marketing/PageHeader";
 import { getDeparturesForTour, getTourBySlug } from "@/lib/data/tours";
-import { availableSeats, type Departure } from "@/lib/types";
+import { getSiteSettings } from "@/lib/data/admin/settings";
+import { hasPlannedDeparture, isDepartureBookable } from "@/lib/departureAvailability";
 
 export async function generateMetadata({
   params,
@@ -15,15 +17,6 @@ export async function generateMetadata({
   return { title: tour ? `Register — ${tour.title}` : "Register" };
 }
 
-/** Plain helper (not the page component) so the Date.now() read doesn't trip the component-purity lint rule. */
-function isBookable(departure: Departure): boolean {
-  return (
-    departure.status === "open" &&
-    availableSeats(departure) > 0 &&
-    new Date(departure.startDate).getTime() >= Date.now()
-  );
-}
-
 export default async function BookTourPage({
   params,
 }: {
@@ -33,18 +26,37 @@ export default async function BookTourPage({
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
-  const departures = await getDeparturesForTour(tour.tourId);
-  const bookable = departures.filter(isBookable);
+  const [departures, settings] = await Promise.all([
+    getDeparturesForTour(tour.tourId),
+    getSiteSettings(),
+  ]);
+  const bookable = departures.filter(isDepartureBookable);
+  const planned = hasPlannedDeparture(departures);
 
   return (
-    <div>
+    <div className="relative isolate overflow-hidden">
+      <BookingPageBackground images={[tour.heroImage, ...tour.gallery]} />
       <PageHeader
         eyebrow="Register"
         title={tour.title}
         lede="Reserve your place — choose dates, party size, and traveler details below."
+        transparent
       />
-      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-        {bookable.length === 0 ? (
+      <div className="relative mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+        {!planned ? (
+          <div className="glass-panel rounded-3xl p-8 text-center sm:p-10">
+            <p className="text-lg leading-8 text-[#a0b4c4]">
+              The next date for this tour will be published soon. Call us at{" "}
+              <a
+                href="tel:18008470700"
+                className="font-bold text-[#7dd3fc] transition hover:brightness-110"
+              >
+                1-800-847-0700
+              </a>{" "}
+              and we&apos;ll let you know the moment it&apos;s live.
+            </p>
+          </div>
+        ) : bookable.length === 0 ? (
           <div className="glass-panel rounded-3xl p-8 text-center sm:p-10">
             <p className="text-lg leading-8 text-[#a0b4c4]">
               There are no open departure dates for this tour right now. Call us at{" "}
@@ -58,7 +70,11 @@ export default async function BookTourPage({
             </p>
           </div>
         ) : (
-          <BookingForm tour={tour} departures={bookable} />
+          <BookingForm
+            tour={tour}
+            departures={bookable}
+            lowSeatsThreshold={settings.lowSeatsThreshold}
+          />
         )}
       </div>
     </div>

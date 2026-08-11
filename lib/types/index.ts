@@ -7,6 +7,13 @@
 
 export type TravelStyle = "land" | "luxury" | "cruise" | "seminar";
 export type TourStatus = "draft" | "published" | "archived";
+/**
+ * Admin-set editorial trust badge shown to customers on the booking page.
+ * Deliberately independent of the real minGroupSize/minGroupSizeMet data
+ * (which stays internal-only) — the admin sets this by judgment, not an
+ * automatic computation.
+ */
+export type BookingAssurance = "conditional" | "guaranteed";
 export type DepartureStatus = "open" | "closed" | "soldout" | "cancelled";
 export type Occupancy = "double" | "single" | "triple" | "child";
 export type BookingStatus =
@@ -71,6 +78,10 @@ export interface Tour {
   status: TourStatus;
   seoTitle?: string;
   seoDescription?: string;
+  /** Display order in the admin list and the public homepage grid, set via drag-and-drop. */
+  sortOrder?: number;
+  /** Customer-facing trust badge; missing/undefined is treated as "conditional". */
+  bookingAssurance?: BookingAssurance;
 }
 
 export interface Departure {
@@ -230,4 +241,86 @@ export interface SiteSettings {
   defaultMinGroupSize: number;
   defaultBalanceDueDays: number;
   defaultCompanyCancelDeadlineDays: number;
+  /** At or below this remaining-seats count, customers see the exact number + a "last spots" badge; above it, only a vague "plenty available" message. */
+  lowSeatsThreshold: number;
+}
+
+/**
+ * Admin-editable copy for the public marketing pages (the "Site Content"
+ * admin tab) — one document per page key, stored in the `siteContent`
+ * collection. Kept separate from Tour/BlogPost/etc. content types since
+ * these back fixed page layouts rather than a list+CRUD collection.
+ */
+export type SiteContentPageKey =
+  | "home"
+  | "about"
+  | "custom-tours"
+  | "special-offers"
+  | "testimonials"
+  | "faq"
+  | "contact"
+  | "legal-privacy"
+  | "legal-terms";
+
+export interface SiteContentTrustSignal {
+  title: string;
+  body: string;
+}
+
+export interface SiteContentHome {
+  heroEyebrow: string;
+  heroTitleLine1: string;
+  heroTitleHighlight: string;
+  heroSubtitle: string;
+  heroPrimaryCta: string;
+  heroSecondaryCta: string;
+  trustSignals: [SiteContentTrustSignal, SiteContentTrustSignal, SiteContentTrustSignal];
+  ctaHeading: string;
+  ctaHeadingHighlight: string;
+  ctaBody: string;
+  ctaPrimaryButton: string;
+  ctaSecondaryButton: string;
+}
+
+export interface SiteContentSection {
+  sectionId: string;
+  heading: string;
+  body: string;
+}
+
+export interface SiteContentAbout {
+  eyebrow: string;
+  title: string;
+  lede: string;
+  sections: SiteContentSection[];
+}
+
+/** Shared shape for pages whose only editable copy is the top PageHeader. */
+export interface SiteContentSimplePage {
+  eyebrow?: string;
+  title: string;
+  lede?: string;
+}
+
+export interface SiteContentFaqItem {
+  itemId: string;
+  question: string;
+  answer: string;
+}
+
+export interface SiteContentFaq {
+  title: string;
+  lede?: string;
+  items: SiteContentFaqItem[];
+}
+
+/** Contact page's own copy only — the phone numbers it displays come from SiteSettings, not duplicated here. */
+export interface SiteContentContact {
+  title: string;
+  lede: string;
+}
+
+export interface SiteContentLegal {
+  title: string;
+  body: string;
 }

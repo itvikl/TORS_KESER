@@ -1,5 +1,6 @@
 import type { Departure, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
+import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 
@@ -35,13 +36,16 @@ export default function TourPageView({
   tour,
   departures,
   previewMode = false,
+  lowSeatsThreshold = 5,
 }: {
   tour: Tour;
   departures: Departure[];
   /** True when rendered inside the admin's preview pane for an unpublished draft. */
   previewMode?: boolean;
+  /** At/below this remaining-seats count, the departure pill shows the exact number. Defaults to the site's pre-existing behavior for the preview contexts that don't fetch SiteSettings. */
+  lowSeatsThreshold?: number;
 }) {
-  const upcoming = departures.filter((d) => d.status !== "cancelled");
+  const upcoming = departures.filter(isDeparturePlanned);
   const nights = Math.max(tour.durationDays - 1, 0);
   const badge = tour.themeTags[0] ?? tour.travelStyle;
   const bookingHighlights = [
@@ -273,7 +277,7 @@ export default function TourPageView({
             <ul className="mb-6 space-y-2">
               {upcoming.length === 0 && (
                 <li className="text-[15px] text-[#a0b4c4]">
-                  No upcoming departures — call us to join the waitlist.
+                  The next date for this tour will be published soon.
                 </li>
               )}
               {upcoming.map((dep) => {
@@ -290,7 +294,11 @@ export default function TourPageView({
                         year: "numeric",
                       })}
                     </span>
-                    <DepartureStatusPill status={dep.status} seats={seats} />
+                    <DepartureStatusPill
+                      status={dep.status}
+                      seats={seats}
+                      lowSeatsThreshold={lowSeatsThreshold}
+                    />
                   </li>
                 );
               })}
@@ -493,9 +501,11 @@ function ChevronIcon() {
 function DepartureStatusPill({
   status,
   seats,
+  lowSeatsThreshold,
 }: {
   status: Departure["status"];
   seats: number;
+  lowSeatsThreshold: number;
 }) {
   if (status === "soldout" || seats <= 0) {
     return (
@@ -511,7 +521,7 @@ function DepartureStatusPill({
       </span>
     );
   }
-  if (seats <= 5) {
+  if (seats <= lowSeatsThreshold) {
     return (
       <span className="rounded-full bg-[#c8a0f0]/20 px-2.5 py-0.5 text-xs font-semibold text-[#c8a0f0]">
         Only {seats} spots left

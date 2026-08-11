@@ -1,6 +1,7 @@
 import "server-only";
 import type { Departure, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
+import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { adminDb } from "@/lib/firebase/admin";
 
 /**
@@ -69,22 +70,6 @@ export async function getFeaturedTours(limit = 4): Promise<Tour[]> {
   return snapshot.docs.map((doc) => doc.data() as Tour);
 }
 
-/** True when a departure can still be booked. */
-function hasAvailableDeparture(departure: Departure): boolean {
-  return (
-    departure.status === "open" &&
-    availableSeats(departure) > 0 &&
-    new Date(departure.startDate).getTime() >= Date.now()
-  );
-}
-
-function isFutureDeparture(departure: Departure): boolean {
-  return (
-    departure.status !== "cancelled" &&
-    new Date(departure.startDate).getTime() >= Date.now()
-  );
-}
-
 export type RegionAvailability = "available" | "sold_out" | "unavailable";
 
 export interface RegionOption {
@@ -125,11 +110,11 @@ export async function getRegionSearchOptions(): Promise<RegionOption[]> {
       toursInRegion.some((t) => t.tourId === d.tourId)
     );
 
-    if (regionDepartures.some(hasAvailableDeparture)) {
+    if (regionDepartures.some(isDepartureBookable)) {
       return { name, availability: "available" as const };
     }
 
-    const future = regionDepartures.filter(isFutureDeparture);
+    const future = regionDepartures.filter(isDeparturePlanned);
     if (
       future.length > 0 &&
       future.every(

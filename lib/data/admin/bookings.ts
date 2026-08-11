@@ -43,3 +43,39 @@ export async function getAllDeparturesAdmin(): Promise<Departure[]> {
   const snapshot = await adminDb().collection("departures").get();
   return snapshot.docs.map((doc) => doc.data() as Departure);
 }
+
+/** A single tour's registrants — reuses the same in-memory join as getAllBookingsAdmin rather than a second query shape. */
+export async function getBookingsForTourAdmin(tourId: string): Promise<AdminBookingRow[]> {
+  const rows = await getAllBookingsAdmin();
+  return rows.filter((row) => row.booking.tourId === tourId);
+}
+
+export interface TourBookingSummary {
+  tourId: string;
+  tour?: Tour;
+  registrantCount: number;
+  travelerCount: number;
+}
+
+/** Registrant counts grouped by tour, for the admin bookings landing page. */
+export async function getBookingCountsByTourAdmin(): Promise<TourBookingSummary[]> {
+  const rows = await getAllBookingsAdmin();
+  const byTour = new Map<string, TourBookingSummary>();
+
+  for (const row of rows) {
+    const existing = byTour.get(row.booking.tourId);
+    if (existing) {
+      existing.registrantCount += 1;
+      existing.travelerCount += row.booking.travelerCount;
+    } else {
+      byTour.set(row.booking.tourId, {
+        tourId: row.booking.tourId,
+        tour: row.tour,
+        registrantCount: 1,
+        travelerCount: row.booking.travelerCount,
+      });
+    }
+  }
+
+  return Array.from(byTour.values()).sort((a, b) => b.registrantCount - a.registrantCount);
+}
