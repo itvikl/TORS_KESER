@@ -157,8 +157,8 @@ export default function BookingForm({
   if (clientSecret && paymentBookingId) {
     return (
       <div className="glass-panel-elevated overflow-hidden rounded-3xl p-6 shadow-2xl sm:p-8">
-        <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">Pay your deposit</h2>
-        <p className="mt-2 text-[15px] text-[#a0b4c4]">
+        <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">Pay your deposit</h2>
+        <p className="mt-2 text-[15px] text-[var(--color-slate)]">
           Your registration is saved. Complete your {formatUsd(depositAmount)} deposit below to
           confirm your spot.
         </p>
