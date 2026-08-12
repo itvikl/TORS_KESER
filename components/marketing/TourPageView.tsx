@@ -55,9 +55,9 @@ export default function TourPageView({
   ].filter(Boolean) as string[];
 
   return (
-    <article className="bg-[#0a0e1a] text-[#e0e8f0] selection:bg-[#7dd3fc]/30">
+    <article className="bg-[var(--color-glacier)] text-[var(--color-mist)] selection:bg-[var(--color-ice)]/30 transition-colors">
       {previewMode && (
-        <div className="bg-[#c8a0f0]/20 px-4 py-2 text-center text-sm font-semibold text-[#c8a0f0]">
+        <div className="bg-[var(--color-lilac)]/20 px-4 py-2 text-center text-sm font-semibold text-[var(--color-lilac)]">
           PREVIEW MODE — Not Published
         </div>
       )}
@@ -75,10 +75,10 @@ export default function TourPageView({
         <div className="space-y-14 lg:col-span-2">
           {/* Overview */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc] sm:text-3xl">
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
               Overview
             </h2>
-            <p className="text-lg leading-relaxed text-[#a0b4c4]">
+            <p className="text-lg leading-relaxed text-[var(--color-slate)]">
               {tour.description || tour.summary}
             </p>
 
@@ -107,7 +107,7 @@ export default function TourPageView({
 
           {/* Itinerary */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc] sm:text-3xl">
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
               Your Journey Day by Day
             </h2>
             <div className="space-y-3">
@@ -117,29 +117,29 @@ export default function TourPageView({
                   open={index === 0}
                   className="glass-panel group overflow-hidden rounded-xl"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-white/5 sm:p-6 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-[var(--color-surface-hover-a)] sm:p-6 [&::-webkit-details-marker]:hidden">
                     <div className="flex min-w-0 items-center gap-4 sm:gap-6">
-                      <span className="shrink-0 text-2xl font-bold text-[#7dd3fc]/40">
+                      <span className="shrink-0 text-2xl font-bold text-[var(--color-ice)]/40">
                         {String(day.dayNumber).padStart(2, "0")}
                       </span>
-                      <span className="truncate text-lg font-bold text-[#e0e8f0] sm:text-xl">
+                      <span className="truncate text-lg font-bold text-[var(--color-mist)] sm:text-xl">
                         {day.title}
                       </span>
                     </div>
                     <span
-                      className="shrink-0 text-[#a0b4c4] transition-transform duration-300 group-open:rotate-180"
+                      className="shrink-0 text-[var(--color-slate)] transition-transform duration-300 group-open:rotate-180"
                       aria-hidden="true"
                     >
                       <ChevronIcon />
                     </span>
                   </summary>
-                  <div className="border-t border-white/5 bg-white/5 px-5 pb-6 pt-0 sm:px-6">
+                  <div className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-surface-hover-a)] px-5 pb-6 pt-0 sm:px-6">
                     <div className="mt-5 space-y-3">
-                      <p className="leading-relaxed text-[#a0b4c4]">
+                      <p className="leading-relaxed text-[var(--color-slate)]">
                         {day.description}
                       </p>
                       {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (
-                        <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[#7dd3fc]/80">
+                        <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--color-ice)]/80">
                           {day.attractions && day.attractions.length > 0 && (
                             <li>Attractions: {day.attractions.join(", ")}</li>
                           )}
@@ -160,37 +160,37 @@ export default function TourPageView({
 
           {/* Kashrut */}
           <div className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-[#e0e8f0]">
+            <h2 className="text-xl font-bold text-[var(--color-mist)]">
               Kashrut &amp; What to Know
             </h2>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                   Supervision
                 </dt>
-                <dd className="mt-1 text-[15px] text-[#e0e8f0]">
+                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
                   {tour.kashrutDetails.supervisionLevel}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                   Pat Yisrael
                 </dt>
-                <dd className="mt-1 text-[15px] text-[#e0e8f0]">
+                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
                   {kashrutStatusLabel(tour.kashrutDetails.patYisrael)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                   Chalav Yisrael
                 </dt>
-                <dd className="mt-1 text-[15px] text-[#e0e8f0]">
+                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
                   {kashrutStatusLabel(tour.kashrutDetails.chalavYisrael)}
                 </dd>
               </div>
             </dl>
             {tour.kashrutDetails.notes && (
-              <p className="text-[15px] leading-relaxed text-[#a0b4c4]">
+              <p className="text-[15px] leading-relaxed text-[var(--color-slate)]">
                 {tour.kashrutDetails.notes}
               </p>
             )}
@@ -199,8 +199,8 @@ export default function TourPageView({
           {/* Inclusions / Exclusions */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
             <div className="glass-panel rounded-2xl p-6 sm:p-8">
-              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[#e0e8f0]">
-                <span className="text-[#7dd3fc]" aria-hidden="true">
+              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]">
+                <span className="text-[var(--color-ice)]" aria-hidden="true">
                   ✓
                 </span>
                 What&apos;s Included
@@ -209,18 +209,18 @@ export default function TourPageView({
                 {tour.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <span
-                      className="mt-0.5 text-sm text-[#7dd3fc]"
+                      className="mt-0.5 text-sm text-[var(--color-ice)]"
                       aria-hidden="true"
                     >
                       ✓
                     </span>
-                    <span className="text-[#a0b4c4]">{item}</span>
+                    <span className="text-[var(--color-slate)]">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="glass-panel rounded-2xl p-6 sm:p-8">
-              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[#e0e8f0]/60">
+              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]/60">
                 <span aria-hidden="true">✕</span>
                 Not Included
               </h3>
@@ -233,7 +233,7 @@ export default function TourPageView({
                     <span className="mt-0.5 text-sm" aria-hidden="true">
                       ✕
                     </span>
-                    <span className="text-[#a0b4c4]">{item}</span>
+                    <span className="text-[var(--color-slate)]">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -243,40 +243,40 @@ export default function TourPageView({
 
         {/* Sticky booking */}
         <aside className="relative">
-          <div className="glass-panel-elevated sticky top-28 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] sm:p-8">
+          <div className="glass-panel-elevated sticky top-28 rounded-2xl p-6 shadow-2xl sm:p-8">
             <div className="mb-6">
-              <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[#a0b4c4]">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                 Starting from
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-[var(--color-mist)]">
                   {formatUsd(tour.pricing.pricePerPersonDouble)}
                 </span>
-                <span className="text-sm text-[#a0b4c4]">/ per person</span>
+                <span className="text-sm text-[var(--color-slate)]">/ per person</span>
               </div>
-              <p className="mt-1 text-xs text-[#a0b4c4]">
+              <p className="mt-1 text-xs text-[var(--color-slate)]">
                 Double occupancy · +
                 {formatUsd(tour.pricing.singleSupplement)} single supplement
               </p>
             </div>
 
             {bookingHighlights.length > 0 && (
-              <div className="mb-6 space-y-4 border-y border-white/5 py-6">
+              <div className="mb-6 space-y-4 border-y border-[var(--color-border-hairline-faint)] py-6">
                 {bookingHighlights.map((item) => (
                   <div key={item} className="flex items-center gap-3">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7dd3fc]" aria-hidden="true" />
-                    <span className="font-medium text-[#e0e8f0]">{item}</span>
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]" aria-hidden="true" />
+                    <span className="font-medium text-[var(--color-mist)]">{item}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
               Departure Dates
             </h3>
             <ul className="mb-6 space-y-2">
               {upcoming.length === 0 && (
-                <li className="text-[15px] text-[#a0b4c4]">
+                <li className="text-[15px] text-[var(--color-slate)]">
                   The next date for this tour will be published soon.
                 </li>
               )}
@@ -285,9 +285,9 @@ export default function TourPageView({
                 return (
                   <li
                     key={dep.departureId}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-[15px]"
+                    className="flex items-center justify-between rounded-lg border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-3 py-2.5 text-[15px]"
                   >
-                    <span className="text-[#e0e8f0]">
+                    <span className="text-[var(--color-mist)]">
                       {new Date(dep.startDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -306,23 +306,23 @@ export default function TourPageView({
 
             <a
               href={tour.slug ? `/tours/${tour.slug}/book` : "#"}
-              className="mb-3 block rounded-xl bg-[#10b981] px-4 py-4 text-center text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all hover:bg-[#059669] active:scale-[0.98]"
+              className="mb-3 block rounded-xl bg-[var(--color-success)] px-4 py-4 text-center text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all hover:bg-[var(--color-success-dark)] active:scale-[0.98]"
             >
               Book This Trip
             </a>
             <a
               href="tel:18008470700"
-              className="flex items-center justify-center gap-2 text-sm font-medium text-[#a0b4c4] transition-colors hover:text-[#7dd3fc]"
+              className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]"
             >
               Call 1-800-847-0700
             </a>
 
-            <div className="mt-8 border-t border-white/5 pt-6">
-              <div className="flex items-start gap-3 rounded-xl border border-[#7dd3fc]/10 bg-[#7dd3fc]/5 p-4">
-                <span className="mt-0.5 text-[#7dd3fc]" aria-hidden="true">
+            <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6">
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4">
+                <span className="mt-0.5 text-[var(--color-ice)]" aria-hidden="true">
                   ✓
                 </span>
-                <p className="text-xs leading-tight text-[#a0b4c4]">
+                <p className="text-xs leading-tight text-[var(--color-slate)]">
                   Secure your spot with a $
                   {tour.pricing.depositAmountPerPerson} deposit per person.
                   Balance due {tour.pricing.balanceDueDaysBeforeDeparture}{" "}
@@ -436,15 +436,15 @@ function QuickFact({
 }) {
   return (
     <div className="glass-panel flex flex-col items-center rounded-xl p-5 text-center sm:p-6">
-      <span className="mb-2 text-[#7dd3fc]" aria-hidden="true">
+      <span className="mb-2 text-[var(--color-ice)]" aria-hidden="true">
         {icon === "schedule" && <IconClock />}
         {icon === "groups" && <IconGroups />}
         {icon === "public" && <IconGlobe />}
       </span>
-      <span className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#a0b4c4]">
+      <span className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
         {label}
       </span>
-      <span className="font-medium text-[#e0e8f0]">{value}</span>
+      <span className="font-medium text-[var(--color-mist)]">{value}</span>
     </div>
   );
 }
@@ -507,27 +507,27 @@ function DepartureStatusPill({
 }) {
   if (status === "soldout" || seats <= 0) {
     return (
-      <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-[#a0b4c4]">
+      <span className="rounded-full bg-[var(--color-surface-hover-b)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-slate)]">
         Sold Out
       </span>
     );
   }
   if (status === "cancelled") {
     return (
-      <span className="rounded-full bg-[#ff6b6b]/15 px-2.5 py-0.5 text-xs font-semibold text-[#ff6b6b]">
+      <span className="rounded-full bg-[var(--color-danger)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-danger)]">
         Cancelled
       </span>
     );
   }
   if (seats <= lowSeatsThreshold) {
     return (
-      <span className="rounded-full bg-[#c8a0f0]/20 px-2.5 py-0.5 text-xs font-semibold text-[#c8a0f0]">
+      <span className="rounded-full bg-[var(--color-lilac)]/20 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-lilac)]">
         Only {seats} spots left
       </span>
     );
   }
   return (
-    <span className="rounded-full bg-[#7dd3fc]/15 px-2.5 py-0.5 text-xs font-semibold text-[#7dd3fc]">
+    <span className="rounded-full bg-[var(--color-ice)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-ice)]">
       Available
     </span>
   );

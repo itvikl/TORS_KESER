@@ -8,8 +8,8 @@ export default function AboutSections({ sections }: { sections: SiteContentSecti
           key={section.sectionId}
           className={`glass-panel rounded-2xl p-6 sm:p-8 ${index > 0 ? "mt-8" : ""}`}
         >
-          <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc]">{section.heading}</h2>
-          <p className="mt-4 text-lg leading-relaxed text-[#a0b4c4]">{section.body}</p>
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)]">{section.heading}</h2>
+          <p className="mt-4 text-lg leading-relaxed text-[var(--color-slate)]">{section.body}</p>
         </section>
       ))}
     </>

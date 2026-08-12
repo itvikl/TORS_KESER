@@ -39,9 +39,9 @@ function buildOccupancySlots(room: RoomConfiguration, childCount: number): Occup
 const STEP_LABELS = ["Dates", "Party size", "Travelers", "Contact", "Review"];
 
 const SELECTED_OPTION =
-  "border-[#7dd3fc] bg-[#7dd3fc]/10";
+  "border-[var(--color-ice)] bg-[var(--color-ice)]/10";
 const IDLE_OPTION =
-  "border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] hover:border-[rgba(125,211,252,0.25)]";
+  "border-[var(--color-border-ice)] bg-[var(--color-field-bg)] hover:border-[var(--color-border-ice-strong)]";
 
 export default function BookingForm({
   tour,
@@ -180,7 +180,7 @@ export default function BookingForm({
       <div className="p-6 sm:p-8">
         {step === 1 && (
           <div className="space-y-5">
-            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Choose a departure
             </h2>
             <BookingAssuranceNote assurance={tour.bookingAssurance ?? "conditional"} />
@@ -192,13 +192,13 @@ export default function BookingForm({
                     departureId === d.departureId ? SELECTED_OPTION : IDLE_OPTION
                   }`}
                 >
-                  <span className="flex items-center gap-3 text-[#e0e8f0]">
+                  <span className="flex items-center gap-3 text-[var(--color-mist)]">
                     <input
                       type="radio"
                       name="departure"
                       checked={departureId === d.departureId}
                       onChange={() => setDepartureId(d.departureId)}
-                      className="accent-[#7dd3fc]"
+                      className="accent-[var(--color-ice)]"
                     />
                     {new Date(d.startDate).toLocaleDateString("en-US", {
                       month: "long",
@@ -219,7 +219,7 @@ export default function BookingForm({
 
         {step === 2 && (
           <div className="space-y-5">
-            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Party size &amp; rooms
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -244,12 +244,12 @@ export default function BookingForm({
               <NumberField label="Children" value={childCount} onChange={setChildCount} />
             </div>
 
-            <div className="rounded-xl border border-[rgba(125,211,252,0.15)] bg-[#7dd3fc]/10 p-4 text-[15px]">
-              <p className="font-semibold text-[#e0e8f0]">
+            <div className="rounded-xl border border-[var(--color-border-ice-strong)] bg-[var(--color-ice)]/10 p-4 text-[15px]">
+              <p className="font-semibold text-[var(--color-mist)]">
                 {totalTravelers} traveler{totalTravelers === 1 ? "" : "s"} · Estimated total{" "}
-                <span className="text-[#7dd3fc]">{formatUsd(priceBreakdown.grandTotal)}</span>
+                <span className="text-[var(--color-ice)]">{formatUsd(priceBreakdown.grandTotal)}</span>
               </p>
-              <p className="mt-1 text-[#a0b4c4]">
+              <p className="mt-1 text-[var(--color-slate)]">
                 Deposit due to register: {formatUsd(depositAmount)}
               </p>
             </div>
@@ -264,15 +264,15 @@ export default function BookingForm({
 
         {step === 3 && (
           <div className="space-y-5">
-            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Traveler details
             </h2>
             {travelers.map((traveler, index) => (
               <div
                 key={index}
-                className="rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] p-4 sm:p-5"
+                className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 sm:p-5"
               >
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#7dd3fc]">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-ice)]">
                   Traveler {index + 1} · {traveler.occupancy}
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -322,7 +322,7 @@ export default function BookingForm({
 
         {step === 4 && (
           <div className="space-y-5">
-            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Contact information
             </h2>
             <TextField label="Your name" value={contactName} onChange={setContactName} />
@@ -343,11 +343,11 @@ export default function BookingForm({
 
         {step === 5 && departure && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Review &amp; submit
             </h2>
 
-            <dl className="grid gap-3 rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.5)] p-5 text-[15px]">
+            <dl className="grid gap-3 rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-surface)] p-5 text-[15px]">
               <Row
                 label="Departure"
                 value={new Date(departure.startDate).toLocaleDateString("en-US", {
@@ -365,8 +365,8 @@ export default function BookingForm({
               />
             </dl>
 
-            <div className="rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] p-4 text-sm text-[#a0b4c4]">
-              <p className="mb-2 font-semibold text-[#e0e8f0]">Cancellation policy</p>
+            <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 text-sm text-[var(--color-slate)]">
+              <p className="mb-2 font-semibold text-[var(--color-mist)]">Cancellation policy</p>
               <ul className="space-y-1">
                 {DEFAULT_CANCELLATION_TIERS.map((tier) => (
                   <li key={tier.minWorkingDaysBefore}>
@@ -379,7 +379,7 @@ export default function BookingForm({
             </div>
 
             <fieldset className="space-y-3">
-              <legend className="mb-1 text-sm font-semibold text-[#e0e8f0]">
+              <legend className="mb-1 text-sm font-semibold text-[var(--color-mist)]">
                 How would you like to complete payment?
               </legend>
               <label
@@ -389,15 +389,15 @@ export default function BookingForm({
               >
                 <input
                   type="radio"
-                  className="mt-1 accent-[#7dd3fc]"
+                  className="mt-1 accent-[var(--color-ice)]"
                   checked={contactPreference === "callback"}
                   onChange={() => setContactPreference("callback")}
                 />
                 <span>
-                  <span className="block font-semibold text-[#e0e8f0]">
+                  <span className="block font-semibold text-[var(--color-mist)]">
                     A representative will call me
                   </span>
-                  <span className="text-[#a0b4c4]">
+                  <span className="text-[var(--color-slate)]">
                     We&apos;ll reach out within one business day to arrange your deposit.
                   </span>
                 </span>
@@ -409,15 +409,15 @@ export default function BookingForm({
               >
                 <input
                   type="radio"
-                  className="mt-1 accent-[#7dd3fc]"
+                  className="mt-1 accent-[var(--color-ice)]"
                   checked={contactPreference === "pay_online"}
                   onChange={() => setContactPreference("pay_online")}
                 />
                 <span>
-                  <span className="block font-semibold text-[#e0e8f0]">
+                  <span className="block font-semibold text-[var(--color-mist)]">
                     I&apos;d like to pay online
                   </span>
-                  <span className="text-[#a0b4c4]">
+                  <span className="text-[var(--color-slate)]">
                     Pay your deposit securely by card right after you submit.
                   </span>
                 </span>
@@ -425,7 +425,7 @@ export default function BookingForm({
             </fieldset>
 
             {Object.values(errors).flat().filter(Boolean).length > 0 && (
-              <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+              <div className="rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3 text-sm text-[var(--color-danger-text)]">
                 {Object.values(errors)
                   .flat()
                   .filter(Boolean)
@@ -435,11 +435,11 @@ export default function BookingForm({
               </div>
             )}
 
-            <div className="flex items-center justify-between border-t border-white/10 pt-6">
+            <div className="flex items-center justify-between border-t border-[var(--color-border-hairline)] pt-6">
               <button
                 type="button"
                 onClick={() => setStep(4)}
-                className="text-sm font-semibold text-[#a0b4c4] transition hover:text-[#7dd3fc]"
+                className="text-sm font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-ice)]"
               >
                 ← Back
               </button>
@@ -447,7 +447,7 @@ export default function BookingForm({
                 type="button"
                 disabled={submitting}
                 onClick={handleSubmit}
-                className="rounded-full bg-[#7dd3fc] px-8 py-3.5 text-sm font-bold text-[#001f2e] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+                className="rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60"
               >
                 {submitting ? "Submitting…" : "Submit Registration"}
               </button>
@@ -474,19 +474,19 @@ function Confirmation({
 
   return (
     <div className="glass-panel-elevated rounded-3xl p-8 text-center shadow-2xl sm:p-10">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#7dd3fc]/40 bg-[#7dd3fc]/20 text-4xl text-[#7dd3fc]">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[var(--color-ice)]/40 bg-[var(--color-ice)]/20 text-4xl text-[var(--color-ice)]">
         ✓
       </div>
-      <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[#7dd3fc]">
+      <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[var(--color-ice)]">
         Registration received
       </p>
-      <h2 className="mt-2 font-display text-2xl font-bold text-[#e0e8f0] sm:text-3xl">
+      <h2 className="mt-2 font-display text-2xl font-bold text-[var(--color-mist)] sm:text-3xl">
         We look forward to welcoming you
       </h2>
-      <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[#a0b4c4]">{message}</p>
+      <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[var(--color-slate)]">{message}</p>
       <a
         href="tel:18008470700"
-        className="mt-8 inline-block text-sm font-bold text-[#7dd3fc] transition hover:brightness-110"
+        className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
       >
         Questions? Call 1-800-847-0700
       </a>
@@ -496,7 +496,7 @@ function Confirmation({
 
 function StepIndicator({ step }: { step: number }) {
   return (
-    <ol className="grid grid-cols-2 gap-2 border-b border-white/5 bg-[#0a0e1a]/80 px-4 py-4 text-center text-xs sm:grid-cols-5 sm:gap-0 sm:px-6">
+    <ol className="grid grid-cols-2 gap-2 border-b border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)]/80 px-4 py-4 text-center text-xs sm:grid-cols-5 sm:gap-0 sm:px-6">
       {STEP_LABELS.map((label, index) => {
         const active = index + 1 <= step;
         const current = index + 1 === step;
@@ -504,16 +504,16 @@ function StepIndicator({ step }: { step: number }) {
           <li
             key={label}
             className={`flex items-center justify-center gap-2 ${
-              active ? "font-bold text-[#7dd3fc]" : "text-[#a0b4c4]/50"
+              active ? "font-bold text-[var(--color-ice)]" : "text-[var(--color-slate)]/50"
             }`}
           >
             <span
               className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
                 current
-                  ? "bg-[#7dd3fc] text-[#001f2e]"
+                  ? "bg-[var(--color-ice)] text-[var(--color-ice-ink)]"
                   : active
-                    ? "bg-[#7dd3fc]/20 text-[#7dd3fc]"
-                    : "bg-white/10 text-[#a0b4c4]/50"
+                    ? "bg-[var(--color-ice)]/20 text-[var(--color-ice)]"
+                    : "bg-[var(--color-surface-hover-b)] text-[var(--color-slate)]/50"
               }`}
             >
               {index + 1}
@@ -536,12 +536,12 @@ function StepNav({
   nextDisabled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between border-t border-white/10 pt-6">
+    <div className="flex items-center justify-between border-t border-[var(--color-border-hairline)] pt-6">
       {onBack ? (
         <button
           type="button"
           onClick={onBack}
-          className="text-sm font-semibold text-[#a0b4c4] transition hover:text-[#7dd3fc]"
+          className="text-sm font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-ice)]"
         >
           ← Back
         </button>
@@ -552,7 +552,7 @@ function StepNav({
         type="button"
         disabled={nextDisabled}
         onClick={onNext}
-        className="rounded-full bg-[#7dd3fc] px-8 py-3.5 text-sm font-bold text-[#001f2e] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40"
+        className="rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40"
       >
         Continue
       </button>
@@ -571,8 +571,8 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className="text-[#a0b4c4]">{label}</dt>
-      <dd className={`font-semibold ${accent ? "text-[#7dd3fc]" : "text-[#e0e8f0]"}`}>
+      <dt className="text-[var(--color-slate)]">{label}</dt>
+      <dd className={`font-semibold ${accent ? "text-[var(--color-ice)]" : "text-[var(--color-mist)]"}`}>
         {value}
       </dd>
     </div>
@@ -592,7 +592,7 @@ function NumberField({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <label className="mb-1.5 block min-h-[2.5rem] text-xs font-bold uppercase tracking-widest text-[#a0b4c4]">
+      <label className="mb-1.5 block min-h-[2.5rem] text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
         <span className="block">{label}</span>
         <span className="block font-normal normal-case tracking-normal opacity-80">
           {hint ? `(${hint})` : "\u00A0"}
@@ -622,7 +622,7 @@ function TextField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[#a0b4c4]">
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
         {label}
       </label>
       <input
@@ -646,15 +646,15 @@ function SeatAvailabilityBadge({
   if (seats <= threshold) {
     return (
       <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
-        <span className="rounded-full bg-[#c8a0f0]/20 px-2 py-0.5 text-[#c8a0f0]">
+        <span className="rounded-full bg-[var(--color-lilac)]/20 px-2 py-0.5 text-[var(--color-lilac)]">
           Last spots
         </span>
-        <span className="text-[#a0b4c4]">{seats} spots left</span>
+        <span className="text-[var(--color-slate)]">{seats} spots left</span>
       </span>
     );
   }
   return (
-    <span className="text-xs font-semibold uppercase tracking-wide text-[#a0b4c4]">
+    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-slate)]">
       Plenty of spots available
     </span>
   );
@@ -664,14 +664,14 @@ function SeatAvailabilityBadge({
 function BookingAssuranceNote({ assurance }: { assurance: "conditional" | "guaranteed" }) {
   if (assurance === "guaranteed") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-sm font-medium text-[#10b981]">
+      <div className="flex items-center gap-2 rounded-xl border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 px-4 py-3 text-sm font-medium text-[var(--color-success)]">
         <span aria-hidden="true">✓</span>
         Guaranteed to run — this tour is confirmed regardless of group size.
       </div>
     );
   }
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[#a0b4c4]">
+    <div className="rounded-xl border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-4 py-3 text-sm text-[var(--color-slate)]">
       Subject to registration — this tour departs once enough travelers have joined.
     </div>
   );

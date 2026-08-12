@@ -22,14 +22,14 @@ export default function DestinationSearch() {
         event.preventDefault();
         setSelectedRegions(draft);
       }}
-      className="destination-search relative mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.6)] p-2 shadow-2xl backdrop-blur-lg sm:flex-row sm:items-stretch sm:rounded-full"
+      className="destination-search glass-card relative mx-auto flex w-full max-w-3xl flex-col gap-2 rounded-2xl p-2 shadow-2xl backdrop-blur-lg sm:flex-row sm:items-stretch sm:rounded-full"
     >
-      <div className="flex flex-1 items-center gap-3 rounded-full px-5 py-3 transition-colors hover:bg-white/5">
+      <div className="flex flex-1 items-center gap-3 rounded-full px-5 py-3 transition-colors hover:bg-[var(--color-surface-hover-a)]">
         <RegionSelect regions={regions} value={draft} onChange={setDraft} />
       </div>
       <button
         type="submit"
-        className="rounded-full bg-[#7dd3fc] px-10 py-3.5 text-[15px] font-bold text-[#001f2e] shadow-lg transition-all hover:brightness-110 active:scale-95 sm:px-12"
+        className="rounded-full bg-[var(--color-ice)] px-10 py-3.5 text-[15px] font-bold text-[var(--color-ice-ink)] shadow-lg transition-all hover:brightness-110 active:scale-95 sm:px-12"
       >
         Search Tours
       </button>

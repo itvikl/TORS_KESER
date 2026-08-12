@@ -30,7 +30,7 @@ export default function FeaturedToursGrid() {
     <div>
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.3em] text-[#7dd3fc]">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-[var(--color-ice)]">
             Curated Selections
           </p>
           <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl md:text-5xl">
@@ -38,7 +38,7 @@ export default function FeaturedToursGrid() {
           </h2>
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
-          <p className="max-w-md text-[15px] leading-7 text-[#a0b4c4] md:text-right">
+          <p className="max-w-md text-[15px] leading-7 text-[var(--color-slate)] md:text-right">
             {selectedRegions.length > 0
               ? `${tours.length} kosher tour${tours.length === 1 ? "" : "s"} matching your search.`
               : "Hand-selected journeys that balance comfort, kashrut, and discovery — shaped around your family and your travel style."}
@@ -47,7 +47,7 @@ export default function FeaturedToursGrid() {
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="text-sm font-bold text-[#7dd3fc] transition hover:brightness-110"
+              className="text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
             >
               {expanded ? "Show less" : `Show more (${tours.length - INITIAL_VISIBLE})`}
             </button>
@@ -56,9 +56,9 @@ export default function FeaturedToursGrid() {
       </div>
 
       {tours.length === 0 ? (
-        <p className="mt-12 text-[#a0b4c4]">
+        <p className="mt-12 text-[var(--color-slate)]">
           No tours match that region right now — call us at{" "}
-          <a href="tel:18008470700" className="font-semibold text-[#7dd3fc]">
+          <a href="tel:18008470700" className="font-semibold text-[var(--color-ice)]">
             1-800-847-0700
           </a>
           .
