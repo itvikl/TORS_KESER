@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
+import { adminDb } from "@/lib/firebase/admin";
 import { DepartureInputSchema } from "@/lib/validation/departure";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import {
@@ -11,10 +12,45 @@ import {
   updateDepartureDoc,
 } from "@/lib/data/admin/departures";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
+import type { Booking } from "@/lib/types";
+
+export interface BalancePaymentLink {
+  bookingId: string;
+  contactName: string;
+  balanceAmount: number;
+  url: string;
+}
 
 export type SaveDepartureResult =
-  | { ok: true; departureId: string }
+  | { ok: true; departureId: string; balancePaymentLinks: BalancePaymentLink[] }
   | { ok: false; errors: Record<string, string[] | undefined> };
+
+/**
+ * When a departure flips from conditional (or unset) to "guaranteed",
+ * customers who already paid something (status partial_paid) owe the rest —
+ * see coral-wandering-lantern.md. No real email infrastructure exists yet
+ * (deferred — D5), so this just surfaces the affected bookings + their
+ * token-secured /pay links for staff to send manually; the same call site
+ * is where a real ESP integration would plug in later.
+ */
+async function findBalancePaymentLinks(departureId: string): Promise<BalancePaymentLink[]> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const snapshot = await adminDb()
+    .collection("bookings")
+    .where("departureId", "==", departureId)
+    .where("status", "==", "partial_paid")
+    .get();
+
+  return snapshot.docs.map((doc) => {
+    const booking = doc.data() as Booking;
+    return {
+      bookingId: booking.bookingId,
+      contactName: booking.contactName,
+      balanceAmount: booking.balanceAmount,
+      url: `${siteUrl}/pay/${booking.bookingId}?token=${booking.paymentLinkToken}`,
+    };
+  });
+}
 
 /** startDate minus `days`, as a YYYY-MM-DD string (same date-only format as startDate/endDate). */
 function subtractDays(isoDate: string, days: number): string {
@@ -44,6 +80,7 @@ export async function saveDeparture(
   const balanceDueDate = subtractDays(data.startDate, tour.pricing.balanceDueDaysBeforeDeparture);
 
   let savedId: string;
+  let justBecameGuaranteed = false;
   if (departureId) {
     const existing = await getDepartureByIdAdmin(departureId);
     if (!existing) {
@@ -60,6 +97,7 @@ export async function saveDeparture(
         },
       };
     }
+    justBecameGuaranteed = existing.bookingAssurance !== "guaranteed" && data.bookingAssurance === "guaranteed";
     savedId = await updateDepartureDoc(departureId, tourId, data, balanceDueDate, existing);
   } else {
     savedId = await createDepartureDoc(tourId, data, balanceDueDate);
@@ -71,7 +109,9 @@ export async function saveDeparture(
   revalidatePath(`/tours/${tour.slug}`);
   revalidatePath(`/tours/${tour.slug}/book`);
 
-  return { ok: true, departureId: savedId };
+  const balancePaymentLinks = justBecameGuaranteed ? await findBalancePaymentLinks(savedId) : [];
+
+  return { ok: true, departureId: savedId, balancePaymentLinks };
 }
 
 export async function cancelDeparture(departureId: string, tourId: string): Promise<void> {

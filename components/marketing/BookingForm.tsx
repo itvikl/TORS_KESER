@@ -36,6 +36,8 @@ function buildOccupancySlots(room: RoomConfiguration, childCount: number): Occup
 
 const STEP_LABELS = ["Dates", "Party size", "Travelers", "Contact", "Review"];
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const SELECTED_OPTION =
   "border-[#7dd3fc] bg-[#7dd3fc]/10";
 const IDLE_OPTION =
@@ -69,14 +71,25 @@ export default function BookingForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  // null = "not touched yet, follow the deposit floor as it changes with party size"; once
+  // the customer drags the slider we stick to their chosen number (clamped into range below).
+  const [customPaymentAmount, setCustomPaymentAmount] = useState<number | null>(null);
 
   const departure = departures.find((d) => d.departureId === departureId);
+  const seatsLeft = departure ? availableSeats(departure) : 0;
+  const isGuaranteed = departure?.bookingAssurance === "guaranteed";
   const totalTravelers = room.doubleRooms * 2 + room.singleRooms + room.triples * 3 + childCount;
   const priceBreakdown = useMemo(
     () => calculatePriceBreakdown(tour.pricing, room, childCount),
     [tour.pricing, room, childCount]
   );
   const depositAmount = tour.pricing.depositAmountPerPerson * totalTravelers;
+  // Never trust this on the server — it's re-validated there against the
+  // departure's bookingAssurance and [depositAmount, grandTotal] range
+  // (see coral-wandering-lantern.md D8). This is just the UI's live value.
+  const paymentAmount = isGuaranteed
+    ? priceBreakdown.grandTotal
+    : Math.min(Math.max(customPaymentAmount ?? depositAmount, depositAmount), priceBreakdown.grandTotal);
 
   function goToTravelerStep() {
     const slots = buildOccupancySlots(room, childCount);
@@ -114,6 +127,7 @@ export default function BookingForm({
       contactEmail,
       contactPhone: contactPhone || undefined,
       contactPreference,
+      paymentAmount,
     });
 
     if (!result.ok) {
@@ -147,7 +161,6 @@ export default function BookingForm({
             <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">
               Choose a departure
             </h2>
-            <BookingAssuranceNote assurance={tour.bookingAssurance ?? "conditional"} />
             <div className="space-y-3">
               {departures.map((d) => (
                 <label
@@ -156,19 +169,22 @@ export default function BookingForm({
                     departureId === d.departureId ? SELECTED_OPTION : IDLE_OPTION
                   }`}
                 >
-                  <span className="flex items-center gap-3 text-[#e0e8f0]">
-                    <input
-                      type="radio"
-                      name="departure"
-                      checked={departureId === d.departureId}
-                      onChange={() => setDepartureId(d.departureId)}
-                      className="accent-[#7dd3fc]"
-                    />
-                    {new Date(d.startDate).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                  <span className="flex flex-col gap-1">
+                    <span className="flex items-center gap-3 text-[#e0e8f0]">
+                      <input
+                        type="radio"
+                        name="departure"
+                        checked={departureId === d.departureId}
+                        onChange={() => setDepartureId(d.departureId)}
+                        className="accent-[#7dd3fc]"
+                      />
+                      {new Date(d.startDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <AssuranceBadge assurance={d.bookingAssurance ?? "conditional"} />
                   </span>
                   <SeatAvailabilityBadge
                     seats={availableSeats(d)}
@@ -214,14 +230,23 @@ export default function BookingForm({
                 <span className="text-[#7dd3fc]">{formatUsd(priceBreakdown.grandTotal)}</span>
               </p>
               <p className="mt-1 text-[#a0b4c4]">
-                Deposit due to register: {formatUsd(depositAmount)}
+                {isGuaranteed
+                  ? "This departure is guaranteed to run — full payment is required to reserve your spot."
+                  : `Starting deposit: ${formatUsd(depositAmount)} — you'll choose how much to pay in the next step.`}
               </p>
             </div>
+
+            {totalTravelers > seatsLeft && (
+              <p className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+                Only {seatsLeft} spot{seatsLeft === 1 ? "" : "s"} left on this date — reduce the
+                party size or choose another date.
+              </p>
+            )}
 
             <StepNav
               onBack={() => setStep(1)}
               onNext={goToTravelerStep}
-              nextDisabled={totalTravelers === 0}
+              nextDisabled={totalTravelers === 0 || totalTravelers > seatsLeft}
             />
           </div>
         )}
@@ -300,7 +325,7 @@ export default function BookingForm({
             <StepNav
               onBack={() => setStep(3)}
               onNext={() => setStep(5)}
-              nextDisabled={!contactName.trim() || !contactEmail.trim()}
+              nextDisabled={!contactName.trim() || !EMAIL_PATTERN.test(contactEmail.trim())}
             />
           </div>
         )}
@@ -322,12 +347,45 @@ export default function BookingForm({
               />
               <Row label="Travelers" value={String(totalTravelers)} />
               <Row label="Estimated total" value={formatUsd(priceBreakdown.grandTotal)} accent />
-              <Row label="Deposit due to register" value={formatUsd(depositAmount)} />
               <Row
                 label="Balance due"
-                value={`${tour.pricing.balanceDueDaysBeforeDeparture} days before departure`}
+                value={`${formatUsd(priceBreakdown.grandTotal - paymentAmount)} — ${tour.pricing.balanceDueDaysBeforeDeparture} days before departure`}
               />
             </dl>
+
+            {isGuaranteed ? (
+              <div className="flex items-center gap-2 rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-sm font-medium text-[#10b981]">
+                <span aria-hidden="true">✓</span>
+                This departure is guaranteed to run — full payment of{" "}
+                {formatUsd(priceBreakdown.grandTotal)} is required to reserve your spot.
+              </div>
+            ) : (
+              <div className="rounded-xl border border-[rgba(125,211,252,0.15)] bg-[rgba(15,21,36,0.4)] p-4">
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor="paymentAmount" className="text-sm font-semibold text-[#e0e8f0]">
+                    How much would you like to pay now?
+                  </label>
+                  <span className="text-lg font-bold text-[#7dd3fc]">{formatUsd(paymentAmount)}</span>
+                </div>
+                <input
+                  id="paymentAmount"
+                  type="range"
+                  min={depositAmount}
+                  max={priceBreakdown.grandTotal}
+                  step={50}
+                  value={paymentAmount}
+                  onChange={(e) => setCustomPaymentAmount(Number(e.target.value))}
+                  className="mt-3 w-full accent-[#7dd3fc]"
+                />
+                <div className="mt-1 flex justify-between text-xs text-[#a0b4c4]">
+                  <span>Deposit {formatUsd(depositAmount)}</span>
+                  <span>Full price {formatUsd(priceBreakdown.grandTotal)}</span>
+                </div>
+                {errors.paymentAmount && (
+                  <p className="mt-2 text-xs text-red-300">{errors.paymentAmount[0]}</p>
+                )}
+              </div>
+            )}
 
             <div className="rounded-xl border border-[rgba(125,211,252,0.1)] bg-[rgba(15,21,36,0.4)] p-4 text-sm text-[#a0b4c4]">
               <p className="mb-2 font-semibold text-[#e0e8f0]">Cancellation policy</p>
@@ -558,8 +616,12 @@ function NumberField({
       <input
         type="number"
         min={0}
+        step={1}
         value={value}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
+        onChange={(e) => {
+          const parsed = Number(e.target.value);
+          onChange(Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : 0);
+        }}
         className="glacier-field mt-auto w-full"
       />
     </div>
@@ -617,19 +679,18 @@ function SeatAvailabilityBadge({
   );
 }
 
-/** Tour-level trust badge — constant across every departure, shown once above the date picker. */
-function BookingAssuranceNote({ assurance }: { assurance: "conditional" | "guaranteed" }) {
+/** Per-departure trust badge, shown inline in the date list — each departure carries its own assurance. */
+function AssuranceBadge({ assurance }: { assurance: "conditional" | "guaranteed" }) {
   if (assurance === "guaranteed") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-sm font-medium text-[#10b981]">
-        <span aria-hidden="true">✓</span>
-        Guaranteed to run — this tour is confirmed regardless of group size.
-      </div>
+      <span className="ml-7 inline-flex w-fit items-center gap-1 rounded-full bg-[#10b981]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#10b981]">
+        <span aria-hidden="true">✓</span> Guaranteed to run
+      </span>
     );
   }
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[#a0b4c4]">
-      Subject to registration — this tour departs once enough travelers have joined.
-    </div>
+    <span className="ml-7 inline-flex w-fit items-center rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#a0b4c4]">
+      Subject to registration
+    </span>
   );
 }

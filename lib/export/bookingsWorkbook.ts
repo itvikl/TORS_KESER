@@ -5,7 +5,7 @@ import type { Tour } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, string> = {
   pending_payment: "Pending payment",
-  deposit_paid: "Deposit paid",
+  partial_paid: "Partially paid",
   paid_in_full: "Paid in full",
   cancelled: "Cancelled",
   refunded: "Refunded",

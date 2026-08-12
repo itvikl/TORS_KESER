@@ -18,7 +18,7 @@ export type DepartureStatus = "open" | "closed" | "soldout" | "cancelled";
 export type Occupancy = "double" | "single" | "triple" | "child";
 export type BookingStatus =
   | "pending_payment"
-  | "deposit_paid"
+  | "partial_paid"
   | "paid_in_full"
   | "cancelled"
   | "refunded";
@@ -80,8 +80,6 @@ export interface Tour {
   seoDescription?: string;
   /** Display order in the admin list and the public homepage grid, set via drag-and-drop. */
   sortOrder?: number;
-  /** Customer-facing trust badge; missing/undefined is treated as "conditional". */
-  bookingAssurance?: BookingAssurance;
 }
 
 export interface Departure {
@@ -98,6 +96,8 @@ export interface Departure {
   kashrutSupervisorId?: string;
   balanceDueDate: string; // ISO date, derived from startDate - balanceDueDaysBeforeDeparture
   status: DepartureStatus;
+  /** Customer-facing trust badge; missing/undefined is treated as "conditional". */
+  bookingAssurance?: BookingAssurance;
 }
 
 export function availableSeats(departure: Departure): number {
@@ -160,10 +160,15 @@ export interface Booking {
   travelerCount: number;
   roomConfiguration: RoomConfiguration;
   priceBreakdown: PriceBreakdown;
+  /** The tour's deposit floor at booking time — a minimum, not necessarily what was paid (see initialPaymentAmount). */
   depositAmount: number;
+  /** What the customer actually chose/was charged for the first payment — between depositAmount and priceBreakdown.grandTotal, or exactly grandTotal on a guaranteed departure. */
+  initialPaymentAmount: number;
   balanceAmount: number;
   amountPaid: number;
   status: BookingStatus;
+  /** Random token gating /pay/[bookingId] — generated at creation, not a login/session credential. */
+  paymentLinkToken: string;
   contactPreference: ContactPreference;
   paymentProvider?: "stripe";
   paymentIntentId?: string;

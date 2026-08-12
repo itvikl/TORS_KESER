@@ -5,9 +5,12 @@ import { adminDb } from "@/lib/firebase/admin";
 import type { Booking, Payment } from "@/lib/types";
 
 /**
- * Single source of truth for "deposit paid" (PRD FR-17) — a client-side
+ * Single source of truth for "payment received" (PRD FR-17) — a client-side
  * redirect back from Stripe is never trusted to mean payment succeeded;
- * only a verified webhook event updates booking.status.
+ * only a verified webhook event updates booking.status. Handles both the
+ * customer's first payment (deposit or full, on the public flow) and a
+ * later balance top-up from /pay/[bookingId] — see
+ * coral-wandering-lantern.md for the flexible-payment-amount spec.
  *
  * Idempotent via webhookEvents/{event.id}: Stripe retries delivery on
  * anything but a fast 2xx, so the same event can arrive more than once.
@@ -37,17 +40,19 @@ export async function POST(request: Request) {
     if (!bookingId) {
       console.error(`Stripe event ${event.id}: checkout.session.completed with no bookingId metadata`);
     } else {
-      await recordDepositPayment(event.id, bookingId, session);
+      const paymentType = session.metadata?.paymentType === "balance" ? "balance" : "initial";
+      await recordPayment(event.id, bookingId, session, paymentType);
     }
   }
 
   return NextResponse.json({ received: true });
 }
 
-async function recordDepositPayment(
+async function recordPayment(
   eventId: string,
   bookingId: string,
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  paymentType: "initial" | "balance"
 ) {
   const bookingRef = adminDb().collection("bookings").doc(bookingId);
   const webhookEventRef = adminDb().collection("webhookEvents").doc(eventId);
@@ -70,13 +75,17 @@ async function recordDepositPayment(
     }
 
     const booking = bookingSnap.data() as Booking;
-    const amountPaid = (session.amount_total ?? 0) / 100;
+    const paidNow = (session.amount_total ?? 0) / 100;
+    const newAmountPaid = booking.amountPaid + paidNow;
+    const newBalanceAmount = Math.max(0, booking.priceBreakdown.grandTotal - newAmountPaid);
+    const newStatus = newBalanceAmount <= 0 ? "paid_in_full" : "partial_paid";
     const paymentIntentId =
       typeof session.payment_intent === "string" ? session.payment_intent : undefined;
 
     tx.update(bookingRef, {
-      status: "deposit_paid",
-      amountPaid: booking.amountPaid + amountPaid,
+      status: newStatus,
+      amountPaid: newAmountPaid,
+      balanceAmount: newBalanceAmount,
       paymentProvider: "stripe",
       paymentIntentId,
       updatedAt: new Date().toISOString(),
@@ -86,8 +95,8 @@ async function recordDepositPayment(
     const payment: Payment = {
       paymentId: paymentRef.id,
       bookingId,
-      amount: amountPaid,
-      type: "deposit",
+      amount: paidNow,
+      type: paymentType === "initial" ? "deposit" : "balance",
       providerRef: paymentIntentId ?? session.id,
       createdAt: new Date().toISOString(),
     };

@@ -17,6 +17,8 @@ export const DepartureInputSchema = z
     minGroupSizeMet: z.boolean(),
     guideId: z.string().optional(),
     kashrutSupervisorId: z.string().optional(),
+    // Customer-facing trust badge — missing/undefined is treated as "conditional".
+    bookingAssurance: z.enum(["conditional", "guaranteed"]).optional(),
   })
   .refine((data) => data.endDate >= data.startDate, {
     error: "End date must be on or after the start date.",

@@ -1,14 +1,34 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { calculatePriceBreakdown } from "@/lib/pricing";
-import { BookingInputSchema, ManualBookingInputSchema } from "@/lib/validation/booking";
+import { ManualBookingInputSchema, PublicBookingInputSchema } from "@/lib/validation/booking";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import { stripeServer } from "@/lib/stripe/server";
 import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
 import type { BookingInput } from "@/lib/validation/booking";
+
+function generatePaymentLinkToken(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+/**
+ * How createBookingCore should decide the booking's initial status and how
+ * much the customer is being charged right now:
+ * - "public": no Stripe leg has run yet — status is always pending_payment,
+ *   and `requestedAmount` (from the payment slider) is validated against the
+ *   departure's bookingAssurance + [depositAmount, grandTotal] range, never
+ *   trusted outright (PRD FR-13; see coral-wandering-lantern.md D8 — an
+ *   out-of-range amount is rejected, not silently clamped).
+ * - "manual": staff pick the status directly (a phone booking may already be
+ *   paid off-platform) — no assurance check, amount is derived from status.
+ */
+type PaymentResolution =
+  | { mode: "public"; requestedAmount: number }
+  | { mode: "manual"; status: BookingStatus };
 
 export type GetBookingTravelersResult =
   | { ok: true; travelers: Traveler[] }
@@ -44,9 +64,9 @@ class BookingError extends Error {
  */
 async function createBookingCore(
   data: BookingInput,
-  status: BookingStatus
+  resolution: PaymentResolution
 ): Promise<
-  | { ok: true; bookingId: string; tour: Tour; depositAmount: number }
+  | { ok: true; bookingId: string; tour: Tour; initialPaymentAmount: number }
   | { ok: false; errors: Record<string, string[]> }
 > {
   const departureRef = adminDb().collection("departures").doc(data.departureId);
@@ -69,7 +89,41 @@ async function createBookingCore(
   );
   const travelerCount = data.travelers.length;
   const depositAmount = tour.pricing.depositAmountPerPerson * travelerCount;
-  const balanceAmount = Math.max(0, priceBreakdown.grandTotal - depositAmount);
+
+  let status: BookingStatus;
+  let initialPaymentAmount: number;
+
+  if (resolution.mode === "public") {
+    // No Stripe leg has run at this point regardless of assurance — the
+    // webhook is the only thing allowed to mark a payment as received.
+    status = "pending_payment";
+    if (departurePreview.bookingAssurance === "guaranteed") {
+      // Never trust the client's slider value here — a guaranteed departure
+      // always requires the full price, no matter what was submitted.
+      initialPaymentAmount = priceBreakdown.grandTotal;
+    } else if (
+      resolution.requestedAmount < depositAmount ||
+      resolution.requestedAmount > priceBreakdown.grandTotal
+    ) {
+      return {
+        ok: false,
+        errors: {
+          paymentAmount: [
+            `Choose an amount between $${depositAmount} and $${priceBreakdown.grandTotal}.`,
+          ],
+        },
+      };
+    } else {
+      initialPaymentAmount = resolution.requestedAmount;
+    }
+  } else {
+    status = resolution.status;
+    initialPaymentAmount =
+      status === "paid_in_full" ? priceBreakdown.grandTotal : status === "partial_paid" ? depositAmount : 0;
+  }
+
+  const amountPaid = status === "pending_payment" ? 0 : initialPaymentAmount;
+  const balanceAmount = Math.max(0, priceBreakdown.grandTotal - amountPaid);
 
   const now = new Date().toISOString();
   const bookingRef = adminDb().collection("bookings").doc();
@@ -82,9 +136,11 @@ async function createBookingCore(
     roomConfiguration: data.roomConfiguration,
     priceBreakdown,
     depositAmount,
+    initialPaymentAmount,
     balanceAmount,
-    amountPaid: status === "paid_in_full" ? priceBreakdown.grandTotal : status === "deposit_paid" ? depositAmount : 0,
+    amountPaid,
     status,
+    paymentLinkToken: generatePaymentLinkToken(),
     contactPreference: data.contactPreference,
     contactName: data.contactName,
     contactEmail: data.contactEmail,
@@ -130,7 +186,7 @@ async function createBookingCore(
     throw err;
   }
 
-  return { ok: true, bookingId: bookingRef.id, tour, depositAmount };
+  return { ok: true, bookingId: bookingRef.id, tour, initialPaymentAmount };
 }
 
 /**
@@ -141,17 +197,20 @@ async function createBookingCore(
  * wired up. Staff follow up from /admin/bookings either way.
  */
 export async function createBooking(input: unknown): Promise<CreateBookingResult> {
-  const parsed = BookingInputSchema.safeParse(input);
+  const parsed = PublicBookingInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   }
 
-  const core = await createBookingCore(parsed.data, "pending_payment");
+  const core = await createBookingCore(parsed.data, {
+    mode: "public",
+    requestedAmount: parsed.data.paymentAmount,
+  });
   if (!core.ok) return core;
 
   const checkoutUrl =
-    parsed.data.contactPreference === "pay_online" && core.depositAmount > 0
-      ? await tryCreateCheckoutSession(core.bookingId, core.tour, core.depositAmount)
+    parsed.data.contactPreference === "pay_online" && core.initialPaymentAmount > 0
+      ? await tryCreateCheckoutSession(core.bookingId, core.tour, core.initialPaymentAmount, "initial")
       : undefined;
 
   return { ok: true, bookingId: core.bookingId, checkoutUrl };
@@ -172,7 +231,7 @@ export async function createManualBooking(input: unknown): Promise<CreateManualB
   }
 
   const { status, ...bookingInput } = parsed.data;
-  const core = await createBookingCore(bookingInput, status);
+  const core = await createBookingCore(bookingInput, { mode: "manual", status });
   if (!core.ok) return core;
 
   revalidatePath("/admin/bookings");
@@ -205,6 +264,75 @@ export async function getBookingTravelers(bookingId: string): Promise<GetBooking
   return { ok: true, travelers };
 }
 
+export type GetBookingByPaymentLinkResult =
+  | { ok: true; booking: Booking; tour: Tour; departure: Departure }
+  | { ok: false; error: string };
+
+/**
+ * Public, token-gated lookup for /pay/[bookingId] — the token is a random
+ * value stored on the booking at creation time, not a login/session. A
+ * mismatch returns the same generic error as "not found" so the response
+ * can't be used to enumerate valid booking IDs or tokens (see
+ * coral-wandering-lantern.md D4).
+ */
+export async function getBookingByPaymentLink(
+  bookingId: string,
+  token: string
+): Promise<GetBookingByPaymentLinkResult> {
+  const bookingSnap = await adminDb().collection("bookings").doc(bookingId).get();
+  if (!bookingSnap.exists) {
+    return { ok: false, error: "This payment link is invalid or has expired." };
+  }
+  const booking = bookingSnap.data() as Booking;
+  if (booking.paymentLinkToken !== token) {
+    return { ok: false, error: "This payment link is invalid or has expired." };
+  }
+
+  const [tourSnap, departureSnap] = await Promise.all([
+    adminDb().collection("tours").doc(booking.tourId).get(),
+    adminDb().collection("departures").doc(booking.departureId).get(),
+  ]);
+  if (!tourSnap.exists || !departureSnap.exists) {
+    return { ok: false, error: "This booking's tour or departure is no longer available." };
+  }
+
+  return {
+    ok: true,
+    booking,
+    tour: tourSnap.data() as Tour,
+    departure: departureSnap.data() as Departure,
+  };
+}
+
+export type CreateBalanceCheckoutResult = { ok: true; checkoutUrl: string } | { ok: false; error: string };
+
+/**
+ * Re-verifies the token server-side (never trusts that the page already
+ * checked it) before creating a new Stripe Checkout session for whatever
+ * balance remains — used by the "Pay $X now" button on /pay/[bookingId].
+ */
+export async function createBalanceCheckoutSession(
+  bookingId: string,
+  token: string
+): Promise<CreateBalanceCheckoutResult> {
+  const lookup = await getBookingByPaymentLink(bookingId, token);
+  if (!lookup.ok) return { ok: false, error: lookup.error };
+
+  const { booking, tour } = lookup;
+  if (booking.status === "cancelled" || booking.status === "refunded") {
+    return { ok: false, error: "This booking is no longer active." };
+  }
+  if (booking.balanceAmount <= 0) {
+    return { ok: false, error: "This booking is already paid in full." };
+  }
+
+  const checkoutUrl = await tryCreateCheckoutSession(bookingId, tour, booking.balanceAmount, "balance");
+  if (!checkoutUrl) {
+    return { ok: false, error: "Couldn't start checkout — please try again in a moment." };
+  }
+  return { ok: true, checkoutUrl };
+}
+
 /**
  * Best-effort: the booking above has already been saved successfully by
  * the time this runs. If Stripe isn't configured yet (no
@@ -215,11 +343,17 @@ export async function getBookingTravelers(bookingId: string): Promise<GetBooking
 async function tryCreateCheckoutSession(
   bookingId: string,
   tour: Tour,
-  depositAmount: number
+  amount: number,
+  paymentType: "initial" | "balance"
 ): Promise<string | undefined> {
   if (!process.env.STRIPE_SECRET_KEY) return undefined;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const productLabel = paymentType === "initial" ? "Initial payment" : "Balance payment";
+  const cancelUrl =
+    paymentType === "initial"
+      ? `${siteUrl}/tours/${tour.slug}/book`
+      : `${siteUrl}/pay/${bookingId}`;
 
   try {
     const session = await stripeServer().checkout.sessions.create({
@@ -228,18 +362,19 @@ async function tryCreateCheckoutSession(
         {
           price_data: {
             currency: "usd",
-            product_data: { name: `Deposit — ${tour.title}` },
-            unit_amount: Math.round(depositAmount * 100),
+            product_data: { name: `${productLabel} — ${tour.title}` },
+            unit_amount: Math.round(amount * 100),
           },
           quantity: 1,
         },
       ],
       // The webhook (app/api/webhooks/stripe/route.ts) reads this back off
-      // the completed session to know which booking to mark paid — it's
-      // the only link between the Stripe side and our booking doc.
-      metadata: { bookingId },
+      // the completed session to know which booking to mark paid and
+      // whether it was the first payment or a balance top-up — it's the
+      // only link between the Stripe side and our booking doc.
+      metadata: { bookingId, paymentType },
       success_url: `${siteUrl}/tours/${tour.slug}/book/success?booking=${bookingId}`,
-      cancel_url: `${siteUrl}/tours/${tour.slug}/book`,
+      cancel_url: cancelUrl,
     });
     return session.url ?? undefined;
   } catch (err) {
