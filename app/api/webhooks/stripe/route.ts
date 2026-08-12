@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripeServer } from "@/lib/stripe/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { sendPaymentReceiptEmail } from "@/lib/email/send";
 import type { Booking, Payment } from "@/lib/types";
 
 /**
- * Single source of truth for "deposit paid" (PRD FR-17) — a client-side
- * redirect back from Stripe is never trusted to mean payment succeeded;
- * only a verified webhook event updates booking.status.
+ * Single source of truth for "deposit paid" (PRD FR-17) — the browser
+ * confirming a PaymentIntent (via Stripe Elements, embedded in the booking
+ * flow) is never trusted to mean payment succeeded; only a verified webhook
+ * event updates booking.status.
  *
  * Idempotent via webhookEvents/{event.id}: Stripe retries delivery on
  * anything but a fast 2xx, so the same event can arrive more than once.
@@ -30,55 +32,66 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const bookingId = session.metadata?.bookingId;
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object as Stripe.PaymentIntent;
+    const bookingId = paymentIntent.metadata.bookingId;
 
     if (!bookingId) {
-      console.error(`Stripe event ${event.id}: checkout.session.completed with no bookingId metadata`);
+      console.error(`Stripe event ${event.id}: payment_intent.succeeded with no bookingId metadata`);
     } else {
-      await recordDepositPayment(event.id, bookingId, session);
+      const result = await recordDepositPayment(event.id, bookingId, paymentIntent);
+      if (result.recorded) {
+        await sendPaymentReceiptEmail({
+          booking: result.booking,
+          amount: result.amount,
+          providerRef: paymentIntent.id,
+        });
+      }
     }
   }
 
   return NextResponse.json({ received: true });
 }
 
+type RecordDepositResult =
+  | { recorded: false }
+  | { recorded: true; booking: Booking; amount: number };
+
 async function recordDepositPayment(
   eventId: string,
   bookingId: string,
-  session: Stripe.Checkout.Session
-) {
+  paymentIntent: Stripe.PaymentIntent
+): Promise<RecordDepositResult> {
   const bookingRef = adminDb().collection("bookings").doc(bookingId);
   const webhookEventRef = adminDb().collection("webhookEvents").doc(eventId);
 
-  await adminDb().runTransaction(async (tx) => {
+  return adminDb().runTransaction(async (tx): Promise<RecordDepositResult> => {
     const [eventSnap, bookingSnap] = await Promise.all([
       tx.get(webhookEventRef),
       tx.get(bookingRef),
     ]);
 
     // Already handled a previous delivery of this exact event — no-op.
-    if (eventSnap.exists) return;
+    if (eventSnap.exists) return { recorded: false };
 
     if (!bookingSnap.exists) {
       tx.set(webhookEventRef, {
         processedAt: new Date().toISOString(),
         note: `booking ${bookingId} not found`,
       });
-      return;
+      return { recorded: false };
     }
 
     const booking = bookingSnap.data() as Booking;
-    const amountPaid = (session.amount_total ?? 0) / 100;
-    const paymentIntentId =
-      typeof session.payment_intent === "string" ? session.payment_intent : undefined;
+    const amountPaid = paymentIntent.amount / 100;
+    const newAmountPaid = booking.amountPaid + amountPaid;
+    const status = newAmountPaid >= booking.priceBreakdown.grandTotal ? "paid_in_full" : "deposit_paid";
 
     tx.update(bookingRef, {
-      status: "deposit_paid",
-      amountPaid: booking.amountPaid + amountPaid,
+      status,
+      amountPaid: newAmountPaid,
       paymentProvider: "stripe",
-      paymentIntentId,
+      paymentIntentId: paymentIntent.id,
       updatedAt: new Date().toISOString(),
     });
 
@@ -88,11 +101,13 @@ async function recordDepositPayment(
       bookingId,
       amount: amountPaid,
       type: "deposit",
-      providerRef: paymentIntentId ?? session.id,
+      providerRef: paymentIntent.id,
       createdAt: new Date().toISOString(),
     };
     tx.set(paymentRef, payment);
 
     tx.set(webhookEventRef, { processedAt: new Date().toISOString(), bookingId });
+
+    return { recorded: true, booking: { ...booking, amountPaid: newAmountPaid, status }, amount: amountPaid };
   });
 }

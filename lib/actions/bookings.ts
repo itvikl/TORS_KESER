@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { calculatePriceBreakdown } from "@/lib/pricing";
+import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { BookingInputSchema, ManualBookingInputSchema } from "@/lib/validation/booking";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
-import { stripeServer } from "@/lib/stripe/server";
 import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
 import type { BookingInput } from "@/lib/validation/booking";
 
@@ -15,7 +15,7 @@ export type GetBookingTravelersResult =
   | { ok: false; error: string };
 
 export type CreateBookingResult =
-  | { ok: true; bookingId: string; checkoutUrl?: string }
+  | { ok: true; bookingId: string }
   | { ok: false; errors: Record<string, string[]> };
 
 export type CreateManualBookingResult =
@@ -46,7 +46,7 @@ async function createBookingCore(
   data: BookingInput,
   status: BookingStatus
 ): Promise<
-  | { ok: true; bookingId: string; tour: Tour; depositAmount: number }
+  | { ok: true; bookingId: string }
   | { ok: false; errors: Record<string, string[]> }
 > {
   const departureRef = adminDb().collection("departures").doc(data.departureId);
@@ -130,15 +130,20 @@ async function createBookingCore(
     throw err;
   }
 
-  return { ok: true, bookingId: bookingRef.id, tour, depositAmount };
+  await sendBookingConfirmationEmail(booking);
+
+  return { ok: true, bookingId: bookingRef.id };
 }
 
 /**
  * Public, unauthenticated action — anyone can submit a registration (no
  * customer account system exists yet). No payment happens here: every
  * booking is written as `pending_payment` regardless of the customer's
- * chosen contactPreference (callback vs. pay online), since Stripe isn't
- * wired up. Staff follow up from /admin/bookings either way.
+ * chosen contactPreference (callback vs. pay online). For pay_online, the
+ * caller (BookingForm) follows this up with createDepositPaymentIntent and
+ * a Stripe Elements card form; the booking only moves out of
+ * `pending_payment` once the webhook confirms the charge (PRD FR-17). For
+ * callback, staff follow up from /admin/bookings.
  */
 export async function createBooking(input: unknown): Promise<CreateBookingResult> {
   const parsed = BookingInputSchema.safeParse(input);
@@ -146,15 +151,7 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
     return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   }
 
-  const core = await createBookingCore(parsed.data, "pending_payment");
-  if (!core.ok) return core;
-
-  const checkoutUrl =
-    parsed.data.contactPreference === "pay_online" && core.depositAmount > 0
-      ? await tryCreateCheckoutSession(core.bookingId, core.tour, core.depositAmount)
-      : undefined;
-
-  return { ok: true, bookingId: core.bookingId, checkoutUrl };
+  return createBookingCore(parsed.data, "pending_payment");
 }
 
 /**
@@ -203,47 +200,4 @@ export async function getBookingTravelers(bookingId: string): Promise<GetBooking
 
   const travelers = snapshot.docs.map((doc) => doc.data() as Traveler);
   return { ok: true, travelers };
-}
-
-/**
- * Best-effort: the booking above has already been saved successfully by
- * the time this runs. If Stripe isn't configured yet (no
- * STRIPE_SECRET_KEY) or the API call fails, we just skip the redirect —
- * the registration itself still went through and staff follow up from
- * /admin/bookings, same as the "callback" path.
- */
-async function tryCreateCheckoutSession(
-  bookingId: string,
-  tour: Tour,
-  depositAmount: number
-): Promise<string | undefined> {
-  if (!process.env.STRIPE_SECRET_KEY) return undefined;
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  try {
-    const session = await stripeServer().checkout.sessions.create({
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { name: `Deposit — ${tour.title}` },
-            unit_amount: Math.round(depositAmount * 100),
-          },
-          quantity: 1,
-        },
-      ],
-      // The webhook (app/api/webhooks/stripe/route.ts) reads this back off
-      // the completed session to know which booking to mark paid — it's
-      // the only link between the Stripe side and our booking doc.
-      metadata: { bookingId },
-      success_url: `${siteUrl}/tours/${tour.slug}/book/success?booking=${bookingId}`,
-      cancel_url: `${siteUrl}/tours/${tour.slug}/book`,
-    });
-    return session.url ?? undefined;
-  } catch (err) {
-    console.error("Stripe Checkout session creation failed:", err);
-    return undefined;
-  }
 }

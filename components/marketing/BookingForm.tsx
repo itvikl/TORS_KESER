@@ -5,6 +5,8 @@ import { availableSeats, type Departure, type Occupancy, type RoomConfiguration,
 import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
 import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellationPolicy";
 import { createBooking } from "@/lib/actions/bookings";
+import { createDepositPaymentIntent } from "@/lib/actions/payments";
+import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 
 interface TravelerDraft {
   firstName: string;
@@ -69,6 +71,9 @@ export default function BookingForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [paymentBookingId, setPaymentBookingId] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentSetupError, setPaymentSetupError] = useState<string | null>(null);
 
   const departure = departures.find((d) => d.departureId === departureId);
   const totalTravelers = room.doubleRooms * 2 + room.singleRooms + room.triples * 3 + childCount;
@@ -96,6 +101,7 @@ export default function BookingForm({
   async function handleSubmit() {
     setSubmitting(true);
     setErrors({});
+    setPaymentSetupError(null);
 
     const result = await createBooking({
       departureId,
@@ -122,10 +128,16 @@ export default function BookingForm({
       return;
     }
 
-    if (result.checkoutUrl) {
-      // Leaving the page for Stripe Checkout — keep the button disabled
-      // and skip setSubmitting(false) so there's no flash of re-enabled UI.
-      window.location.href = result.checkoutUrl;
+    if (contactPreference === "pay_online") {
+      const intentResult = await createDepositPaymentIntent(result.bookingId);
+      setSubmitting(false);
+      if (!intentResult.ok) {
+        setPaymentSetupError(intentResult.error);
+        setConfirmedId(result.bookingId);
+        return;
+      }
+      setPaymentBookingId(result.bookingId);
+      setClientSecret(intentResult.clientSecret);
       return;
     }
 
@@ -134,7 +146,31 @@ export default function BookingForm({
   }
 
   if (confirmedId) {
-    return <Confirmation contactPreference={contactPreference} />;
+    return (
+      <Confirmation
+        contactPreference={contactPreference}
+        paymentSetupFailed={!!paymentSetupError}
+      />
+    );
+  }
+
+  if (clientSecret && paymentBookingId) {
+    return (
+      <div className="glass-panel-elevated overflow-hidden rounded-3xl p-6 shadow-2xl sm:p-8">
+        <h2 className="text-xl font-bold tracking-tight text-[#e0e8f0]">Pay your deposit</h2>
+        <p className="mt-2 text-[15px] text-[#a0b4c4]">
+          Your registration is saved. Complete your {formatUsd(depositAmount)} deposit below to
+          confirm your spot.
+        </p>
+        <div className="mt-6">
+          <DepositPaymentForm
+            clientSecret={clientSecret}
+            amount={depositAmount}
+            onSuccess={() => setConfirmedId(paymentBookingId)}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -382,8 +418,7 @@ export default function BookingForm({
                     I&apos;d like to pay online
                   </span>
                   <span className="text-[#a0b4c4]">
-                    You&apos;ll be taken to our secure payment page to pay your deposit right
-                    after submitting.
+                    Pay your deposit securely by card right after you submit.
                   </span>
                 </span>
               </label>
@@ -424,7 +459,19 @@ export default function BookingForm({
   );
 }
 
-function Confirmation({ contactPreference }: { contactPreference: "callback" | "pay_online" }) {
+function Confirmation({
+  contactPreference,
+  paymentSetupFailed = false,
+}: {
+  contactPreference: "callback" | "pay_online";
+  paymentSetupFailed?: boolean;
+}) {
+  const message = paymentSetupFailed
+    ? "Thank you! We couldn't start online payment just now, but your registration is saved — a member of our team will follow up shortly to collect your deposit."
+    : contactPreference === "callback"
+      ? "Thank you! A member of our team will call you within one business day to confirm details and arrange your deposit."
+      : "Thank you! Your deposit has been received and your spot is confirmed.";
+
   return (
     <div className="glass-panel-elevated rounded-3xl p-8 text-center shadow-2xl sm:p-10">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#7dd3fc]/40 bg-[#7dd3fc]/20 text-4xl text-[#7dd3fc]">
@@ -436,11 +483,7 @@ function Confirmation({ contactPreference }: { contactPreference: "callback" | "
       <h2 className="mt-2 font-display text-2xl font-bold text-[#e0e8f0] sm:text-3xl">
         We look forward to welcoming you
       </h2>
-      <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[#a0b4c4]">
-        {contactPreference === "callback"
-          ? "Thank you! A member of our team will call you within one business day to confirm details and arrange your deposit."
-          : "Thank you! We're finishing setup for online payments — we'll email you a secure payment link shortly, or you're welcome to call us in the meantime."}
-      </p>
+      <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[#a0b4c4]">{message}</p>
       <a
         href="tel:18008470700"
         className="mt-8 inline-block text-sm font-bold text-[#7dd3fc] transition hover:brightness-110"
