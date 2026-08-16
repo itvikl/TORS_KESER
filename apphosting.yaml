@@ -71,3 +71,9 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Create once: npx firebase apphosting:secrets:set STRIPE_SECRET_KEY
+  - variable: STRIPE_SECRET_KEY
+    secret: STRIPE_SECRET_KEY
+    availability:
+      - RUNTIME
