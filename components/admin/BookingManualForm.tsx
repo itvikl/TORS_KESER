@@ -68,7 +68,7 @@ export default function BookingManualForm({
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactPreference, setContactPreference] = useState<ContactPreference>("callback");
-  const [status, setStatus] = useState<BookingStatus>("deposit_paid");
+  const [status, setStatus] = useState<BookingStatus>("partial_paid");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
 
@@ -239,7 +239,7 @@ export default function BookingManualForm({
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             >
               <option value="pending_payment">Pending payment</option>
-              <option value="deposit_paid">Deposit paid</option>
+              <option value="partial_paid">Partially paid</option>
               <option value="paid_in_full">Paid in full</option>
             </select>
           </Field>

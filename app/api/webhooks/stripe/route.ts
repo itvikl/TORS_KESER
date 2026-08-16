@@ -6,10 +6,13 @@ import { sendPaymentReceiptEmail } from "@/lib/email/send";
 import type { Booking, Payment } from "@/lib/types";
 
 /**
- * Single source of truth for "deposit paid" (PRD FR-17) — the browser
+ * Single source of truth for "payment received" (PRD FR-17) — the browser
  * confirming a PaymentIntent (via Stripe Elements, embedded in the booking
- * flow) is never trusted to mean payment succeeded; only a verified webhook
- * event updates booking.status.
+ * flow or the token-gated /pay/[bookingId] balance page) is never trusted to
+ * mean payment succeeded; only a verified webhook event updates
+ * booking.status. Handles both the customer's first payment (deposit,
+ * partial, or full — see the payment slider in BookingForm) and a later
+ * balance top-up.
  *
  * Idempotent via webhookEvents/{event.id}: Stripe retries delivery on
  * anything but a fast 2xx, so the same event can arrive more than once.
@@ -39,7 +42,8 @@ export async function POST(request: Request) {
     if (!bookingId) {
       console.error(`Stripe event ${event.id}: payment_intent.succeeded with no bookingId metadata`);
     } else {
-      const result = await recordDepositPayment(event.id, bookingId, paymentIntent);
+      const paymentType = paymentIntent.metadata.paymentType === "balance" ? "balance" : "initial";
+      const result = await recordPayment(event.id, bookingId, paymentIntent, paymentType);
       if (result.recorded) {
         await sendPaymentReceiptEmail({
           booking: result.booking,
@@ -53,19 +57,20 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
-type RecordDepositResult =
+type RecordPaymentResult =
   | { recorded: false }
   | { recorded: true; booking: Booking; amount: number };
 
-async function recordDepositPayment(
+async function recordPayment(
   eventId: string,
   bookingId: string,
-  paymentIntent: Stripe.PaymentIntent
-): Promise<RecordDepositResult> {
+  paymentIntent: Stripe.PaymentIntent,
+  paymentType: "initial" | "balance"
+): Promise<RecordPaymentResult> {
   const bookingRef = adminDb().collection("bookings").doc(bookingId);
   const webhookEventRef = adminDb().collection("webhookEvents").doc(eventId);
 
-  return adminDb().runTransaction(async (tx): Promise<RecordDepositResult> => {
+  return adminDb().runTransaction(async (tx): Promise<RecordPaymentResult> => {
     const [eventSnap, bookingSnap] = await Promise.all([
       tx.get(webhookEventRef),
       tx.get(bookingRef),
@@ -85,11 +90,13 @@ async function recordDepositPayment(
     const booking = bookingSnap.data() as Booking;
     const amountPaid = paymentIntent.amount / 100;
     const newAmountPaid = booking.amountPaid + amountPaid;
-    const status = newAmountPaid >= booking.priceBreakdown.grandTotal ? "paid_in_full" : "deposit_paid";
+    const newBalanceAmount = Math.max(0, booking.priceBreakdown.grandTotal - newAmountPaid);
+    const status = newBalanceAmount <= 0 ? "paid_in_full" : "partial_paid";
 
     tx.update(bookingRef, {
       status,
       amountPaid: newAmountPaid,
+      balanceAmount: newBalanceAmount,
       paymentProvider: "stripe",
       paymentIntentId: paymentIntent.id,
       updatedAt: new Date().toISOString(),
@@ -100,7 +107,7 @@ async function recordDepositPayment(
       paymentId: paymentRef.id,
       bookingId,
       amount: amountPaid,
-      type: "deposit",
+      type: paymentType === "balance" ? "balance" : newBalanceAmount <= 0 ? "full" : "deposit",
       providerRef: paymentIntent.id,
       createdAt: new Date().toISOString(),
     };
@@ -108,6 +115,10 @@ async function recordDepositPayment(
 
     tx.set(webhookEventRef, { processedAt: new Date().toISOString(), bookingId });
 
-    return { recorded: true, booking: { ...booking, amountPaid: newAmountPaid, status }, amount: amountPaid };
+    return {
+      recorded: true,
+      booking: { ...booking, amountPaid: newAmountPaid, balanceAmount: newBalanceAmount, status },
+      amount: amountPaid,
+    };
   });
 }

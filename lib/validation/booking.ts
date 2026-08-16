@@ -40,12 +40,25 @@ export const BookingInputSchema = z.object({
 export type BookingInput = z.infer<typeof BookingInputSchema>;
 
 /**
+ * Public-flow-only extension: the amount the customer chose (or was forced
+ * into, for a guaranteed departure) via the payment slider in BookingForm.
+ * Re-validated server-side against the departure's bookingAssurance and
+ * price range in createBookingCore — this schema only guards "it's a
+ * positive number", not the actual floor/ceiling (those need the tour's
+ * pricing, which isn't available until the server action loads it).
+ */
+export const PublicBookingInputSchema = BookingInputSchema.extend({
+  paymentAmount: z.number().positive({ error: "Choose a payment amount." }),
+});
+export type PublicBookingInput = z.infer<typeof PublicBookingInputSchema>;
+
+/**
  * Same shape as BookingInputSchema plus an admin-chosen initial status —
  * used by createManualBooking (e.g. a phone registration) where there's no
  * Stripe leg to determine status, so staff set it directly.
  */
 export const ManualBookingInputSchema = BookingInputSchema.extend({
-  status: z.enum(["pending_payment", "deposit_paid", "paid_in_full"], {
+  status: z.enum(["pending_payment", "partial_paid", "paid_in_full"], {
     error: "Choose a status.",
   }),
 });

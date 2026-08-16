@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SiteContentHome } from "@/lib/types";
+import LetterDrop from "@/components/ui/LetterDrop";
 
 /**
  * The hero's text/CTA column only (not the background photo or
@@ -20,10 +21,12 @@ export default function HomeHeroContent({
         {content.heroEyebrow}
       </p>
       <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-7xl">
-        {content.heroTitleLine1}
-        <span className="mt-2 block text-[#7dd3fc] [text-shadow:0_0_15px_rgba(125,211,252,0.3)]">
-          {content.heroTitleHighlight}
-        </span>
+        <LetterDrop text={content.heroTitleLine1} />
+        <LetterDrop
+          text={content.heroTitleHighlight}
+          className="mt-2 block text-[#7dd3fc] [text-shadow:0_0_15px_rgba(125,211,252,0.3)]"
+          startDelayMs={content.heroTitleLine1.replace(/\s/g, "").length * 22}
+        />
       </h1>
       <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-[#a0b4c4] sm:text-xl">
         {content.heroSubtitle}

@@ -8,10 +8,10 @@ import { formatUsd } from "@/lib/pricing";
 export const metadata: Metadata = { title: "Payment received" };
 
 /**
- * Landing page for Stripe's Checkout `success_url`
- * (lib/actions/bookings.ts:tryCreateCheckoutSession). The booking itself is
- * only ever marked paid by the webhook (app/api/webhooks/stripe/route.ts) —
- * this page just reads back the current state to confirm it to the customer.
+ * Booking confirmation summary, keyed off a bookingId query param. The
+ * booking itself is only ever marked paid by the webhook
+ * (app/api/webhooks/stripe/route.ts) — this page just reads back the
+ * current state to confirm it to the customer.
  */
 export default async function BookingSuccessPage({
   searchParams,

@@ -65,7 +65,6 @@ export const TourInputSchema = z.object({
   status: z.enum(["draft", "published", "archived"]),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
-  bookingAssurance: z.enum(["conditional", "guaranteed"]).optional(),
 });
 
 export type TourInput = z.infer<typeof TourInputSchema>;

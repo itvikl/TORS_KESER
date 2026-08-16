@@ -87,7 +87,7 @@ export default async function DepartureRegistrantsPage({
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
   pending_payment: "bg-gold/15 text-terracotta-dark",
-  deposit_paid: "bg-olive/15 text-olive",
+  partial_paid: "bg-olive/15 text-olive",
   paid_in_full: "bg-olive/25 text-olive",
   cancelled: "bg-ink-muted/15 text-ink-muted",
   refunded: "bg-ink-muted/15 text-ink-muted",
@@ -95,7 +95,7 @@ const STATUS_STYLES: Record<BookingStatus, string> = {
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
   pending_payment: "Pending payment",
-  deposit_paid: "Deposit paid",
+  partial_paid: "Partially paid",
   paid_in_full: "Paid in full",
   cancelled: "Cancelled",
   refunded: "Refunded",

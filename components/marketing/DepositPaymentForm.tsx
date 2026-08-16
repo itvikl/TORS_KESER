@@ -128,7 +128,7 @@ function PaymentFields({ amount, onSuccess }: { amount: number; onSuccess: () =>
         onClick={handlePay}
         className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60"
       >
-        {submitting ? "Processing…" : `Pay ${formatUsd(amount)} deposit`}
+        {submitting ? "Processing…" : `Pay ${formatUsd(amount)}`}
       </button>
     </div>
   );
