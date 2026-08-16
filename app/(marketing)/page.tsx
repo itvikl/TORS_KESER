@@ -81,6 +81,15 @@ export default async function HomePage({
                 alt="Luxury travel destination with dramatic coastal views"
                 className="h-full w-full scale-125 object-cover object-center"
               />
+              <div
+                className="absolute inset-0 mix-blend-soft-light [animation:aurora-shift_16s_ease-in-out_infinite]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(120deg, rgba(125,211,252,0.5), rgba(200,160,240,0.35), rgba(125,211,252,0.5))",
+                  backgroundSize: "200% 200%",
+                }}
+                aria-hidden="true"
+              />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(10,14,26,0.25)] to-[rgba(10,14,26,0.85)]" />
             </div>
 
@@ -90,7 +99,41 @@ export default async function HomePage({
               <div className="mt-12 w-full max-w-3xl">
                 <DestinationSearch />
               </div>
+
+              <ul className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                {content.trustSignals.map((signal, index) => (
+                  <li
+                    key={index}
+                    className="glass-panel flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#e0e8f0]"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#7dd3fc"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12l4 4 10-10" />
+                    </svg>
+                    {signal.title}
+                  </li>
+                ))}
+              </ul>
             </div>
+
+            <a
+              href="#featured-tours"
+              aria-label="Scroll to featured tours"
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70 transition-colors hover:text-white [animation:scroll-cue-bounce_2s_ease-in-out_infinite]"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </a>
           </section>
 
           <section

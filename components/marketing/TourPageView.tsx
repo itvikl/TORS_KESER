@@ -3,6 +3,7 @@ import { availableSeats } from "@/lib/types";
 import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
+import TextReveal from "@/components/ui/TextReveal";
 
 /**
  * KashrutDetails.patYisrael/chalavYisrael are each a 3-way value
@@ -78,9 +79,10 @@ export default function TourPageView({
             <h2 className="text-2xl font-bold tracking-tight text-[#7dd3fc] sm:text-3xl">
               Overview
             </h2>
-            <p className="text-lg leading-relaxed text-[#a0b4c4]">
-              {tour.description || tour.summary}
-            </p>
+            <TextReveal
+              text={tour.description || tour.summary}
+              className="text-lg leading-relaxed text-[#a0b4c4]"
+            />
 
             <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-3">
               <QuickFact
