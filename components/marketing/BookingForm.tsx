@@ -468,52 +468,13 @@ export default function BookingForm({
               />
             </dl>
 
-            {isGuaranteed ? (
+            {isGuaranteed && (
               <div className="flex items-center gap-2 rounded-xl border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 px-4 py-3 text-sm font-medium text-[var(--color-success)]">
                 <span aria-hidden="true">✓</span>
                 This departure is guaranteed to run — full payment of{" "}
                 {formatUsd(priceBreakdown.grandTotal)} is required to reserve your spot.
               </div>
-            ) : (
-              <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4">
-                <div className="flex items-baseline justify-between">
-                  <label htmlFor="paymentAmount" className="text-sm font-semibold text-[var(--color-mist)]">
-                    How much would you like to pay now?
-                  </label>
-                  <span className="text-lg font-bold text-[var(--color-ice)]">{formatUsd(paymentAmount)}</span>
-                </div>
-                <input
-                  id="paymentAmount"
-                  type="range"
-                  min={depositAmount}
-                  max={priceBreakdown.grandTotal}
-                  step={50}
-                  value={paymentAmount}
-                  onChange={(e) => setCustomPaymentAmount(Number(e.target.value))}
-                  className="mt-3 w-full accent-[var(--color-ice)]"
-                />
-                <div className="mt-1 flex justify-between text-xs text-[var(--color-slate)]">
-                  <span>Deposit {formatUsd(depositAmount)}</span>
-                  <span>Full price {formatUsd(priceBreakdown.grandTotal)}</span>
-                </div>
-                {errors.paymentAmount && (
-                  <p className="mt-2 text-xs text-[var(--color-danger-text)]">{errors.paymentAmount[0]}</p>
-                )}
-              </div>
             )}
-
-            <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 text-sm text-[var(--color-slate)]">
-              <p className="mb-2 font-semibold text-[var(--color-mist)]">Cancellation policy</p>
-              <ul className="space-y-1">
-                {DEFAULT_CANCELLATION_TIERS.map((tier) => (
-                  <li key={tier.minWorkingDaysBefore}>
-                    {tier.minWorkingDaysBefore}+ working days before departure: {tier.chargePercent}
-                    % charge
-                  </li>
-                ))}
-                <li>Plus a ${DEFAULT_ADMIN_FEE} admin fee.</li>
-              </ul>
-            </div>
 
             <fieldset className="space-y-3">
               <legend className="mb-1 text-sm font-semibold text-[var(--color-mist)]">
@@ -560,6 +521,47 @@ export default function BookingForm({
                 </span>
               </label>
             </fieldset>
+
+            {!isGuaranteed && contactPreference === "pay_online" && (
+              <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4">
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor="paymentAmount" className="text-sm font-semibold text-[var(--color-mist)]">
+                    How much would you like to pay now?
+                  </label>
+                  <span className="text-lg font-bold text-[var(--color-ice)]">{formatUsd(paymentAmount)}</span>
+                </div>
+                <input
+                  id="paymentAmount"
+                  type="range"
+                  min={depositAmount}
+                  max={priceBreakdown.grandTotal}
+                  step={50}
+                  value={paymentAmount}
+                  onChange={(e) => setCustomPaymentAmount(Number(e.target.value))}
+                  className="mt-3 w-full accent-[var(--color-ice)]"
+                />
+                <div className="mt-1 flex justify-between text-xs text-[var(--color-slate)]">
+                  <span>Deposit {formatUsd(depositAmount)}</span>
+                  <span>Full price {formatUsd(priceBreakdown.grandTotal)}</span>
+                </div>
+                {errors.paymentAmount && (
+                  <p className="mt-2 text-xs text-[var(--color-danger-text)]">{errors.paymentAmount[0]}</p>
+                )}
+              </div>
+            )}
+
+            <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 text-sm text-[var(--color-slate)]">
+              <p className="mb-2 font-semibold text-[var(--color-mist)]">Cancellation policy</p>
+              <ul className="space-y-1">
+                {DEFAULT_CANCELLATION_TIERS.map((tier) => (
+                  <li key={tier.minWorkingDaysBefore}>
+                    {tier.minWorkingDaysBefore}+ working days before departure: {tier.chargePercent}
+                    % charge
+                  </li>
+                ))}
+                <li>Plus a ${DEFAULT_ADMIN_FEE} admin fee.</li>
+              </ul>
+            </div>
 
             {Object.values(errors).flat().filter(Boolean).length > 0 && (
               <div className="rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3 text-sm text-[var(--color-danger-text)]">
