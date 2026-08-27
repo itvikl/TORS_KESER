@@ -221,7 +221,7 @@ export default function MonthSelect({
       : null;
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+    <div className="mx-auto flex min-w-0 max-w-[15rem] items-center gap-2.5">
       {icon ? (
         <span aria-hidden="true" className="shrink-0 text-[var(--color-ice)]">
           {icon}
