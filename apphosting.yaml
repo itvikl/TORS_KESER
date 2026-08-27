@@ -71,3 +71,25 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Create once: npx firebase apphosting:secrets:set STRIPE_SECRET_KEY
+  # Use a TEST MODE key (sk_test_...) until ready to go live.
+  - variable: STRIPE_SECRET_KEY
+    secret: STRIPE_SECRET_KEY
+    availability:
+      - RUNTIME
+
+  # Create once: npx firebase apphosting:secrets:set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  # Use a TEST MODE key (pk_test_...) until ready to go live.
+  - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    secret: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Create once: npx firebase apphosting:secrets:set STRIPE_WEBHOOK_SECRET
+  # From a TEST MODE webhook endpoint (Stripe dashboard, in test mode) until ready to go live.
+  - variable: STRIPE_WEBHOOK_SECRET
+    secret: STRIPE_WEBHOOK_SECRET
+    availability:
+      - RUNTIME
