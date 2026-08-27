@@ -48,7 +48,6 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
           <TextField label="Title — highlighted line" value={draft.heroTitleHighlight} onChange={(v) => set("heroTitleHighlight", v)} error={errors.heroTitleHighlight} />
           <TextAreaField label="Subtitle" value={draft.heroSubtitle} onChange={(v) => set("heroSubtitle", v)} rows={2} error={errors.heroSubtitle} />
           <TextField label="Primary button" value={draft.heroPrimaryCta} onChange={(v) => set("heroPrimaryCta", v)} error={errors.heroPrimaryCta} />
-          <TextField label="Secondary button" value={draft.heroSecondaryCta} onChange={(v) => set("heroSecondaryCta", v)} error={errors.heroSecondaryCta} />
         </FieldGroup>
 
         <FieldGroup title="Trust signals">

@@ -11,6 +11,7 @@ export const TravelerInputSchema = z.object({
   lastName: z.string().min(1, { error: "Last name is required." }),
   dob: z.string().optional(),
   passport: z.string().optional(),
+  passportScanUrl: z.string().optional(),
   occupancy: z.enum(["double", "single", "triple", "child"]),
   roomWith: z.string().optional(),
   dietary: z.string().optional(),

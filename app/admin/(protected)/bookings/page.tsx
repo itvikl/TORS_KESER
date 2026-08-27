@@ -16,7 +16,8 @@ export default async function AdminBookingsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-ink">Bookings</h1>
           <p className="mt-1 text-sm text-ink-muted">
             {totalRegistrants} registration{totalRegistrants === 1 ? "" : "s"} across{" "}
-            {rows.length} tour{rows.length === 1 ? "" : "s"} — select a tour to see its registrants
+            {rows.length} tour{rows.length === 1 ? "" : "s"} — select a tour to see its planned
+            departures
           </p>
         </div>
         <Link

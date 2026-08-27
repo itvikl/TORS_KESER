@@ -183,15 +183,10 @@ export default function BookingDetailModal({
               <StatTile label="Balance due" value={formatUsd(booking.balanceAmount)} tone={balanceTone} />
             </div>
 
-            {(priceBreakdown.singleSupplementsTotal > 0 || priceBreakdown.childAdjustments > 0) && (
+            {priceBreakdown.childAdjustments > 0 && (
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-xs text-ink-muted">
                 <span>Base {formatUsd(priceBreakdown.baseTotal)}</span>
-                {priceBreakdown.singleSupplementsTotal > 0 && (
-                  <span>Single supplements {formatUsd(priceBreakdown.singleSupplementsTotal)}</span>
-                )}
-                {priceBreakdown.childAdjustments > 0 && (
-                  <span>Child adjustments {formatUsd(priceBreakdown.childAdjustments)}</span>
-                )}
+                <span>Child adjustments {formatUsd(priceBreakdown.childAdjustments)}</span>
               </div>
             )}
           </Card>
@@ -224,6 +219,16 @@ export default function BookingDetailModal({
                         )}
                         {traveler.dietary && <TravelerField label="Dietary" value={traveler.dietary} />}
                       </div>
+                    )}
+                    {traveler.passportScanUrl && (
+                      <a
+                        href={traveler.passportScanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-navy hover:underline"
+                      >
+                        View passport scan →
+                      </a>
                     )}
                   </div>
                 ))}

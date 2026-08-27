@@ -21,21 +21,23 @@ export function calculatePriceBreakdown(
   // then "corrected" via a subtraction in childAdjustments, which meant a
   // booking with children was never actually charged for them: the
   // subtraction had nothing added to offset).
+  //
+  // Single occupancy is its own flat per-person rate, not the double rate
+  // plus a supplement — pricePerPersonSingle is the whole price a solo
+  // traveler pays, full stop.
   const baseTotal =
-    (doubleTravelers + singleTravelers) * pricing.pricePerPersonDouble +
+    doubleTravelers * pricing.pricePerPersonDouble +
+    singleTravelers * pricing.pricePerPersonSingle +
     tripleTravelers * tripleRate;
-
-  const singleSupplementsTotal = room.singleRooms * pricing.singleSupplement;
 
   // The full child charge (not a delta) — falls back to the adult rate
   // when no separate child price is configured for the tour.
   const childAdjustments = childCount * (pricing.childPrice ?? pricing.pricePerPersonDouble);
 
-  const grandTotal = baseTotal + singleSupplementsTotal + childAdjustments;
+  const grandTotal = baseTotal + childAdjustments;
 
   return {
     baseTotal,
-    singleSupplementsTotal,
     childAdjustments,
     grandTotal,
   };

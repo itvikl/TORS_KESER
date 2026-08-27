@@ -241,6 +241,37 @@ export async function createManualBooking(input: unknown): Promise<CreateManualB
 }
 
 /**
+ * Marks every not-yet-seen booking for a departure as viewed — called when
+ * staff open that departure's registrant list, so the "new registration"
+ * red badge on /admin/bookings clears once it's actually been looked at.
+ */
+export async function markDepartureBookingsViewed(
+  tourId: string,
+  departureId: string
+): Promise<void> {
+  await requireAdminSession();
+
+  const snapshot = await adminDb()
+    .collection("bookings")
+    .where("tourId", "==", tourId)
+    .where("departureId", "==", departureId)
+    .get();
+
+  const unviewed = snapshot.docs.filter((doc) => !(doc.data() as Booking).viewedAt);
+  if (unviewed.length === 0) return;
+
+  const now = new Date().toISOString();
+  const batch = adminDb().batch();
+  for (const doc of unviewed) {
+    batch.update(doc.ref, { viewedAt: now });
+  }
+  await batch.commit();
+
+  revalidatePath("/admin/bookings");
+  revalidatePath(`/admin/bookings/${tourId}`);
+}
+
+/**
  * Fetches a booking's travelers subcollection on demand (e.g. when staff
  * expand a booking's detail card in /admin/bookings) rather than joining it
  * into every row of the list — the list itself already carries every other

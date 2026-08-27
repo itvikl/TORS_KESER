@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { availableSeats, type Departure, type Occupancy, type RoomConfiguration, type Tour } from "@/lib/types";
 import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
 import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellationPolicy";
 import { createBooking } from "@/lib/actions/bookings";
 import { createDepositPaymentIntent } from "@/lib/actions/payments";
+import { uploadPassportScan } from "@/lib/actions/uploads";
 import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 
 interface TravelerDraft {
@@ -13,6 +14,8 @@ interface TravelerDraft {
   lastName: string;
   dob: string;
   passport: string;
+  passportScanUrl: string;
+  passportScanFileName: string;
   occupancy: Occupancy;
   roomWith: string;
   dietary: string;
@@ -23,6 +26,8 @@ const BLANK_TRAVELER: Omit<TravelerDraft, "occupancy"> = {
   lastName: "",
   dob: "",
   passport: "",
+  passportScanUrl: "",
+  passportScanFileName: "",
   roomWith: "",
   dietary: "",
 };
@@ -126,6 +131,7 @@ export default function BookingForm({
         lastName: t.lastName,
         dob: t.dob || undefined,
         passport: t.passport || undefined,
+        passportScanUrl: t.passportScanUrl || undefined,
         occupancy: t.occupancy,
         roomWith: t.roomWith || undefined,
         dietary: t.dietary || undefined,
@@ -335,6 +341,14 @@ export default function BookingForm({
                     label="Dietary needs"
                     value={traveler.dietary}
                     onChange={(v) => updateTraveler(index, { dietary: v })}
+                  />
+                  <PassportUploadField
+                    value={traveler.passportScanUrl}
+                    fileName={traveler.passportScanFileName}
+                    onUploaded={(url, fileName) =>
+                      updateTraveler(index, { passportScanUrl: url, passportScanFileName: fileName })
+                    }
+                    onRemove={() => updateTraveler(index, { passportScanUrl: "", passportScanFileName: "" })}
                   />
                 </div>
               </div>
@@ -665,7 +679,13 @@ function NumberField({
         value={value}
         onChange={(e) => {
           const parsed = Number(e.target.value);
-          onChange(Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : 0);
+          const next = Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : 0;
+          // React's controlled-input sync for type="number" compares with
+          // loose equality ("01" != 1 is false), so it silently skips
+          // rewriting the DOM and a leading zero sticks around — normalize
+          // the raw input value here so the field never shows "01".
+          e.target.value = String(next);
+          onChange(next);
         }}
         className="glacier-field mt-auto w-full"
       />
@@ -695,6 +715,81 @@ function TextField({
         onChange={(e) => onChange(e.target.value)}
         className="glacier-field w-full"
       />
+    </div>
+  );
+}
+
+function PassportUploadField({
+  value,
+  fileName,
+  onUploaded,
+  onRemove,
+}: {
+  value: string;
+  fileName: string;
+  onUploaded: (url: string, fileName: string) => void;
+  onRemove: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    const formData = new FormData();
+    formData.append("file", file);
+    const result = await uploadPassportScan(formData);
+    if (result.ok) {
+      onUploaded(result.url, file.name);
+    } else {
+      setError(result.error);
+    }
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  return (
+    <div className="sm:col-span-2">
+      <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
+        Passport scan{" "}
+        <span className="font-normal normal-case tracking-normal opacity-70">(optional)</span>
+      </label>
+      {value ? (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] px-3.5 py-2.5">
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="truncate text-sm font-medium text-[var(--color-ice)] hover:underline"
+          >
+            {fileName || "View uploaded file"}
+          </a>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="shrink-0 text-xs font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-danger-text)]"
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--color-border-ice-strong)] bg-[var(--color-field-bg)] px-3.5 py-3 text-sm font-medium text-[var(--color-slate)] transition-colors hover:border-[var(--color-ice)] hover:text-[var(--color-mist)] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+          {uploading ? "Uploading…" : "Upload photo or PDF"}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            disabled={uploading}
+            onChange={handleChange}
+            className="hidden"
+          />
+        </label>
+      )}
+      {error && <p className="mt-1 text-xs font-medium text-[var(--color-danger-text)]">{error}</p>}
     </div>
   );
 }

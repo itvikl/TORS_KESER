@@ -11,62 +11,109 @@ import {
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Departure, Tour } from "@/lib/types";
-import type { RegionOption } from "@/lib/data/tours";
+import type { CountryOption } from "@/lib/data/tours";
+import { isDeparturePlanned } from "@/lib/departureAvailability";
 
 export type FeaturedTourItem = {
+  tour: Tour;
+  departures: Departure[];
+  image: string;
+};
+
+export type FilteredTourItem = {
   tour: Tour;
   nextDeparture?: Departure;
   image: string;
 };
 
 type TourFilterContextValue = {
-  selectedRegions: string[];
-  setSelectedRegions: (regions: string[], opts?: { scroll?: boolean }) => void;
-  regions: RegionOption[];
+  selectedCountries: string[];
+  dateFrom: string;
+  dateTo: string;
+  applyFilters: (
+    next: { countries: string[]; dateFrom: string; dateTo: string },
+    opts?: { scroll?: boolean }
+  ) => void;
+  countries: CountryOption[];
   tours: FeaturedTourItem[];
-  filteredTours: FeaturedTourItem[];
+  filteredTours: FilteredTourItem[];
 };
 
 const TourFilterContext = createContext<TourFilterContextValue | null>(null);
 
-function parseRegionsParam(
+function parseCountriesParam(
   searchParams: URLSearchParams,
   fallback: string[] = []
 ): string[] {
-  const fromUrl = searchParams.getAll("region").filter(Boolean);
+  const fromUrl = searchParams.getAll("country").filter(Boolean);
   return fromUrl.length > 0 ? fromUrl : fallback;
 }
 
+/** A tour "matches" a date range if it has a planned departure starting in it. */
+function matchingDeparture(
+  departures: Departure[],
+  dateFrom: string,
+  dateTo: string
+): Departure | undefined {
+  const fromTime = dateFrom ? new Date(dateFrom).getTime() : undefined;
+  const toTime = dateTo ? new Date(dateTo).getTime() : undefined;
+
+  return departures.find((departure) => {
+    if (!isDeparturePlanned(departure)) return false;
+    const start = new Date(departure.startDate).getTime();
+    if (fromTime !== undefined && start < fromTime) return false;
+    if (toTime !== undefined && start > toTime) return false;
+    return true;
+  });
+}
+
 export function TourFilterProvider({
-  regions,
+  countries,
   tours,
-  initialRegions = [],
+  initialCountries = [],
+  initialDateFrom = "",
+  initialDateTo = "",
   children,
 }: {
-  regions: RegionOption[];
+  countries: CountryOption[];
   tours: FeaturedTourItem[];
-  initialRegions?: string[];
+  initialCountries?: string[];
+  initialDateFrom?: string;
+  initialDateTo?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [selectedRegions, setSelectedRegionsState] = useState(initialRegions);
+  const [selectedCountries, setSelectedCountries] = useState(initialCountries);
+  const [dateFrom, setDateFrom] = useState(initialDateFrom);
+  const [dateTo, setDateTo] = useState(initialDateTo);
 
   useEffect(() => {
-    setSelectedRegionsState(parseRegionsParam(searchParams));
+    setSelectedCountries(parseCountriesParam(searchParams));
+    setDateFrom(searchParams.get("from") ?? "");
+    setDateTo(searchParams.get("to") ?? "");
   }, [searchParams]);
 
-  const setSelectedRegions = useCallback(
-    (next: string[], opts?: { scroll?: boolean }) => {
-      const unique = [...new Set(next.filter(Boolean))];
-      setSelectedRegionsState(unique);
+  const applyFilters = useCallback(
+    (
+      next: { countries: string[]; dateFrom: string; dateTo: string },
+      opts?: { scroll?: boolean }
+    ) => {
+      const nextCountries = [...new Set(next.countries.filter(Boolean))];
+      setSelectedCountries(nextCountries);
+      setDateFrom(next.dateFrom);
+      setDateTo(next.dateTo);
 
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("region");
-      for (const region of unique) {
-        params.append("region", region);
+      params.delete("country");
+      for (const country of nextCountries) {
+        params.append("country", country);
       }
+      if (next.dateFrom) params.set("from", next.dateFrom);
+      else params.delete("from");
+      if (next.dateTo) params.set("to", next.dateTo);
+      else params.delete("to");
 
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -83,20 +130,41 @@ export function TourFilterProvider({
   );
 
   const filteredTours = useMemo(() => {
-    if (selectedRegions.length === 0) return tours;
-    const selected = new Set(selectedRegions);
-    return tours.filter((item) => selected.has(item.tour.region));
-  }, [selectedRegions, tours]);
+    const selected = new Set(selectedCountries);
+    const hasDateFilter = Boolean(dateFrom || dateTo);
+
+    const inCountry = tours.filter(
+      (item) =>
+        selected.size === 0 || item.tour.countries.some((c) => selected.has(c))
+    );
+
+    if (!hasDateFilter) {
+      return inCountry.map(({ tour, departures, image }) => ({
+        tour,
+        nextDeparture: departures[0],
+        image,
+      }));
+    }
+
+    const matched: FilteredTourItem[] = [];
+    for (const { tour, departures, image } of inCountry) {
+      const departure = matchingDeparture(departures, dateFrom, dateTo);
+      if (departure) matched.push({ tour, nextDeparture: departure, image });
+    }
+    return matched;
+  }, [selectedCountries, dateFrom, dateTo, tours]);
 
   const value = useMemo(
     () => ({
-      selectedRegions,
-      setSelectedRegions,
-      regions,
+      selectedCountries,
+      dateFrom,
+      dateTo,
+      applyFilters,
+      countries,
       tours,
       filteredTours,
     }),
-    [selectedRegions, setSelectedRegions, regions, tours, filteredTours]
+    [selectedCountries, dateFrom, dateTo, applyFilters, countries, tours, filteredTours]
   );
 
   return (

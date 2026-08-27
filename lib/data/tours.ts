@@ -70,32 +70,25 @@ export async function getFeaturedTours(limit = 4): Promise<Tour[]> {
   return snapshot.docs.map((doc) => doc.data() as Tour);
 }
 
-export type RegionAvailability = "available" | "sold_out" | "unavailable";
+export type CountryAvailability = "available" | "sold_out" | "unavailable";
 
-export interface RegionOption {
+export interface CountryOption {
   name: string;
-  availability: RegionAvailability;
+  availability: CountryAvailability;
 }
 
-/** Canonical region list shown in the homepage search. */
-const SEARCH_REGIONS = [
-  "Asia & Far East",
-  "South America",
-  "Europe",
-  "Africa",
-  "North America",
-  "South Pacific",
-] as const;
-
 /**
- * All search regions with availability for the homepage dropdown.
- * Available regions are selectable; others are shown disabled with a reason.
+ * All countries actually tagged on a published tour, with availability for
+ * the homepage dropdown. Unlike the old fixed continent list, this is
+ * derived from real tour data — a country only appears here if some tour
+ * goes there. Available countries are selectable; others are shown
+ * disabled with a reason.
  *
  * Fetches all published tours and all departures (rather than a query per
- * region) — both collections are small, so this stays a single round trip
- * to Firestore instead of up to six.
+ * country) — both collections are small, so this stays a single round trip
+ * to Firestore.
  */
-export async function getRegionSearchOptions(): Promise<RegionOption[]> {
+export async function getCountrySearchOptions(): Promise<CountryOption[]> {
   const [tours, departures] = await Promise.all([
     getAllTours(),
     adminDb()
@@ -104,17 +97,19 @@ export async function getRegionSearchOptions(): Promise<RegionOption[]> {
       .then((snapshot) => snapshot.docs.map((doc) => doc.data() as Departure)),
   ]);
 
-  return SEARCH_REGIONS.map((name) => {
-    const toursInRegion = tours.filter((t) => t.region === name);
-    const regionDepartures = departures.filter((d) =>
-      toursInRegion.some((t) => t.tourId === d.tourId)
+  const countryNames = [...new Set(tours.flatMap((t) => t.countries))].sort();
+
+  return countryNames.map((name) => {
+    const toursForCountry = tours.filter((t) => t.countries.includes(name));
+    const countryDepartures = departures.filter((d) =>
+      toursForCountry.some((t) => t.tourId === d.tourId)
     );
 
-    if (regionDepartures.some(isDepartureBookable)) {
+    if (countryDepartures.some(isDepartureBookable)) {
       return { name, availability: "available" as const };
     }
 
-    const future = regionDepartures.filter(isDeparturePlanned);
+    const future = countryDepartures.filter(isDeparturePlanned);
     if (
       future.length > 0 &&
       future.every(

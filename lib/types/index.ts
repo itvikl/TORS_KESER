@@ -36,7 +36,8 @@ export interface KashrutDetails {
 
 export interface TourPricing {
   pricePerPersonDouble: number;
-  singleSupplement: number;
+  /** Flat per-person price for a private (single-occupancy) room — not an add-on over the double rate. */
+  pricePerPersonSingle: number;
   pricePerPersonTriple?: number;
   childPrice?: number;
   depositAmountPerPerson: number;
@@ -63,7 +64,7 @@ export interface Tour {
   description: string;
   heroImage: string;
   gallery: string[];
-  region: string;
+  countries: string[];
   travelStyle: TravelStyle;
   themeTags: string[];
   durationDays: number;
@@ -126,7 +127,6 @@ export interface Review {
 
 export interface PriceBreakdown {
   baseTotal: number;
-  singleSupplementsTotal: number;
   childAdjustments: number;
   grandTotal: number;
 }
@@ -143,6 +143,7 @@ export interface Traveler {
   lastName: string;
   dob?: string;
   passport?: string;
+  passportScanUrl?: string;
   occupancy: Occupancy;
   roomWith?: string;
   dietary?: string;
@@ -177,6 +178,8 @@ export interface Booking {
   contactPhone?: string;
   createdAt: string;
   updatedAt: string;
+  /** Set once staff open this departure's registrant list — undefined means the booking hasn't been seen yet. */
+  viewedAt?: string;
 }
 
 export interface Payment {
@@ -278,7 +281,6 @@ export interface SiteContentHome {
   heroTitleHighlight: string;
   heroSubtitle: string;
   heroPrimaryCta: string;
-  heroSecondaryCta: string;
   trustSignals: [SiteContentTrustSignal, SiteContentTrustSignal, SiteContentTrustSignal];
   ctaHeading: string;
   ctaHeadingHighlight: string;

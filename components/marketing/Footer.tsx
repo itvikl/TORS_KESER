@@ -1,16 +1,18 @@
 import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
 
-// Region names must match lib/data/tours.ts's SEARCH_REGIONS exactly — these
-// deep-link into the homepage's existing region filter (TourFilterProvider).
+// Country names must match lib/countries.ts's COUNTRIES exactly — these
+// deep-link into the homepage's existing country filter (TourFilterProvider).
+// A small curated sample (not the full catalog) — update if the featured
+// destinations change.
 const COLUMNS = [
   {
     title: "Destinations",
     links: [
-      { href: "/?region=South%20America#featured-tours", label: "South America" },
-      { href: "/?region=Europe#featured-tours", label: "Europe" },
-      { href: "/?region=Asia%20%26%20Far%20East#featured-tours", label: "Asia & Far East" },
-      { href: "/?region=Africa#featured-tours", label: "Africa" },
+      { href: "/?country=Israel#featured-tours", label: "Israel" },
+      { href: "/?country=Italy#featured-tours", label: "Italy" },
+      { href: "/?country=Costa%20Rica#featured-tours", label: "Costa Rica" },
+      { href: "/?country=Morocco#featured-tours", label: "Morocco" },
     ],
   },
   {

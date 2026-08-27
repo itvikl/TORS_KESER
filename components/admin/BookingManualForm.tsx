@@ -311,7 +311,14 @@ function NumberField({
         type="number"
         min={0}
         value={value}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
+        onChange={(e) => {
+          const next = Math.max(0, Math.floor(Number(e.target.value) || 0));
+          // React's controlled-input sync for type="number" uses loose
+          // equality ("01" != 1 is false), so it skips rewriting the DOM
+          // and a leading zero sticks around — normalize the raw value here.
+          e.target.value = String(next);
+          onChange(next);
+        }}
         className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
       />
     </Field>

@@ -16,7 +16,7 @@ export function getPublishChecklist(tour: Tour): ChecklistItem[] {
     { label: "Slug", ok: tour.slug.trim().length > 0 },
     { label: "Summary", ok: tour.summary.trim().length > 0 },
     { label: "Hero image", ok: tour.heroImage.trim().length > 0 },
-    { label: "Region", ok: tour.region.trim().length > 0 },
+    { label: "Countries", ok: tour.countries.length > 0 },
     {
       label: "Price per person (double)",
       ok: tour.pricing.pricePerPersonDouble > 0,

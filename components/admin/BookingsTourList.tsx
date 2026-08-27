@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { TourBookingSummary } from "@/lib/data/admin/bookings";
+import NewBookingsBadge from "@/components/admin/NewBookingsBadge";
 
 export default function BookingsTourList({ rows }: { rows: TourBookingSummary[] }) {
   return (
@@ -17,8 +18,11 @@ export default function BookingsTourList({ rows }: { rows: TourBookingSummary[] 
           {rows.map((row) => (
             <tr key={row.tourId} className="align-middle">
               <td className="px-4 py-3">
-                <p className="font-semibold text-ink">{row.tour?.title ?? "Unknown tour"}</p>
-                {row.tour && <p className="text-xs text-ink-muted">/{row.tour.slug}</p>}
+                <div className="flex flex-col">
+                  <NewBookingsBadge count={row.newCount} />
+                  <p className="font-semibold text-ink">{row.tour?.title ?? "Unknown tour"}</p>
+                  {row.tour && <p className="text-xs text-ink-muted">/{row.tour.slug}</p>}
+                </div>
               </td>
               <td className="px-4 py-3 text-ink-muted">{row.registrantCount}</td>
               <td className="px-4 py-3 text-ink-muted">{row.travelerCount}</td>
@@ -27,7 +31,7 @@ export default function BookingsTourList({ rows }: { rows: TourBookingSummary[] 
                   href={`/admin/bookings/${row.tourId}`}
                   className="text-sm font-medium text-navy hover:text-navy-light"
                 >
-                  View registrants
+                  View departures
                 </Link>
               </td>
             </tr>

@@ -10,7 +10,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import type { RegionOption } from "@/lib/data/tours";
+import type { CountryOption } from "@/lib/data/tours";
 
 const AVAILABILITY_LABEL = {
   available: null,
@@ -19,16 +19,16 @@ const AVAILABILITY_LABEL = {
 } as const;
 
 /**
- * Multi-select region dropdown — closed control looks like a select;
+ * Multi-select country dropdown — closed control looks like a select;
  * open menu supports multiple checks without becoming a listbox.
  * Portaled to document.body so it is not clipped by the next section.
  */
-export default function RegionSelect({
-  regions,
+export default function CountrySelect({
+  countries,
   value = [],
   onChange,
 }: {
-  regions: RegionOption[];
+  countries: CountryOption[];
   value?: string[];
   onChange?: (value: string[]) => void;
 }) {
@@ -101,10 +101,10 @@ export default function RegionSelect({
     };
   }, [open]);
 
-  function toggleRegion(name: string, disabled: boolean) {
+  function toggleCountry(name: string, disabled: boolean) {
     if (disabled) return;
     const next = selected.has(name)
-      ? value.filter((region) => region !== name)
+      ? value.filter((country) => country !== name)
       : [...value, name];
     onChange?.(next);
   }
@@ -116,9 +116,9 @@ export default function RegionSelect({
     }
   }
 
-  // Hidden inputs so the form can still read selected regions on submit
-  const hiddenInputs = value.map((region) => (
-    <input key={region} type="hidden" name="region" value={region} />
+  // Hidden inputs so the form can still read selected countries on submit
+  const hiddenInputs = value.map((country) => (
+    <input key={country} type="hidden" name="country" value={country} />
   ));
 
   const menu =
@@ -148,7 +148,7 @@ export default function RegionSelect({
               <span className="font-medium">Any destination</span>
             </button>
 
-            {regions.map(({ name, availability }) => {
+            {countries.map(({ name, availability }) => {
               const tag = AVAILABILITY_LABEL[availability];
               const disabled = availability !== "available";
               const isSelected = selected.has(name);
@@ -162,7 +162,7 @@ export default function RegionSelect({
                     aria-selected={isSelected}
                     aria-disabled={disabled || undefined}
                     disabled={disabled}
-                    onClick={() => toggleRegion(name, disabled)}
+                    onClick={() => toggleCountry(name, disabled)}
                     className={[
                       "mt-0.5 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition-colors",
                       disabled

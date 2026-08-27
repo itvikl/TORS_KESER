@@ -12,7 +12,10 @@ export default function TourCard({
   image: string;
 }) {
   return (
-    <article className="glass-card group flex flex-col overflow-hidden rounded-3xl shadow-2xl backdrop-blur-lg duration-500">
+    <Link
+      href={`/tours/${tour.slug}`}
+      className="glass-card group flex flex-col overflow-hidden rounded-3xl shadow-2xl backdrop-blur-lg duration-500"
+    >
       <div className="relative h-72 overflow-hidden">
         <SafeImage
           src={image}
@@ -21,7 +24,7 @@ export default function TourCard({
           className="object-cover transition duration-700 group-hover:scale-110"
         />
         <div className="absolute left-4 top-4 rounded-full border border-[var(--color-border-ice)] bg-[var(--color-surface)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-mist)] backdrop-blur-lg">
-          {tour.region}
+          {tour.countries.join(" & ")}
         </div>
         {tour.isSpecialOffer && (
           <div className="absolute right-4 top-4 rounded-full bg-[var(--color-offer-gold)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[#0f1524] shadow-lg">
@@ -49,14 +52,11 @@ export default function TourCard({
                 })}`
               : "Flexible dates"}
           </div>
-          <Link
-            href={`/tours/${tour.slug}`}
-            className="flex items-center gap-1 text-sm font-bold text-[var(--color-ice)] transition-all group-hover:gap-2"
-          >
+          <span className="flex items-center gap-1 text-sm font-bold text-[var(--color-ice)] transition-all group-hover:gap-2">
             View Details <span aria-hidden="true">→</span>
-          </Link>
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

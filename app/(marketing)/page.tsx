@@ -9,7 +9,7 @@ import { TourFilterProvider } from "@/components/marketing/TourFilterProvider";
 import {
   getAllTours,
   getDeparturesForTour,
-  getRegionSearchOptions,
+  getCountrySearchOptions,
 } from "@/lib/data/tours";
 import { getSiteContent } from "@/lib/data/siteContent";
 import { hasPlannedDeparture } from "@/lib/departureAvailability";
@@ -28,7 +28,7 @@ const FEATURED_IMAGES = [
 
 /**
  * The home page's tours/departures/site-content reads don't depend on
- * `searchParams` (only the client-side region filter does), but were
+ * `searchParams` (only the client-side country filter does), but were
  * re-run from scratch — including one Firestore read per tour for its
  * departures — on every navigation to "/", including the header's "Tours"
  * link. That round trip was the multi-second delay on that click. Caching
@@ -38,9 +38,9 @@ const FEATURED_IMAGES = [
  */
 const getHomeData = unstable_cache(
   async () => {
-    const [allTours, regions, content] = await Promise.all([
+    const [allTours, countries, content] = await Promise.all([
       getAllTours(),
-      getRegionSearchOptions(),
+      getCountrySearchOptions(),
       getSiteContent("home"),
     ]);
 
@@ -58,14 +58,14 @@ const getHomeData = unstable_cache(
       .sort((a, b) => bySortOrder(a.tour, b.tour))
       .map(({ tour, departures }, index) => ({
         tour,
-        nextDeparture: departures[0],
+        departures,
         // Real tour photo first (set in the admin editor) — the stock photo
         // array is only a last-resort placeholder for tours with no image at
         // all yet (old seed data, or a brand-new draft).
         image: tour.heroImage || tour.gallery[0] || FEATURED_IMAGES[index % FEATURED_IMAGES.length],
       }));
 
-    return { regions, content, toursWithDepartures };
+    return { countries, content, toursWithDepartures };
   },
   ["home-page-data"],
   { revalidate: 60, tags: [HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG] }
@@ -74,25 +74,27 @@ const getHomeData = unstable_cache(
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ region?: string | string[] }>;
+  searchParams: Promise<{ country?: string | string[]; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
-  const initialRegions = (
-    Array.isArray(params.region)
-      ? params.region
-      : params.region
-        ? [params.region]
+  const initialCountries = (
+    Array.isArray(params.country)
+      ? params.country
+      : params.country
+        ? [params.country]
         : []
   ).filter(Boolean);
 
-  const { regions, content, toursWithDepartures } = await getHomeData();
+  const { countries, content, toursWithDepartures } = await getHomeData();
 
   return (
     <Suspense fallback={null}>
       <TourFilterProvider
-        regions={regions}
+        countries={countries}
         tours={toursWithDepartures}
-        initialRegions={initialRegions}
+        initialCountries={initialCountries}
+        initialDateFrom={params.from ?? ""}
+        initialDateTo={params.to ?? ""}
       >
         <div className="overflow-x-hidden bg-[var(--color-glacier)] text-[var(--color-mist)] transition-colors">
           <section className="relative isolate overflow-hidden">

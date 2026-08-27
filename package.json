@@ -9,6 +9,7 @@
     "lint": "eslint",
     "seed": "tsx scripts/seed-firestore.ts",
     "backfill-sort-order": "tsx scripts/backfill-sort-order.ts",
+    "backfill-tour-countries": "tsx scripts/backfill-tour-countries.ts",
     "set-role": "tsx scripts/set-user-role.ts",
     "clear-broken-seed-images": "tsx scripts/clear-broken-seed-images.ts",
     "deploy:apphosting": "firebase deploy --only apphosting --project kesertors"

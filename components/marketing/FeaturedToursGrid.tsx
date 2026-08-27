@@ -7,24 +7,26 @@ import TourCard from "@/components/marketing/TourCard";
 const INITIAL_VISIBLE = 12;
 
 export default function FeaturedToursGrid() {
-  const { selectedRegions, filteredTours: tours } = useTourFilter();
+  const { selectedCountries, dateFrom, dateTo, filteredTours: tours } = useTourFilter();
   const [expanded, setExpanded] = useState(false);
+  const hasDateFilter = Boolean(dateFrom || dateTo);
+  const isFiltered = selectedCountries.length > 0 || hasDateFilter;
 
   useEffect(() => {
     setExpanded(false);
-  }, [selectedRegions]);
+  }, [selectedCountries, dateFrom, dateTo]);
 
   const visible = expanded ? tours : tours.slice(0, INITIAL_VISIBLE);
   const canExpand = tours.length > INITIAL_VISIBLE;
 
   const heading =
-    selectedRegions.length === 0
+    selectedCountries.length === 0
       ? "Featured Tours"
-      : selectedRegions.length === 1
-        ? `Tours to ${selectedRegions[0]}`
-        : selectedRegions.length === 2
-          ? `Tours to ${selectedRegions[0]} & ${selectedRegions[1]}`
-          : `Tours to ${selectedRegions.length} regions`;
+      : selectedCountries.length === 1
+        ? `Tours to ${selectedCountries[0]}`
+        : selectedCountries.length === 2
+          ? `Tours to ${selectedCountries[0]} & ${selectedCountries[1]}`
+          : `Tours to ${selectedCountries.length} countries`;
 
   return (
     <div>
@@ -39,7 +41,7 @@ export default function FeaturedToursGrid() {
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
           <p className="max-w-md text-[15px] leading-7 text-[var(--color-slate)] md:text-right">
-            {selectedRegions.length > 0
+            {isFiltered
               ? `${tours.length} kosher tour${tours.length === 1 ? "" : "s"} matching your search.`
               : "Hand-selected journeys that balance comfort, kashrut, and discovery — shaped around your family and your travel style."}
           </p>
@@ -57,7 +59,9 @@ export default function FeaturedToursGrid() {
 
       {tours.length === 0 ? (
         <p className="mt-12 text-[var(--color-slate)]">
-          No tours match that region right now — call us at{" "}
+          {hasDateFilter
+            ? "No tours depart in that date range right now"
+            : "No tours match that country right now"} — call us at{" "}
           <a href="tel:18008470700" className="font-semibold text-[var(--color-ice)]">
             1-800-847-0700
           </a>

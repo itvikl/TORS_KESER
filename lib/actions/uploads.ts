@@ -59,3 +59,51 @@ export async function uploadImage(formData: FormData, folder = "tours"): Promise
 
   return { ok: true, url };
 }
+
+const PASSPORT_MAX_BYTES = 10 * 1024 * 1024; // 10MB
+const PASSPORT_ALLOWED_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "application/pdf": "pdf",
+};
+
+/**
+ * Uploads a traveler's passport scan/photo during the public booking flow —
+ * unlike uploadImage, deliberately has no requireAdminSession() gate, since
+ * it runs before a booking (and therefore any staff session) exists. Kept
+ * as a separate action rather than reusing uploadImage so the two can
+ * diverge on allowed types (PDF) and folder without touching the
+ * admin-authenticated path.
+ */
+export async function uploadPassportScan(formData: FormData): Promise<UploadImageResult> {
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { ok: false, error: "No file provided." };
+  }
+
+  const extension = PASSPORT_ALLOWED_TYPES[file.type];
+  if (!extension) {
+    return { ok: false, error: "Only JPEG, PNG, WebP images or PDF files are allowed." };
+  }
+  if (file.size > PASSPORT_MAX_BYTES) {
+    return { ok: false, error: "File is too large (max 10MB)." };
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const path = `passport-scans/${randomUUID()}.${extension}`;
+  const downloadToken = randomUUID();
+
+  const bucket = adminStorage().bucket();
+  const blob = bucket.file(path);
+  await blob.save(buffer, {
+    contentType: file.type,
+    metadata: { metadata: { firebaseStorageDownloadTokens: downloadToken } },
+  });
+
+  const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
+    path
+  )}?alt=media&token=${downloadToken}`;
+
+  return { ok: true, url };
+}

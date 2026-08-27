@@ -1,14 +1,5 @@
 import * as z from "zod";
-
-/** Kept in sync with the homepage search regions (lib/data/tours.ts SEARCH_REGIONS). */
-export const REGIONS = [
-  "Asia & Far East",
-  "South America",
-  "Europe",
-  "Africa",
-  "North America",
-  "South Pacific",
-] as const;
+import { COUNTRIES } from "@/lib/countries";
 
 const KashrutBooleanOrNotGuaranteed = z.union([z.boolean(), z.literal("not_guaranteed")]);
 
@@ -38,7 +29,9 @@ export const TourInputSchema = z.object({
   description: z.string(),
   heroImage: z.string(),
   gallery: z.array(z.string()),
-  region: z.enum(REGIONS, { error: "Choose a region." }),
+  countries: z
+    .array(z.enum(COUNTRIES))
+    .min(1, { error: "Choose at least one country." }),
   travelStyle: z.enum(["land", "luxury", "cruise", "seminar"]),
   themeTags: z.array(z.string()),
   durationDays: z.number().int().min(1, { error: "Duration must be at least 1 day." }),
@@ -49,7 +42,7 @@ export const TourInputSchema = z.object({
   exclusions: z.array(z.string()),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
-    singleSupplement: z.number().min(0),
+    pricePerPersonSingle: z.number().min(0),
     pricePerPersonTriple: z.number().min(0).optional(),
     childPrice: z.number().min(0).optional(),
     depositAmountPerPerson: z.number().min(0),

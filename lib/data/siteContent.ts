@@ -25,7 +25,6 @@ export const SITE_CONTENT_DEFAULTS = {
     heroTitleHighlight: "wanted to see",
     heroSubtitle: "Fully escorted, fully kosher journeys worldwide.",
     heroPrimaryCta: "Explore Tours",
-    heroSecondaryCta: "Plan a Custom Trip",
     trustSignals: [
       {
         title: "Kashrut You Can Trust",

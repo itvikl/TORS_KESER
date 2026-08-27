@@ -11,7 +11,6 @@ export const SiteContentHomeInputSchema = z.object({
   heroTitleHighlight: z.string().min(1, { error: "Required." }),
   heroSubtitle: z.string().min(1, { error: "Required." }),
   heroPrimaryCta: z.string().min(1, { error: "Required." }),
-  heroSecondaryCta: z.string().min(1, { error: "Required." }),
   trustSignals: z.tuple([TrustSignalInputSchema, TrustSignalInputSchema, TrustSignalInputSchema]),
   ctaHeading: z.string().min(1, { error: "Required." }),
   ctaHeadingHighlight: z.string().min(1, { error: "Required." }),

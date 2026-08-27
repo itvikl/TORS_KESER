@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Departure, ItineraryDay, Tour, TourStatus } from "@/lib/types";
-import { REGIONS } from "@/lib/validation/tour";
+import { COUNTRIES } from "@/lib/countries";
 import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChecklist";
 import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
@@ -18,7 +18,7 @@ const BLANK_TOUR: Tour = {
   description: "",
   heroImage: "",
   gallery: [],
-  region: REGIONS[0],
+  countries: [],
   travelStyle: "land",
   themeTags: [],
   durationDays: 7,
@@ -29,7 +29,7 @@ const BLANK_TOUR: Tour = {
   exclusions: [],
   pricing: {
     pricePerPersonDouble: 0,
-    singleSupplement: 0,
+    pricePerPersonSingle: 0,
     depositAmountPerPerson: 0,
     balanceDueDaysBeforeDeparture: 60,
   },
@@ -251,20 +251,31 @@ export default function TourEditorForm({
                 onChange={(e) => set("description", e.target.value)}
               />
             </Field>
+            <Field
+              label="Countries"
+              hint="Ctrl/Cmd-click to select multiple"
+              error={errors.countries}
+            >
+              <select
+                multiple
+                size={8}
+                className={inputClass}
+                value={draft.countries}
+                onChange={(e) =>
+                  set(
+                    "countries",
+                    Array.from(e.target.selectedOptions, (option) => option.value)
+                  )
+                }
+              >
+                {COUNTRIES.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Region" error={errors.region}>
-                <select
-                  className={inputClass}
-                  value={draft.region}
-                  onChange={(e) => set("region", e.target.value)}
-                >
-                  {REGIONS.map((region) => (
-                    <option key={region} value={region}>
-                      {region}
-                    </option>
-                  ))}
-                </select>
-              </Field>
               <Field label="Travel style">
                 <select
                   className={inputClass}
@@ -382,13 +393,13 @@ export default function TourEditorForm({
                   onChange={(e) => setPricing("pricePerPersonDouble", Number(e.target.value))}
                 />
               </Field>
-              <Field label="Single supplement">
+              <Field label="Price / person (single)" hint="the full price for a private room, not an add-on">
                 <input
                   type="number"
                   min={0}
                   className={inputClass}
-                  value={draft.pricing.singleSupplement}
-                  onChange={(e) => setPricing("singleSupplement", Number(e.target.value))}
+                  value={draft.pricing.pricePerPersonSingle}
+                  onChange={(e) => setPricing("pricePerPersonSingle", Number(e.target.value))}
                 />
               </Field>
               <Field label="Price / person (triple)" hint="optional">

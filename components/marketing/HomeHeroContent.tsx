@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { SiteContentHome } from "@/lib/types";
 import LetterDrop from "@/components/ui/LetterDrop";
 
@@ -33,29 +32,16 @@ export default function HomeHeroContent({
       </p>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
         {interactive ? (
-          <>
-            <a
-              href="#featured-tours"
-              className="rounded-full bg-[#7dd3fc] px-7 py-3 text-sm font-bold text-[#001f2e] transition hover:brightness-110 active:scale-95"
-            >
-              {content.heroPrimaryCta}
-            </a>
-            <Link
-              href="/custom-made-tours"
-              className="rounded-full border border-white/35 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              {content.heroSecondaryCta}
-            </Link>
-          </>
+          <a
+            href="#featured-tours"
+            className="rounded-full bg-[#7dd3fc] px-7 py-3 text-sm font-bold text-[#001f2e] transition hover:brightness-110 active:scale-95"
+          >
+            {content.heroPrimaryCta}
+          </a>
         ) : (
-          <>
-            <span className="rounded-full bg-[#7dd3fc] px-7 py-3 text-sm font-bold text-[#001f2e]">
-              {content.heroPrimaryCta}
-            </span>
-            <span className="rounded-full border border-white/35 bg-white/10 px-7 py-3 text-sm font-semibold text-white">
-              {content.heroSecondaryCta}
-            </span>
-          </>
+          <span className="rounded-full bg-[#7dd3fc] px-7 py-3 text-sm font-bold text-[#001f2e]">
+            {content.heroPrimaryCta}
+          </span>
         )}
       </div>
     </div>

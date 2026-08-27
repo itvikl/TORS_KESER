@@ -63,7 +63,7 @@ export default function SortableToursTable({ rows: initialRows }: { rows: TourRo
             <th className="w-8 px-2 py-3" />
             <th className="px-4 py-3">Tour</th>
             <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Region</th>
+            <th className="px-4 py-3">Countries</th>
             <th className="px-4 py-3">From</th>
             <th className="px-4 py-3">Capacity</th>
             <th className="px-4 py-3" />
@@ -117,7 +117,7 @@ function SortableTourRow({ tour, capacity }: TourRowData) {
       <td className="px-4 py-3">
         <StatusBadge status={tour.status} />
       </td>
-      <td className="px-4 py-3 text-ink-muted">{tour.region}</td>
+      <td className="px-4 py-3 text-ink-muted">{tour.countries.join(", ")}</td>
       <td className="px-4 py-3 text-ink-muted">
         {formatUsd(tour.pricing.pricePerPersonDouble)}
       </td>

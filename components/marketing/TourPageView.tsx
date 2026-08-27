@@ -68,7 +68,7 @@ export default function TourPageView({
         alt={tour.title}
         title={tour.title}
         badge={badge}
-        region={tour.region}
+        countries={tour.countries}
         durationDays={tour.durationDays}
       />
 
@@ -101,8 +101,8 @@ export default function TourPageView({
               />
               <QuickFact
                 icon="public"
-                label="Region"
-                value={tour.region}
+                label="Countries"
+                value={tour.countries.join(", ")}
               />
             </div>
           </div>
@@ -257,8 +257,8 @@ export default function TourPageView({
                 <span className="text-sm text-[var(--color-slate)]">/ per person</span>
               </div>
               <p className="mt-1 text-xs text-[var(--color-slate)]">
-                Double occupancy · +
-                {formatUsd(tour.pricing.singleSupplement)} single supplement
+                Double occupancy · {formatUsd(tour.pricing.pricePerPersonSingle)} / person for a
+                private room
               </p>
             </div>
 
@@ -344,14 +344,14 @@ function TourHeroGallery({
   alt,
   title,
   badge,
-  region,
+  countries,
   durationDays,
 }: {
   images: string[];
   alt: string;
   title: string;
   badge: string;
-  region: string;
+  countries: string[];
   durationDays: number;
 }) {
   const safe = images.length ? images : ["/placeholder.svg"];
@@ -377,7 +377,7 @@ function TourHeroGallery({
             {title}
           </h1>
           <p className="text-sm font-medium text-[#a0b4c4] sm:text-base">
-            {region}
+            {countries.join(" & ")}
             <span className="mx-2 text-white/30" aria-hidden="true">
               ·
             </span>
