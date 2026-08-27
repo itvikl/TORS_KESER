@@ -58,6 +58,7 @@ export default function MonthSelect({
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const [mounted, setMounted] = useState(false);
@@ -136,6 +137,28 @@ export default function MonthSelect({
     };
   }, [open]);
 
+  // The trigger and the portaled menu aren't DOM-nested, so a plain
+  // mouseleave on either would fire while the pointer is just moving from
+  // one to the other. A short delay (cancelled by entering the other one)
+  // closes on genuine mouse-out without breaking that hand-off.
+  function scheduleClose() {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => setOpen(false), 200);
+  }
+
+  function cancelClose() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
   function toggleMonth(monthValue: string) {
     const next = selected.has(monthValue)
       ? value.filter((m) => m !== monthValue)
@@ -160,6 +183,8 @@ export default function MonthSelect({
             aria-multiselectable="true"
             aria-labelledby={`${listId}-label`}
             style={menuStyle}
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
             className="rounded-2xl border border-[var(--color-border-ice-strong)] bg-[var(--color-popover-bg)] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
           >
             <button
@@ -221,7 +246,11 @@ export default function MonthSelect({
       : null;
 
   return (
-    <div className="mx-auto flex min-w-0 max-w-[15rem] items-center gap-2.5">
+    <div
+      className="mx-auto flex min-w-0 max-w-[15rem] items-center gap-2.5"
+      onMouseEnter={cancelClose}
+      onMouseLeave={scheduleClose}
+    >
       {icon ? (
         <span aria-hidden="true" className="shrink-0 text-[var(--color-ice)]">
           {icon}
