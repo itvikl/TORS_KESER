@@ -67,7 +67,7 @@ export default function DestinationSearch() {
   return (
     <div
       id={SEARCH_ANCHOR_ID}
-      className="destination-search glass-card relative mx-auto flex w-full max-w-3xl items-stretch rounded-full p-1.5 shadow-2xl backdrop-blur-lg"
+      className="destination-search glass-card relative mx-auto flex w-full max-w-3xl flex-col items-stretch rounded-[28px] p-1.5 shadow-2xl backdrop-blur-lg sm:flex-row sm:rounded-full"
     >
       <div
         className={[
@@ -90,7 +90,7 @@ export default function DestinationSearch() {
         />
       </div>
 
-      <div className="flex shrink-0 items-center justify-center px-1">
+      <div className="flex shrink-0 items-center justify-center self-center px-1 py-1 sm:py-0">
         {anyActive ? (
           <button
             type="button"
