@@ -19,6 +19,12 @@ const AVAILABILITY_LABEL = {
   unavailable: "Unavailable",
 } as const;
 
+/** True on touch/no-hover devices, where there's no mouse-out to close a menu with. */
+function isCoarsePointer(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(hover: none)").matches;
+}
+
 /**
  * Country dropdown — closed control looks like a select; open menu supports
  * either multiple checks or a single choice (closing on pick) without
@@ -148,6 +154,10 @@ export default function CountrySelect({
     if (disabled) return;
     if (!multiple) {
       onChange?.([name]);
+      // No hover on touch devices, so there's no mouse-out to close this —
+      // close right on choose instead. Desktop keeps it open (closes on
+      // mouse-out/outside click) so a mouse user can glance at the list.
+      if (isCoarsePointer()) setOpen(false);
       return;
     }
     const next = selected.has(name)
@@ -158,6 +168,7 @@ export default function CountrySelect({
 
   function clearSelection() {
     onChange?.([]);
+    if (!multiple && isCoarsePointer()) setOpen(false);
   }
 
   function onTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
