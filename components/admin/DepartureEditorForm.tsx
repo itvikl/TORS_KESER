@@ -162,6 +162,10 @@ export default function DepartureEditorForm({
               type="date"
               value={draft.startDate}
               onChange={(e) => set("startDate", e.target.value)}
+              // Only steers new departures away from past dates — editing an
+              // existing (already past) departure isn't blocked here or
+              // server-side; see saveDeparture in lib/actions/departures.ts.
+              min={mode === "create" ? new Date().toISOString().slice(0, 10) : undefined}
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             />
           </Field>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { availableSeats, type Departure, type Occupancy, type RoomConfiguration, type Tour } from "@/lib/types";
 import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
 import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellationPolicy";
@@ -60,6 +60,7 @@ export default function BookingForm({
   /** At/below this remaining-seats count, the exact number + a "last spots" badge are shown; above it, only a vague "plenty available" message. */
   lowSeatsThreshold: number;
 }) {
+  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [step, setStep] = useState(1);
   const [departureId, setDepartureId] = useState(departures[0]?.departureId ?? "");
   const [room, setRoom] = useState<RoomConfiguration>({
@@ -75,6 +76,7 @@ export default function BookingForm({
   const [contactPreference, setContactPreference] = useState<"callback" | "pay_online">(
     "callback"
   );
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
@@ -112,6 +114,11 @@ export default function BookingForm({
 
   function updateTraveler(index: number, patch: Partial<TravelerDraft>) {
     setTravelers((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
+  }
+
+  /** Marks a field touched on blur, so its inline validation message only appears after the visitor has left it. */
+  function touch(key: string) {
+    setTouched((prev) => ({ ...prev, [key]: true }));
   }
 
   const travelersValid =
@@ -209,7 +216,7 @@ export default function BookingForm({
               {departures.map((d) => (
                 <label
                   key={d.departureId}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-4 text-[15px] transition-all ${
+                  className={`flex cursor-pointer flex-col items-start gap-3 rounded-xl border px-4 py-4 text-[15px] transition-all sm:flex-row sm:items-center sm:justify-between ${
                     departureId === d.departureId ? SELECTED_OPTION : IDLE_OPTION
                   }`}
                 >
@@ -313,34 +320,65 @@ export default function BookingForm({
                     label="First name"
                     value={traveler.firstName}
                     onChange={(v) => updateTraveler(index, { firstName: v })}
+                    onBlur={() => touch(`traveler-${index}-firstName`)}
+                    error={
+                      touched[`traveler-${index}-firstName`] && !traveler.firstName.trim()
+                        ? "First name is required."
+                        : undefined
+                    }
+                    name={`traveler-${index}-firstName`}
+                    autoComplete={`section-traveler-${index} given-name`}
+                    required
                   />
                   <TextField
                     label="Last name"
                     value={traveler.lastName}
                     onChange={(v) => updateTraveler(index, { lastName: v })}
+                    onBlur={() => touch(`traveler-${index}-lastName`)}
+                    error={
+                      touched[`traveler-${index}-lastName`] && !traveler.lastName.trim()
+                        ? "Last name is required."
+                        : undefined
+                    }
+                    name={`traveler-${index}-lastName`}
+                    autoComplete={`section-traveler-${index} family-name`}
+                    required
                   />
                   <TextField
                     label="Date of birth"
                     type="date"
+                    max={todayIso}
                     value={traveler.dob}
                     onChange={(v) => updateTraveler(index, { dob: v })}
+                    onBlur={() => touch(`traveler-${index}-dob`)}
+                    error={
+                      touched[`traveler-${index}-dob`] && traveler.dob > todayIso
+                        ? "Date of birth can't be in the future."
+                        : undefined
+                    }
+                    name={`traveler-${index}-dob`}
+                    autoComplete={`section-traveler-${index} bday`}
                   />
                   <TextField
                     label="Passport number"
                     value={traveler.passport}
                     onChange={(v) => updateTraveler(index, { passport: v })}
+                    name={`traveler-${index}-passport`}
+                    autoComplete="off"
                   />
                   {(traveler.occupancy === "double" || traveler.occupancy === "triple") && (
                     <TextField
                       label="Rooming with"
                       value={traveler.roomWith}
                       onChange={(v) => updateTraveler(index, { roomWith: v })}
+                      name={`traveler-${index}-roomWith`}
                     />
                   )}
                   <TextField
                     label="Dietary needs"
                     value={traveler.dietary}
                     onChange={(v) => updateTraveler(index, { dietary: v })}
+                    name={`traveler-${index}-dietary`}
                   />
                   <PassportUploadField
                     value={traveler.passportScanUrl}
@@ -366,14 +404,39 @@ export default function BookingForm({
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
               Contact information
             </h2>
-            <TextField label="Your name" value={contactName} onChange={setContactName} />
+            <TextField
+              label="Your name"
+              value={contactName}
+              onChange={setContactName}
+              onBlur={() => touch("contactName")}
+              error={touched.contactName && !contactName.trim() ? "Name is required." : undefined}
+              name="contactName"
+              autoComplete="name"
+              required
+            />
             <TextField
               label="Email"
               type="email"
               value={contactEmail}
               onChange={setContactEmail}
+              onBlur={() => touch("contactEmail")}
+              error={
+                touched.contactEmail && !EMAIL_PATTERN.test(contactEmail.trim())
+                  ? "Enter a valid email."
+                  : undefined
+              }
+              name="contactEmail"
+              autoComplete="email"
+              required
             />
-            <TextField label="Phone" type="tel" value={contactPhone} onChange={setContactPhone} />
+            <TextField
+              label="Phone"
+              type="tel"
+              value={contactPhone}
+              onChange={setContactPhone}
+              name="contactPhone"
+              autoComplete="tel"
+            />
             <StepNav
               onBack={() => setStep(3)}
               onNext={() => setStep(5)}
@@ -509,7 +572,7 @@ export default function BookingForm({
               </div>
             )}
 
-            <div className="flex items-center justify-between border-t border-[var(--color-border-hairline)] pt-6">
+            <div className="flex flex-col-reverse items-stretch gap-4 border-t border-[var(--color-border-hairline)] pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
               <button
                 type="button"
                 onClick={() => setStep(4)}
@@ -521,7 +584,7 @@ export default function BookingForm({
                 type="button"
                 disabled={submitting}
                 onClick={handleSubmit}
-                className="rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+                className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60 sm:w-auto"
               >
                 {submitting ? "Submitting…" : "Submit Registration"}
               </button>
@@ -570,7 +633,7 @@ function Confirmation({
 
 function StepIndicator({ step }: { step: number }) {
   return (
-    <ol className="grid grid-cols-2 gap-2 border-b border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)]/80 px-4 py-4 text-center text-xs sm:grid-cols-5 sm:gap-0 sm:px-6">
+    <ol className="grid grid-cols-5 gap-1 border-b border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)]/80 px-4 py-4 text-center text-xs sm:gap-0 sm:px-6">
       {STEP_LABELS.map((label, index) => {
         const active = index + 1 <= step;
         const current = index + 1 === step;
@@ -610,7 +673,7 @@ function StepNav({
   nextDisabled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between border-t border-[var(--color-border-hairline)] pt-6">
+    <div className="flex flex-col-reverse items-stretch gap-4 border-t border-[var(--color-border-hairline)] pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
       {onBack ? (
         <button
           type="button"
@@ -626,7 +689,7 @@ function StepNav({
         type="button"
         disabled={nextDisabled}
         onClick={onNext}
-        className="rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40"
+        className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40 sm:w-auto"
       >
         Continue
       </button>
@@ -644,9 +707,9 @@ function Row({
   accent?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <dt className="text-[var(--color-slate)]">{label}</dt>
-      <dd className={`font-semibold ${accent ? "text-[var(--color-ice)]" : "text-[var(--color-mist)]"}`}>
+      <dd className={`font-semibold ${accent ? "text-[var(--color-ice)]" : "text-[var(--color-mist)]"} sm:text-right`}>
         {value}
       </dd>
     </div>
@@ -697,24 +760,57 @@ function TextField({
   label,
   value,
   onChange,
+  onBlur,
+  error,
   type = "text",
+  name,
+  autoComplete,
+  required = false,
+  min,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /** Typically used to mark the field "touched" so `error` only shows after the visitor leaves it. */
+  onBlur?: () => void;
+  error?: string;
   type?: string;
+  /** Also used as the field's `id`, so the label is properly associated with it. */
+  name?: string;
+  autoComplete?: string;
+  required?: boolean;
+  /** For type="date" — bounds the native picker (e.g. no future date of birth). */
+  min?: string;
+  max?: string;
 }) {
+  const id = useId();
+  const fieldId = name ?? id;
+
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
+      <label
+        htmlFor={fieldId}
+        className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]"
+      >
         {label}
+        {required && <span aria-hidden="true"> *</span>}
       </label>
       <input
+        id={fieldId}
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        autoComplete={autoComplete}
+        required={required}
+        min={min}
+        max={max}
+        aria-invalid={!!error}
         className="glacier-field w-full"
       />
+      {error && <p className="mt-1 text-xs text-[var(--color-danger-text)]">{error}</p>}
     </div>
   );
 }

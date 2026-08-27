@@ -9,7 +9,12 @@ export const RoomConfigurationSchema = z.object({
 export const TravelerInputSchema = z.object({
   firstName: z.string().min(1, { error: "First name is required." }),
   lastName: z.string().min(1, { error: "Last name is required." }),
-  dob: z.string().optional(),
+  dob: z
+    .string()
+    .optional()
+    .refine((v) => !v || v <= new Date().toISOString().slice(0, 10), {
+      error: "Date of birth can't be in the future.",
+    }),
   passport: z.string().optional(),
   passportScanUrl: z.string().optional(),
   occupancy: z.enum(["double", "single", "triple", "child"]),

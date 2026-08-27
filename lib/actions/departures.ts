@@ -78,15 +78,25 @@ export async function saveDeparture(
     return { ok: false, errors: { startDate: ["This tour no longer exists."] } };
   }
 
+  const existing = departureId ? await getDepartureByIdAdmin(departureId) : null;
+  if (departureId && !existing) {
+    return { ok: false, errors: { startDate: ["This departure no longer exists."] } };
+  }
+
+  // Only reject a past startDate for genuinely new/moved-back dates — a
+  // departure that had already happened before this edit stays editable
+  // (capacity corrections, record-keeping) without being blocked here.
+  const today = new Date().toISOString().slice(0, 10);
+  const wasAlreadyPast = existing ? existing.startDate < today : false;
+  if (data.startDate < today && !wasAlreadyPast) {
+    return { ok: false, errors: { startDate: ["Start date can't be in the past."] } };
+  }
+
   const balanceDueDate = subtractDays(data.startDate, tour.pricing.balanceDueDaysBeforeDeparture);
 
   let savedId: string;
   let justBecameGuaranteed = false;
-  if (departureId) {
-    const existing = await getDepartureByIdAdmin(departureId);
-    if (!existing) {
-      return { ok: false, errors: { startDate: ["This departure no longer exists."] } };
-    }
+  if (departureId && existing) {
     const alreadyCommitted = existing.capacityBooked + existing.capacityHeld;
     if (data.capacityTotal < alreadyCommitted) {
       return {
