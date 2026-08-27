@@ -4,6 +4,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -11,60 +12,74 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import type { CountryOption } from "@/lib/data/tours";
 
-const AVAILABILITY_LABEL = {
-  available: null,
-  sold_out: "Sold out",
-  unavailable: "Unavailable",
-} as const;
+export type MonthOption = { value: string; label: string };
+
+/** The next 12 calendar months starting this month, as "YYYY-MM" values. */
+export function getNextTwelveMonths(): MonthOption[] {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth() + i, 1));
+    const value = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    return { value, label: formatter.format(d) };
+  });
+}
 
 /**
- * Country dropdown — closed control looks like a select; open menu supports
- * either multiple checks or a single choice (closing on pick) without
- * becoming a native listbox. Portaled to document.body so it is not clipped
- * by the next section.
+ * Multi-select month dropdown, covering the next 12 months — same
+ * interaction model as CountrySelect. Portaled to document.body so it is
+ * not clipped by the next section.
  */
-export default function CountrySelect({
-  countries,
+export default function MonthSelect({
   value = [],
   onChange,
-  multiple = true,
+  onClose,
   disabled = false,
   icon,
-  label = "Where do you want to travel?",
+  label = "When do you want to travel?",
   hideLabel = false,
 }: {
-  countries: CountryOption[];
   value?: string[];
   onChange?: (value: string[]) => void;
-  multiple?: boolean;
+  /** Fires once, when the menu transitions from open to closed (outside click, Escape, or the trigger). */
+  onClose?: () => void;
   disabled?: boolean;
   icon?: ReactNode;
   label?: string;
   hideLabel?: boolean;
 }) {
+  const months = useMemo(() => getNextTwelveMonths(), []);
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const [mounted, setMounted] = useState(false);
+  const wasOpenRef = useRef(false);
 
   const selected = new Set(value);
   const summary =
-    value.length === 0 ? "Choose destination" : value.join(", ");
-  // Available destinations first, sold-out/unavailable ones pushed to the
-  // bottom rather than interleaved alphabetically.
-  const sortedCountries = [...countries].sort(
-    (a, b) =>
-      Number(a.availability !== "available") -
-      Number(b.availability !== "available")
-  );
+    value.length === 0
+      ? "Choose date"
+      : months
+          .filter((m) => selected.has(m.value))
+          .map((m) => m.label)
+          .join(", ");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (wasOpenRef.current && !open) onClose?.();
+    wasOpenRef.current = open;
+  }, [open, onClose]);
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
@@ -121,20 +136,11 @@ export default function CountrySelect({
     };
   }, [open]);
 
-  function toggleCountry(name: string, disabled: boolean) {
-    if (disabled) return;
-    if (!multiple) {
-      onChange?.([name]);
-      return;
-    }
-    const next = selected.has(name)
-      ? value.filter((country) => country !== name)
-      : [...value, name];
+  function toggleMonth(monthValue: string) {
+    const next = selected.has(monthValue)
+      ? value.filter((m) => m !== monthValue)
+      : [...value, monthValue];
     onChange?.(next);
-  }
-
-  function clearSelection() {
-    onChange?.([]);
   }
 
   function onTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
@@ -151,7 +157,7 @@ export default function CountrySelect({
             ref={menuRef}
             id={listId}
             role="listbox"
-            aria-multiselectable={multiple}
+            aria-multiselectable="true"
             aria-labelledby={`${listId}-label`}
             style={menuStyle}
             className="rounded-2xl border border-[var(--color-border-ice-strong)] bg-[var(--color-popover-bg)] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
@@ -160,7 +166,7 @@ export default function CountrySelect({
               type="button"
               role="option"
               aria-selected={value.length === 0}
-              onClick={clearSelection}
+              onClick={() => onChange?.([])}
               className={[
                 "flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition-colors",
                 value.length === 0
@@ -168,59 +174,43 @@ export default function CountrySelect({
                   : "text-[var(--color-mist)] hover:bg-[var(--color-surface-hover-a)]",
               ].join(" ")}
             >
-              <span className="font-medium">Choose destination</span>
+              <span className="font-medium">Choose date</span>
             </button>
 
-            {sortedCountries.map(({ name, availability }) => {
-              const tag = AVAILABILITY_LABEL[availability];
-              const disabled = availability !== "available";
-              const isSelected = selected.has(name);
+            {months.map(({ value: monthValue, label }) => {
+              const isSelected = selected.has(monthValue);
 
               return (
-                <div key={name}>
+                <div key={monthValue}>
                   <div className="mx-3 border-t border-[var(--color-border-hairline)]" aria-hidden="true" />
                   <button
                     type="button"
                     role="option"
                     aria-selected={isSelected}
-                    aria-disabled={disabled || undefined}
-                    disabled={disabled}
-                    onClick={() => toggleCountry(name, disabled)}
+                    onClick={() => toggleMonth(monthValue)}
                     className={[
                       "mt-0.5 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition-colors",
-                      disabled
-                        ? "cursor-not-allowed text-[var(--color-slate)]/55"
-                        : isSelected
-                          ? "bg-[var(--color-surface-hover-a)] text-[var(--color-ice)]"
-                          : "text-[var(--color-mist)] hover:bg-[var(--color-surface-hover-a)]",
+                      isSelected
+                        ? "bg-[var(--color-surface-hover-a)] text-[var(--color-ice)]"
+                        : "text-[var(--color-mist)] hover:bg-[var(--color-surface-hover-a)]",
                     ].join(" ")}
                   >
                     <span
                       aria-hidden="true"
                       className={[
-                        "flex h-4 w-4 shrink-0 items-center justify-center border",
-                        multiple ? "rounded" : "rounded-full",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
                         isSelected
                           ? "border-[var(--color-ice)] bg-[var(--color-ice)] text-[var(--color-ice-ink)]"
                           : "border-[var(--color-border-ice-strong)] bg-transparent",
                       ].join(" ")}
                     >
-                      {isSelected && multiple ? (
+                      {isSelected ? (
                         <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M2.5 6.5 5 9l4.5-5.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                      ) : isSelected ? (
-                        <span className="h-2 w-2 rounded-full bg-current" />
                       ) : null}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{name}</span>
-                      {tag ? (
-                        <span className="mt-0.5 inline-block rounded-full border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-[var(--color-slate)]">
-                          {tag}
-                        </span>
-                      ) : null}
-                    </span>
+                    <span className="min-w-0 flex-1 font-medium">{label}</span>
                   </button>
                 </div>
               );

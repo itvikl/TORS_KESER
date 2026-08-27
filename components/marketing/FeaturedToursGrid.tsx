@@ -6,15 +6,28 @@ import TourCard from "@/components/marketing/TourCard";
 
 const INITIAL_VISIBLE = 12;
 
+function ChangeSearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 19V5M6 11l6-6 6 6" />
+    </svg>
+  );
+}
+
 export default function FeaturedToursGrid() {
-  const { selectedCountries, dateFrom, dateTo, filteredTours: tours } = useTourFilter();
+  const {
+    selectedCountries,
+    selectedMonths,
+    filteredTours: tours,
+    scrollToSearch,
+  } = useTourFilter();
   const [expanded, setExpanded] = useState(false);
-  const hasDateFilter = Boolean(dateFrom || dateTo);
-  const isFiltered = selectedCountries.length > 0 || hasDateFilter;
+  const hasMonthFilter = selectedMonths.length > 0;
+  const isFiltered = selectedCountries.length > 0 || hasMonthFilter;
 
   useEffect(() => {
     setExpanded(false);
-  }, [selectedCountries, dateFrom, dateTo]);
+  }, [selectedCountries, selectedMonths]);
 
   const visible = expanded ? tours : tours.slice(0, INITIAL_VISIBLE);
   const canExpand = tours.length > INITIAL_VISIBLE;
@@ -38,6 +51,16 @@ export default function FeaturedToursGrid() {
           <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl md:text-5xl">
             {heading}
           </h2>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={scrollToSearch}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-hairline)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-slate)] transition-colors hover:border-[var(--color-border-ice-strong)] hover:text-[var(--color-ice)]"
+            >
+              <ChangeSearchIcon />
+              Change Search
+            </button>
+          )}
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
           <p className="max-w-md text-[15px] leading-7 text-[var(--color-slate)] md:text-right">
@@ -59,8 +82,8 @@ export default function FeaturedToursGrid() {
 
       {tours.length === 0 ? (
         <p className="mt-12 text-[var(--color-slate)]">
-          {hasDateFilter
-            ? "No tours depart in that date range right now"
+          {hasMonthFilter
+            ? "No tours depart in those months right now"
             : "No tours match that country right now"} — call us at{" "}
           <a href="tel:18008470700" className="font-semibold text-[var(--color-ice)]">
             1-800-847-0700

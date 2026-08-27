@@ -74,7 +74,7 @@ const getHomeData = unstable_cache(
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ country?: string | string[]; from?: string; to?: string }>;
+  searchParams: Promise<{ country?: string | string[]; month?: string | string[] }>;
 }) {
   const params = await searchParams;
   const initialCountries = (
@@ -83,6 +83,9 @@ export default async function HomePage({
       : params.country
         ? [params.country]
         : []
+  ).filter(Boolean);
+  const initialMonths = (
+    Array.isArray(params.month) ? params.month : params.month ? [params.month] : []
   ).filter(Boolean);
 
   const { countries, content, toursWithDepartures } = await getHomeData();
@@ -93,8 +96,7 @@ export default async function HomePage({
         countries={countries}
         tours={toursWithDepartures}
         initialCountries={initialCountries}
-        initialDateFrom={params.from ?? ""}
-        initialDateTo={params.to ?? ""}
+        initialMonths={initialMonths}
       >
         <div className="overflow-x-hidden bg-[var(--color-glacier)] text-[var(--color-mist)] transition-colors">
           <section className="relative isolate overflow-hidden">
