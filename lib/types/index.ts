@@ -81,6 +81,8 @@ export interface Tour {
   seoDescription?: string;
   /** Display order in the admin list and the public homepage grid, set via drag-and-drop. */
   sortOrder?: number;
+  /** Set only by scripts/migrate-legacy-tours.ts — distinguishes scraped-from-old-site tours (pricing/dates not yet verified) from hand-curated ones, so staff know which need review before ever publishing. */
+  isLegacyMigrated?: boolean;
 }
 
 export interface Departure {

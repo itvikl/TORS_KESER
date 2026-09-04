@@ -6,3 +6,4 @@
  */
 export const HOME_TOURS_CACHE_TAG = "home-tours";
 export const HOME_CONTENT_CACHE_TAG = "home-content";
+export const HOME_BLOG_CACHE_TAG = "home-blog";

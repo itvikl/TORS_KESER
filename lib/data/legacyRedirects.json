@@ -1,0 +1,1162 @@
+[
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/brazil-argentina-tour",
+    "destination": "/tours/brazil-argentina-tour",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/costa-rica",
+    "destination": "/tours/costa-rica",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/ecuador-the-galapagos-islands",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/japan",
+    "destination": "/tours/japan",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/peru",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/portugal",
+    "destination": "/tours/portugal",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/united-arab-emirates",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/vienna-budapest-prague",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/vienna-budapest-prague-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/vietnam-cambodia",
+    "destination": "/tours/vietnam-cambodia",
+    "permanent": true
+  },
+  {
+    "source": "/all-tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/best-jewish-heritage-trips-to-consider",
+    "destination": "/blog/best-jewish-heritage-trips-to-consider",
+    "permanent": true
+  },
+  {
+    "source": "/best-kosher-travel-tours-2025",
+    "destination": "/blog/best-kosher-travel-tours-2025",
+    "permanent": true
+  },
+  {
+    "source": "/best-kosher-trips-summer-2025",
+    "destination": "/blog/best-kosher-trips-summer-2025",
+    "permanent": true
+  },
+  {
+    "source": "/can-i-keep-kosher-while-traveling-the-world-and-how-we-make-it-easy",
+    "destination": "/blog/can-i-keep-kosher-while-traveling-the-world-and-how-we-make-it-easy",
+    "permanent": true
+  },
+  {
+    "source": "/category/blog",
+    "destination": "/blog",
+    "permanent": true
+  },
+  {
+    "source": "/contact-us",
+    "destination": "/contact",
+    "permanent": true
+  },
+  {
+    "source": "/croatia-kosher-tours",
+    "destination": "/blog/croatia-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/eating-kosher-abroad",
+    "destination": "/blog/eating-kosher-abroad",
+    "permanent": true
+  },
+  {
+    "source": "/far-east-kosher-tours",
+    "destination": "/blog/far-east-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%90%D7%91%D7%99-%D7%A4%D7%9C%D7%93%D7%9E%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%90%D7%91%D7%99%D7%94-%D7%91%D7%9F-%D7%A9%D7%9C%D7%95%D7%9D",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%90%D7%99%D7%AA%D7%9F-%D7%A2%D7%95%D7%9E%D7%A8",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%91%D7%9C%D7%94%D7%94-%D7%A8%D7%A9%D7%A3",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%91%D7%A0%D7%99%D7%98%D7%94-%D7%A8%D7%A4%D7%90%D7%9C%D7%99",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%93%D7%95%D7%93-%D7%A4%D7%A8%D7%A9",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%97%D7%99%D7%94-%D7%A1%D7%95%D7%9C%D7%95%D7%9E%D7%95%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%99%D7%92%D7%90%D7%9C-%D7%A8%D7%95%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%99%D7%95%D7%A7%D7%99-%D7%91%D7%A0%D7%99%D7%9E%D7%99%D7%A0%D7%99",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%9C%D7%99%D7%90%D7%95%D7%A8%D7%94-%D7%93%D7%A0%D7%99%D7%90%D7%9C%D7%99",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%9E%D7%99%D7%A8%D7%94-%D7%92%D7%9C%D7%91%D7%A9%D7%98%D7%99%D7%99%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%9E%D7%A0%D7%97%D7%9D-%D7%9C%D7%95%D7%99",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A1%D7%99%D7%A0%D7%93%D7%99-%D7%A7%D7%9C%D7%99%D7%99%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A6%D7%91%D7%99-%D7%98%D7%9C",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A8%D7%99%D7%98%D7%94-%D7%96%D7%99%D7%9C%D7%91%D7%A8",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A9%D7%99-%D7%99%D7%95%D7%92%D7%91",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A9%D7%99%D7%9E%D7%99-%D7%91%D7%A8%D7%A1",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A9%D7%9C%D7%9E%D7%94-%D7%92%D7%99%D7%A1%D7%A4%D7%9F",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/guides/%D7%A9%D7%9E%D7%A2%D7%95%D7%9F-%D7%A2%D7%98%D7%A8",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/how-do-shabbat-and-jewish-holidays-fit-into-a-group-tour-itinerary",
+    "destination": "/blog/how-do-shabbat-and-jewish-holidays-fit-into-a-group-tour-itinerary",
+    "permanent": true
+  },
+  {
+    "source": "/how-to-plan-a-kosher-trip-with-kids-in-the-summer",
+    "destination": "/blog/how-to-plan-a-kosher-trip-with-kids-in-the-summer",
+    "permanent": true
+  },
+  {
+    "source": "/japan",
+    "destination": "/tours/japan",
+    "permanent": true
+  },
+  {
+    "source": "/japan-kosher-tours",
+    "destination": "/blog/japan-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/jewish-senior-travel",
+    "destination": "/blog/jewish-senior-travel",
+    "permanent": true
+  },
+  {
+    "source": "/jewish-tours",
+    "destination": "/blog/jewish-tours",
+    "permanent": true
+  },
+  {
+    "source": "/jewish-travel-guide-in-2024",
+    "destination": "/blog/jewish-travel-guide-in-2024",
+    "permanent": true
+  },
+  {
+    "source": "/jewish-travel-tours-for-seniors-2024",
+    "destination": "/blog/jewish-travel-tours-for-seniors-2024",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-alaska-tours",
+    "destination": "/blog/kosher-alaska-tours",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-amalfi-coast",
+    "destination": "/blog/kosher-amalfi-coast",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-costa-rica-tour",
+    "destination": "/blog/kosher-costa-rica-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-ecuador-tour",
+    "destination": "/blog/kosher-ecuador-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-far-east-tour",
+    "destination": "/blog/kosher-far-east-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-france-tour",
+    "destination": "/blog/kosher-france-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-galapagos-tour",
+    "destination": "/blog/kosher-galapagos-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-panama-tour",
+    "destination": "/blog/kosher-panama-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-peru-tour",
+    "destination": "/blog/kosher-peru-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-provence-tour",
+    "destination": "/blog/kosher-provence-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-safari-tanzania",
+    "destination": "/blog/kosher-safari-tanzania",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-summer-vacation-2025",
+    "destination": "/blog/kosher-summer-vacation-2025",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tokyo-tour",
+    "destination": "/blog/kosher-tokyo-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-costa-rica",
+    "destination": "/blog/kosher-tour-to-costa-rica",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-greece",
+    "destination": "/blog/kosher-tour-to-greece",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-italy",
+    "destination": "/blog/kosher-tour-to-italy",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-morocco",
+    "destination": "/blog/kosher-tour-to-morocco",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-south-africa",
+    "destination": "/blog/kosher-tour-to-south-africa",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tour-to-spain",
+    "destination": "/blog/kosher-tour-to-spain",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tours-europe",
+    "destination": "/blog/kosher-tours-europe",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-tours-for-seniors-2025",
+    "destination": "/blog/kosher-tours-for-seniors-2025",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-vienna-tour",
+    "destination": "/blog/kosher-vienna-tour",
+    "permanent": true
+  },
+  {
+    "source": "/kosher-vietnam-tours",
+    "destination": "/blog/kosher-vietnam-tours",
+    "permanent": true
+  },
+  {
+    "source": "/navigating-kashrut-on-your-summer-trips-in-2025",
+    "destination": "/blog/navigating-kashrut-on-your-summer-trips-in-2025",
+    "permanent": true
+  },
+  {
+    "source": "/observant-jewish-tour-guide",
+    "destination": "/blog/observant-jewish-tour-guide",
+    "permanent": true
+  },
+  {
+    "source": "/observing-shabbat-abroad",
+    "destination": "/blog/observing-shabbat-abroad",
+    "permanent": true
+  },
+  {
+    "source": "/organized-kosher-tours-in-europe-for-the-summer",
+    "destination": "/blog/organized-kosher-tours-in-europe-for-the-summer",
+    "permanent": true
+  },
+  {
+    "source": "/planning-the-perfect-kosher-trip-recommendations",
+    "destination": "/blog/planning-the-perfect-kosher-trip-recommendations",
+    "permanent": true
+  },
+  {
+    "source": "/recommendations",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/south-pacific-kosher-tours",
+    "destination": "/blog/south-pacific-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/synagogues-on-a-kosher-tour",
+    "destination": "/blog/synagogues-on-a-kosher-tour",
+    "permanent": true
+  },
+  {
+    "source": "/terms-conditions",
+    "destination": "/legal/terms-conditions",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-australia-new-zealand",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-baltic-sea",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-canada-alaska",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-china",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-costa-rica",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-japan",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-morocco-2",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-morocco-3",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-peru-2",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-spain-portugal",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-tanzania",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-vietnam-and-cambodia",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testemonials-western-europe",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/testimonials-morocco",
+    "destination": "/testimonials",
+    "permanent": true
+  },
+  {
+    "source": "/the-ultimate-guide-to-kosher-tours-for-seniors-comfort-community-and-cuisine",
+    "destination": "/blog/the-ultimate-guide-to-kosher-tours-for-seniors-comfort-community-and-cuisine",
+    "permanent": true
+  },
+  {
+    "source": "/the-united-arab-emirates-kosher-tours",
+    "destination": "/blog/the-united-arab-emirates-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/africa",
+    "destination": "/?country=Morocco&country=Egypt&country=Tanzania&country=South%20Africa#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/africa/egypt",
+    "destination": "/?country=Egypt#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/africa/morocco",
+    "destination": "/?country=Morocco#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/africa/south-africa",
+    "destination": "/?country=South%20Africa#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/africa/tanzania",
+    "destination": "/?country=Tanzania#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia",
+    "destination": "/?country=South%20Korea&country=Japan&country=Thailand&country=Uzbekistan&country=Philippines&country=Vietnam&country=Cambodia&country=India&country=Taiwan&country=Singapore&country=United%20Arab%20Emirates&country=China#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/cambodia",
+    "destination": "/?country=Cambodia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/china",
+    "destination": "/?country=China#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/hong-kong",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/india",
+    "destination": "/?country=India#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/japan",
+    "destination": "/?country=Japan#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/philippines",
+    "destination": "/?country=Philippines#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/singapore",
+    "destination": "/?country=Singapore#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/south-korea",
+    "destination": "/?country=South%20Korea#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/taiwan",
+    "destination": "/?country=Taiwan#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/thailand",
+    "destination": "/?country=Thailand#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/united-arab-emirates",
+    "destination": "/?country=United%20Arab%20Emirates#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/uzbekistan",
+    "destination": "/?country=Uzbekistan#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/asia/vietnam",
+    "destination": "/?country=Vietnam#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/australia-south-pacific",
+    "destination": "/?country=Australia&country=New%20Zealand#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/australia-south-pacific/australia",
+    "destination": "/?country=Australia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/australia-south-pacific/new-zealand",
+    "destination": "/?country=New%20Zealand#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/australia-south-pacific/tasmania",
+    "destination": "/?country=Australia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe",
+    "destination": "/?country=Finland&country=France&country=Czechia&country=Portugal&country=Italy&country=Austria&country=Poland&country=Sweden&country=Hungary&country=United%20Kingdom&country=Germany&country=Spain&country=Denmark&country=Norway&country=Netherlands&country=Iceland&country=Slovenia&country=Russia&country=Belgium&country=Croatia&country=Greece&country=Ireland&country=Lithuania#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/austria",
+    "destination": "/?country=Austria#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/belgium",
+    "destination": "/?country=Belgium#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/canary-islands",
+    "destination": "/?country=Spain#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/croatia",
+    "destination": "/?country=Croatia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/czech-republic",
+    "destination": "/?country=Czechia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/denmark",
+    "destination": "/?country=Denmark#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/england",
+    "destination": "/?country=United%20Kingdom#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/finland",
+    "destination": "/?country=Finland#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/france",
+    "destination": "/?country=France#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/germany",
+    "destination": "/?country=Germany#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/greece",
+    "destination": "/?country=Greece#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/hungary",
+    "destination": "/?country=Hungary#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/iceland",
+    "destination": "/?country=Iceland#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/ireland",
+    "destination": "/?country=Ireland#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/italy",
+    "destination": "/?country=Italy#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/lithuania",
+    "destination": "/?country=Lithuania#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/netherlands",
+    "destination": "/?country=Netherlands#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/norway",
+    "destination": "/?country=Norway#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/poland",
+    "destination": "/?country=Poland#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/portugal",
+    "destination": "/?country=Portugal#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/russia",
+    "destination": "/?country=Russia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/slovania",
+    "destination": "/?country=Slovenia#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/spain",
+    "destination": "/?country=Spain#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/europe/sweden",
+    "destination": "/?country=Sweden#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/north-america",
+    "destination": "/?country=United%20States&country=Canada#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/north-america/alaska",
+    "destination": "/?country=United%20States#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/north-america/canada",
+    "destination": "/?country=Canada#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/north-america/usa",
+    "destination": "/?country=United%20States#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america",
+    "destination": "/?country=Panama&country=Costa%20Rica&country=Peru&country=Ecuador&country=Chile&country=Brazil&country=Argentina&country=Guatemala&country=Uruguay#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/argentina",
+    "destination": "/?country=Argentina#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/brazil",
+    "destination": "/?country=Brazil#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/chile",
+    "destination": "/?country=Chile#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/costa-rica",
+    "destination": "/?country=Costa%20Rica#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/ecuador",
+    "destination": "/?country=Ecuador#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/falkland-islands",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/galapagos-islands",
+    "destination": "/?country=Ecuador#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/guatemala",
+    "destination": "/?country=Guatemala#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/panama",
+    "destination": "/?country=Panama#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/peru",
+    "destination": "/?country=Peru#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-destinations/south-america/uruguay",
+    "destination": "/?country=Uruguay#featured-tours",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/australia-cruises",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/cruises-premium",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/far-east-kosher-travel",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/land-tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/luxury-tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/passover-tours-and-vacations",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/seminars",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/summer-kosher-vacations-and-tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/winter-kosher-vacations-and-tours",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours-types/yeshiva-break-tours-and-vacations",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/all-around-japan",
+    "destination": "/tours/japan",
+    "permanent": true
+  },
+  {
+    "source": "/tours/australia-tasmania-new-zealand",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/baltic-sea-cruise",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/baltic-tour",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/canada",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/canadian-rockies-alaska",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/canary-islands-madeira",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/china",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/china-uzbekistan",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/cruise-the-british-isles",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/ecuador-the-galapagos-islands",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/ecuador-the-galapagos-islands-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/egypt",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/egypt-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/family-fantasy-in-central-europe",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/far-east-cruise",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/far-east-cruise-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/greece-tour",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/guatemala",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/india",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/india-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/ireland-scotland",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/italy-2",
+    "destination": "/tours/italy",
+    "permanent": true
+  },
+  {
+    "source": "/tours/italy-2-2",
+    "destination": "/tours/italy",
+    "permanent": true
+  },
+  {
+    "source": "/tours/japan-cruise",
+    "destination": "/tours/japan",
+    "permanent": true
+  },
+  {
+    "source": "/tours/lithuania-latvia-study-tour",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/mediterranean-sea-cruise",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/new-zealand",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/new-zealand-and-australia",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/norwegian-fjords-cruise",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/passover-in-china",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/peru",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/poland",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/poland-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/provence",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/russia",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/russian-lapland",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/scotland-whisky-tour",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/slovenia-croatia",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/south-africa",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/south-america-cruise",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/south-pacific",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/spain",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/spain-portugal",
+    "destination": "/tours/portugal",
+    "permanent": true
+  },
+  {
+    "source": "/tours/tanzania",
+    "destination": "/tours/kosher-safari-tanzania",
+    "permanent": true
+  },
+  {
+    "source": "/tours/thailand",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/tour-to-iceland",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/united-arab-emirates",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/united-arab-emirates-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/vienna-budapest-prague",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/vienna-budapest-prague-2",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/west-usa",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tours/western-united-states",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/tradition-meets-tomorrow-20-essential-tips-for-the-observant-traveler-in-japan",
+    "destination": "/blog/tradition-meets-tomorrow-20-essential-tips-for-the-observant-traveler-in-japan",
+    "permanent": true
+  },
+  {
+    "source": "/travel-itineraries-for-kosher-tours",
+    "destination": "/blog/travel-itineraries-for-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/trips-to-ireland-and-scotland-2024",
+    "destination": "/blog/trips-to-ireland-and-scotland-2024",
+    "permanent": true
+  },
+  {
+    "source": "/trips-to-spain-and-portugal-2024",
+    "destination": "/blog/trips-to-spain-and-portugal-2024",
+    "permanent": true
+  },
+  {
+    "source": "/what-does-the-price-of-a-kosher-tour-include",
+    "destination": "/blog/what-does-the-price-of-a-kosher-tour-include",
+    "permanent": true
+  },
+  {
+    "source": "/winter-tours-november-2024",
+    "destination": "/blog/winter-tours-november-2024",
+    "permanent": true
+  },
+  {
+    "source": "/world-wide-kosher-tours",
+    "destination": "/blog/world-wide-kosher-tours",
+    "permanent": true
+  },
+  {
+    "source": "/wp-content/uploads/2019/08/Brazil-Argentina-10-days.pdf",
+    "destination": "/",
+    "permanent": true
+  }
+]

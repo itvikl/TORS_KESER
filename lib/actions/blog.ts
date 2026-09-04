@@ -27,7 +27,9 @@ export async function saveBlogPost(input: unknown, postId?: string): Promise<Sav
 
   revalidatePath("/admin/blog");
   revalidatePath(`/admin/blog/${savedId}`);
+  revalidatePath("/blog");
   revalidatePath(`/blog/${data.slug}`);
+  revalidatePath("/"); // homepage's "latest posts" section reads the same collection
 
   return { ok: true, postId: savedId };
 }

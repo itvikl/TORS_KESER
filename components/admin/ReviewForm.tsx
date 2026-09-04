@@ -16,9 +16,20 @@ const BLANK: Review = {
   status: "approved",
 };
 
-export default function ReviewForm({ tours }: { tours: Tour[] }) {
+export default function ReviewForm({
+  tours,
+  reviewId,
+  initialReview,
+}: {
+  tours: Tour[];
+  /** Present when editing an existing review; omitted when creating a new one. */
+  reviewId?: string;
+  initialReview?: Review;
+}) {
   const router = useRouter();
-  const [draft, setDraft] = useState<Review>({ ...BLANK, tourId: tours[0]?.tourId ?? "" });
+  const [draft, setDraft] = useState<Review>(
+    initialReview ?? { ...BLANK, tourId: tours[0]?.tourId ?? "" }
+  );
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
 
@@ -30,7 +41,7 @@ export default function ReviewForm({ tours }: { tours: Tour[] }) {
     setSaving(true);
     setErrors({});
 
-    const result = await saveReview(draft);
+    const result = await saveReview(draft, reviewId);
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
@@ -38,6 +49,7 @@ export default function ReviewForm({ tours }: { tours: Tour[] }) {
     }
 
     router.push("/admin/reviews");
+    router.refresh();
   }
 
   return (
@@ -120,7 +132,7 @@ export default function ReviewForm({ tours }: { tours: Tour[] }) {
         onClick={handleSave}
         className="rounded-lg bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-60"
       >
-        {saving ? "Saving…" : "Save review"}
+        {saving ? "Saving…" : reviewId ? "Save changes" : "Save review"}
       </button>
     </div>
   );
