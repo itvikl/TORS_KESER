@@ -12,6 +12,9 @@
     "backfill-tour-countries": "tsx scripts/backfill-tour-countries.ts",
     "set-role": "tsx scripts/set-user-role.ts",
     "clear-broken-seed-images": "tsx scripts/clear-broken-seed-images.ts",
+    "migrate-legacy-tours": "tsx scripts/migrate-legacy-tours.ts",
+    "migrate-legacy-blog": "tsx scripts/migrate-legacy-blog.ts",
+    "migrate-legacy-testimonials": "tsx scripts/migrate-legacy-testimonials.ts",
     "deploy:apphosting": "firebase deploy --only apphosting --project kesertors"
   },
   "dependencies": {
@@ -37,6 +40,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cheerio": "^1.2.0",
     "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",

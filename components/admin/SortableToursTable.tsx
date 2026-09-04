@@ -115,7 +115,17 @@ function SortableTourRow({ tour, capacity }: TourRowData) {
         <p className="text-xs text-ink-muted">/{tour.slug}</p>
       </td>
       <td className="px-4 py-3">
-        <StatusBadge status={tour.status} />
+        <div className="flex flex-wrap gap-1.5">
+          <StatusBadge status={tour.status} />
+          {tour.isLegacyMigrated && (
+            <span
+              className="inline-block rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-terracotta-dark"
+              title="Scraped from the old site — pricing, dates and countries need review before publishing"
+            >
+              Migrated
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-4 py-3 text-ink-muted">{tour.countries.join(", ")}</td>
       <td className="px-4 py-3 text-ink-muted">
