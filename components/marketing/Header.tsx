@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { href: "/about", label: "About" },
   { href: "/custom-made-tours", label: "Custom Tours" },
   { href: "/special-offers", label: "Special Offers" },
+  { href: "/blog", label: "Blog" },
   { href: "/testimonials", label: "Testimonials" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },

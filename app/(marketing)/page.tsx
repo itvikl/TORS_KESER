@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
+import Link from "next/link";
 import DestinationSearch from "@/components/marketing/DestinationSearch";
 import FeaturedToursGrid from "@/components/marketing/FeaturedToursGrid";
 import HomeHeroContent from "@/components/marketing/HomeHeroContent";
 import HomeTrustSignals from "@/components/marketing/HomeTrustSignals";
 import HomeCtaSection from "@/components/marketing/HomeCtaSection";
+import BlogCard from "@/components/marketing/BlogCard";
 import { TourFilterProvider } from "@/components/marketing/TourFilterProvider";
 import {
   getAllTours,
@@ -12,9 +14,14 @@ import {
   getCountrySearchOptions,
 } from "@/lib/data/tours";
 import { getSiteContent } from "@/lib/data/siteContent";
+import { getLatestBlogPosts } from "@/lib/data/blog";
 import { hasPlannedDeparture } from "@/lib/departureAvailability";
 import { bySortOrder } from "@/lib/tourSort";
-import { HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG } from "@/lib/data/homeCacheTags";
+import {
+  HOME_TOURS_CACHE_TAG,
+  HOME_CONTENT_CACHE_TAG,
+  HOME_BLOG_CACHE_TAG,
+} from "@/lib/data/homeCacheTags";
 
 const HERO_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC43Nqq9_0gg6kRS_GIKae0tEB10U5ZlAJjEuQHGrs8j0H7ht2uc37RlfwfEKlREJPzoVwsZKOZ4MiPdxls__wOWt67DM5260igbf_nDkLeJMMJLj92m75BfBj6IO_uNEvaCEUKhrmR5vpXp698p6HQhfoA3dImkRz7ad4-7OVfVIR3pM0882ENZZpbqCTRNoa_VnhoJv4VtUPYaZRIe1DPlg10VFrPE9OvEJKPY-pVxYoMXZTJT1KNPccdWa4XpN5v_ShhrQTfNA";
@@ -38,10 +45,11 @@ const FEATURED_IMAGES = [
  */
 const getHomeData = unstable_cache(
   async () => {
-    const [allTours, countries, content] = await Promise.all([
+    const [allTours, countries, content, latestPosts] = await Promise.all([
       getAllTours(),
       getCountrySearchOptions(),
       getSiteContent("home"),
+      getLatestBlogPosts(3),
     ]);
 
     const toursWithAllDepartures = await Promise.all(
@@ -65,10 +73,10 @@ const getHomeData = unstable_cache(
         image: tour.heroImage || tour.gallery[0] || FEATURED_IMAGES[index % FEATURED_IMAGES.length],
       }));
 
-    return { countries, content, toursWithDepartures };
+    return { countries, content, toursWithDepartures, latestPosts };
   },
   ["home-page-data"],
-  { revalidate: 60, tags: [HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG] }
+  { revalidate: 60, tags: [HOME_TOURS_CACHE_TAG, HOME_CONTENT_CACHE_TAG, HOME_BLOG_CACHE_TAG] }
 );
 
 export default async function HomePage({
@@ -88,7 +96,7 @@ export default async function HomePage({
     Array.isArray(params.month) ? params.month : params.month ? [params.month] : []
   ).filter(Boolean);
 
-  const { countries, content, toursWithDepartures } = await getHomeData();
+  const { countries, content, toursWithDepartures, latestPosts } = await getHomeData();
 
   return (
     <Suspense fallback={null}>
@@ -170,6 +178,34 @@ export default async function HomePage({
               <FeaturedToursGrid />
             </div>
           </section>
+
+          {latestPosts.length > 0 && (
+            <section className="bg-[var(--color-glacier)] px-4 py-20 sm:px-6 lg:px-8 transition-colors">
+              <div className="mx-auto max-w-7xl">
+                <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[var(--color-ice)]">
+                      From the Journal
+                    </p>
+                    <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--color-mist)] sm:text-3xl">
+                      Fresh off the road
+                    </h2>
+                  </div>
+                  <Link
+                    href="/blog"
+                    className="flex items-center gap-1 pb-1 text-sm font-bold text-[var(--color-ice)] transition-all hover:gap-2"
+                  >
+                    View all posts <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {latestPosts.map((post) => (
+                    <BlogCard key={post.postId} post={post} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="bg-[var(--color-glacier-elevated)] px-4 py-20 sm:px-6 lg:px-8 transition-colors">
             <HomeTrustSignals signals={content.trustSignals} />

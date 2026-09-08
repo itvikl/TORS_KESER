@@ -59,7 +59,15 @@ export default async function AdminReviewsPage() {
                     <StatusBadge status={review.status} />
                   </td>
                   <td className="px-4 py-3">
-                    <ReviewStatusButtons review={review} />
+                    <div className="flex items-center justify-end gap-3">
+                      <ReviewStatusButtons review={review} />
+                      <Link
+                        href={`/admin/reviews/${review.reviewId}`}
+                        className="text-sm font-medium text-navy hover:text-navy-light"
+                      >
+                        Edit
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

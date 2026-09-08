@@ -7,7 +7,10 @@ export const metadata: Metadata = { title: "Blog" };
 
 export default async function AdminBlogPage() {
   const posts = await getAllBlogPostsAdmin();
-  posts.sort((a, b) => a.title.localeCompare(b.title));
+  // Newest first — matches the public /blog ordering, and keeps recent posts
+  // reachable now that the legacy migration added 58 of them (an A–Z sort
+  // buried anything written this year).
+  posts.sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
 
   return (
     <div>
