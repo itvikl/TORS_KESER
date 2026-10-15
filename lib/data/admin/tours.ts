@@ -84,6 +84,33 @@ export async function updateTourDoc(tourId: string, input: TourInput): Promise<s
   return tourId;
 }
 
+/**
+ * Copies a tour's content into a new draft (no departures — those carry
+ * bookings/capacity, so staff add fresh dates to the copy themselves).
+ * The slug gets a "-copy" suffix, numbered until it's free, since slugs
+ * must stay unique (isSlugTaken).
+ */
+export async function duplicateTourDoc(tourId: string): Promise<string | null> {
+  const source = await getTourByIdAdmin(tourId);
+  if (!source) return null;
+
+  let slug = `${source.slug}-copy`;
+  for (let n = 2; await isSlugTaken(slug); n++) slug = `${source.slug}-copy-${n}`;
+
+  const ref = adminDb().collection(TOURS_COLLECTION).doc();
+  const copy: Tour = {
+    ...source,
+    tourId: ref.id,
+    slug,
+    slugHistory: [],
+    title: `${source.title} (Copy)`,
+    status: "draft",
+    sortOrder: await getNextSortOrder(),
+  };
+  await ref.set(copy);
+  return ref.id;
+}
+
 /** Batch update of display order from a drag-and-drop reorder in the admin tours list. */
 export async function setTourSortOrders(orderedTourIds: string[]): Promise<void> {
   const batch = adminDb().batch();

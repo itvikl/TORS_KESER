@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { reorderTours } from "@/lib/actions/tours";
 import { formatUsd } from "@/lib/pricing";
 import type { Tour, TourStatus } from "@/lib/types";
+import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import ArchiveTourButton from "@/components/admin/ArchiveTourButton";
 
 export interface UpcomingCapacity {
@@ -168,6 +169,7 @@ function SortableTourRow({ tour, capacity }: TourRowData) {
           >
             Edit
           </Link>
+          <DuplicateTourButton tourId={tour.tourId} variant="link" />
           {tour.status !== "archived" && (
             <ArchiveTourButton tourId={tour.tourId} title={tour.title} />
           )}

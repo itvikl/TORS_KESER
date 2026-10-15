@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllLeadsAdmin } from "@/lib/data/admin/leads";
+import LeadStatusSelect from "@/components/admin/LeadStatusSelect";
 import type { Lead } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Leads" };
@@ -56,7 +57,7 @@ export default async function AdminLeadsPage() {
                     <SourceBadge source={lead.source} />
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={lead.status} />
+                    <LeadStatusSelect leadId={lead.leadId} status={lead.status} />
                   </td>
                   <td className="px-4 py-3 text-ink-muted">
                     {new Date(lead.createdAt).toLocaleDateString("en-US", {
@@ -72,23 +73,6 @@ export default async function AdminLeadsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-const STATUS_STYLES: Record<Lead["status"], string> = {
-  new: "bg-gold/15 text-terracotta-dark",
-  contacted: "bg-navy/10 text-navy",
-  converted: "bg-olive/15 text-olive",
-  closed: "bg-ink-muted/15 text-ink-muted",
-};
-
-function StatusBadge({ status }: { status: Lead["status"] }) {
-  return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLES[status]}`}
-    >
-      {status}
-    </span>
   );
 }
 

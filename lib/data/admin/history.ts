@@ -8,8 +8,26 @@ export interface PastDepartureRow {
   registrantCount: number;
 }
 
+/** Inclusive YYYY-MM-DD bounds on a departure's start date; either side may be omitted. */
+export interface HistoryDateFilter {
+  from?: string;
+  to?: string;
+}
+
+/** Accepts only well-formed YYYY-MM-DD strings (e.g. straight from searchParams). */
+export function parseHistoryDateFilter(params: {
+  from?: string | string[];
+  to?: string | string[];
+}): HistoryDateFilter {
+  const valid = (value?: string | string[]) =>
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+  return { from: valid(params.from), to: valid(params.to) };
+}
+
 /** Same in-memory join pattern as lib/data/admin/bookings.ts — collections are small. */
-export async function getPastDeparturesAdmin(): Promise<PastDepartureRow[]> {
+export async function getPastDeparturesAdmin(
+  filter: HistoryDateFilter = {}
+): Promise<PastDepartureRow[]> {
   const [departuresSnap, toursSnap, bookingsSnap] = await Promise.all([
     adminDb().collection("departures").get(),
     adminDb().collection("tours").get(),
@@ -22,7 +40,10 @@ export async function getPastDeparturesAdmin(): Promise<PastDepartureRow[]> {
   const now = Date.now();
   const pastDepartures = departuresSnap.docs
     .map((doc) => doc.data() as Departure)
-    .filter((departure) => new Date(departure.endDate).getTime() < now);
+    .filter((departure) => new Date(departure.endDate).getTime() < now)
+    // startDate is an ISO string, so its first 10 chars compare lexically as a date.
+    .filter((departure) => !filter.from || departure.startDate.slice(0, 10) >= filter.from)
+    .filter((departure) => !filter.to || departure.startDate.slice(0, 10) <= filter.to);
 
   const rows: PastDepartureRow[] = pastDepartures.map((departure) => {
     const registrantCount = bookings

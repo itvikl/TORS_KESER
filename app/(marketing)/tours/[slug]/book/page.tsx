@@ -19,10 +19,14 @@ export async function generateMetadata({
 
 export default async function BookTourPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  /** ?departure= is set by the per-date "Book" buttons on the tour page. */
+  searchParams: Promise<{ departure?: string | string[] }>;
 }) {
   const { slug } = await params;
+  const { departure: requestedDepartureId } = await searchParams;
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
@@ -73,6 +77,9 @@ export default async function BookTourPage({
           <BookingForm
             tour={tour}
             departures={bookable}
+            initialDepartureId={
+              typeof requestedDepartureId === "string" ? requestedDepartureId : undefined
+            }
             lowSeatsThreshold={settings.lowSeatsThreshold}
           />
         )}

@@ -55,15 +55,22 @@ export default function BookingForm({
   tour,
   departures,
   lowSeatsThreshold,
+  initialDepartureId,
 }: {
   tour: Tour;
   departures: Departure[];
+  /** Pre-selected date (from the tour page's per-date "Book" button); ignored unless it's one of `departures`. */
+  initialDepartureId?: string;
   /** At/below this remaining-seats count, the exact number + a "last spots" badge are shown; above it, only a vague "plenty available" message. */
   lowSeatsThreshold: number;
 }) {
   const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [step, setStep] = useState(1);
-  const [departureId, setDepartureId] = useState(departures[0]?.departureId ?? "");
+  const [departureId, setDepartureId] = useState(
+    departures.find((d) => d.departureId === initialDepartureId)?.departureId ??
+      departures[0]?.departureId ??
+      ""
+  );
   const [room, setRoom] = useState<RoomConfiguration>({
     doubleRooms: 1,
     singleRooms: 0,

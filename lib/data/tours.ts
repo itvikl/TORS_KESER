@@ -1,5 +1,5 @@
 import "server-only";
-import type { Departure, Tour } from "@/lib/types";
+import type { Departure, Staff, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { adminDb } from "@/lib/firebase/admin";
@@ -123,4 +123,18 @@ export async function getCountrySearchOptions(): Promise<CountryOption[]> {
 
     return { name, availability: "unavailable" as const };
   });
+}
+
+/**
+ * Guides assigned (Departure.guideId) to any of the given departures, for
+ * the tour page's "Your Guides" section and per-date guide names.
+ */
+export async function getGuidesForDepartures(departures: Departure[]): Promise<Staff[]> {
+  const ids = Array.from(
+    new Set(departures.map((dep) => dep.guideId).filter((id): id is string => Boolean(id)))
+  );
+  if (ids.length === 0) return [];
+  const refs = ids.map((id) => adminDb().collection("staff").doc(id));
+  const docs = await adminDb().getAll(...refs);
+  return docs.filter((doc) => doc.exists).map((doc) => doc.data() as Staff);
 }

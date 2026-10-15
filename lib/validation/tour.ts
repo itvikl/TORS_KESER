@@ -56,6 +56,7 @@ export const TourInputSchema = z.object({
   }),
   itineraryDays: z.array(ItineraryDayInputSchema),
   status: z.enum(["draft", "published", "archived"]),
+  cancellationPolicy: z.string().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
 });

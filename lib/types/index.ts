@@ -77,6 +77,8 @@ export interface Tour {
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];
   status: TourStatus;
+  /** Customer-facing cancellation terms (free text, shown on the tour page). Blank falls back to DEFAULT_CANCELLATION_POLICY_TEXT. Display-only — refunds are still computed by lib/cancellationPolicy.ts. */
+  cancellationPolicy?: string;
   seoTitle?: string;
   seoDescription?: string;
   /** Display order in the admin list and the public homepage grid, set via drag-and-drop. */

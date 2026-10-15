@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
-import { getDeparturesForTour } from "@/lib/data/tours";
+import { getDeparturesForTour, getGuidesForDepartures } from "@/lib/data/tours";
 import { requireAdminSession } from "@/lib/auth/dal";
 
 export const metadata: Metadata = { title: "Preview", robots: { index: false, follow: false } };
@@ -29,6 +29,7 @@ export default async function TourFullPreviewPage({
   if (!tour) notFound();
 
   const departures = await getDeparturesForTour(tourId);
+  const guides = await getGuidesForDepartures(departures);
 
-  return <TourPageView tour={tour} departures={departures} previewMode />;
+  return <TourPageView tour={tour} departures={departures} guides={guides} previewMode />;
 }

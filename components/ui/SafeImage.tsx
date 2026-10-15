@@ -20,9 +20,12 @@ export default function SafeImage({
   className?: string;
   sizes?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  // Tracks *which* src failed, not just "failed" — in the admin live preview
+  // the same instance gets a new src when a photo is picked, and a boolean
+  // would keep it hidden forever after the empty-state placeholder 404s.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  if (failed) return null;
+  if (failedSrc === src) return null;
 
   return (
     <Image
@@ -31,7 +34,7 @@ export default function SafeImage({
       fill
       sizes={sizes}
       className={className}
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
     />
   );
 }

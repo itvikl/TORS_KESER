@@ -23,6 +23,7 @@ const NAV_SECTIONS: {
       { label: "Blog", href: "/admin/blog" },
       { label: "Special Offers", href: "/admin/offers" },
       { label: "SEO Landing Pages", href: "/admin/seo-pages" },
+      { label: "Image Library", href: "/admin/media" },
     ],
   },
   {

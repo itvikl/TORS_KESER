@@ -74,3 +74,18 @@ export async function createLeadManually(
   revalidatePath("/admin/leads");
   redirect("/admin/leads");
 }
+
+const LEAD_STATUSES = ["new", "contacted", "converted", "closed"] as const;
+
+/** Inline status change from the admin leads table. */
+export async function updateLeadStatus(
+  leadId: string,
+  status: Lead["status"]
+): Promise<{ ok: boolean }> {
+  await requireAdminSession();
+  if (!LEAD_STATUSES.includes(status)) return { ok: false };
+
+  await adminDb().collection("leads").doc(leadId).update({ status });
+  revalidatePath("/admin/leads");
+  return { ok: true };
+}

@@ -1,6 +1,8 @@
-import type { Departure, Tour } from "@/lib/types";
+import type { Departure, Staff, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
-import { isDeparturePlanned } from "@/lib/departureAvailability";
+import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
+import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
+import TourSectionNav, { type TourSectionLink } from "@/components/marketing/TourSectionNav";
 import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
@@ -36,17 +38,44 @@ function kashrutStatusLabel(value: boolean | "not_guaranteed"): string {
 export default function TourPageView({
   tour,
   departures,
+  guides = [],
   previewMode = false,
   lowSeatsThreshold = 5,
 }: {
   tour: Tour;
   departures: Departure[];
+  /** Staff records for the guides assigned (Departure.guideId) to this tour's departures. */
+  guides?: Staff[];
   /** True when rendered inside the admin's preview pane for an unpublished draft. */
   previewMode?: boolean;
   /** At/below this remaining-seats count, the departure pill shows the exact number. Defaults to the site's pre-existing behavior for the preview contexts that don't fetch SiteSettings. */
   lowSeatsThreshold?: number;
 }) {
   const upcoming = departures.filter(isDeparturePlanned);
+  const guideById = new Map(guides.map((guide) => [guide.staffId, guide]));
+  // Only guides leading an upcoming date are shown — past departures' guides aren't relevant to a buyer.
+  const upcomingGuides = Array.from(
+    new Set(upcoming.map((dep) => dep.guideId).filter((id): id is string => Boolean(id)))
+  )
+    .map((id) => guideById.get(id))
+    .filter((guide): guide is Staff => Boolean(guide));
+  const cancellationTerms = (tour.cancellationPolicy?.trim() || DEFAULT_CANCELLATION_POLICY_TEXT)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const hasItinerary = tour.itineraryDays.length > 0;
+  const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
+  const sections: TourSectionLink[] = [
+    { id: "overview", label: "Overview" },
+    ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
+    ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
+    { id: "kashrut", label: "Kashrut" },
+    ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
+    { id: "cancellation", label: "Cancellation Policy" },
+    { id: "dates", label: "Dates & Booking", mobileOnly: true },
+  ];
+  const bookHref = (departureId: string) =>
+    tour.slug ? `/tours/${tour.slug}/book?departure=${encodeURIComponent(departureId)}` : "#";
   const nights = Math.max(tour.durationDays - 1, 0);
   const badge = tour.themeTags[0] ?? tour.travelStyle;
   const bookingHighlights = [
@@ -72,10 +101,12 @@ export default function TourPageView({
         durationDays={tour.durationDays}
       />
 
+      <TourSectionNav sections={sections} />
+
       <section className="relative mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:gap-12 lg:px-8 lg:py-16">
         <div className="space-y-14 lg:col-span-2">
           {/* Overview */}
-          <div className="space-y-6">
+          <div id="overview" className="space-y-6">
             <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
               Overview
             </h2>
@@ -108,60 +139,80 @@ export default function TourPageView({
           </div>
 
           {/* Itinerary */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-              Your Journey Day by Day
-            </h2>
-            <div className="space-y-3">
-              {tour.itineraryDays.map((day, index) => (
-                <details
-                  key={day.dayId}
-                  open={index === 0}
-                  className="glass-panel group overflow-hidden rounded-xl"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-[var(--color-surface-hover-a)] sm:p-6 [&::-webkit-details-marker]:hidden">
-                    <div className="flex min-w-0 items-center gap-4 sm:gap-6">
-                      <span className="shrink-0 text-2xl font-bold text-[var(--color-ice)]/40">
-                        {String(day.dayNumber).padStart(2, "0")}
+          {hasItinerary && (
+            <div id="itinerary" className="space-y-6">
+              <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
+                Your Journey Day by Day
+              </h2>
+              <div className="space-y-3">
+                {tour.itineraryDays.map((day, index) => (
+                  <details
+                    key={day.dayId}
+                    open={index === 0}
+                    className="glass-panel group overflow-hidden rounded-xl"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-[var(--color-surface-hover-a)] sm:p-6 [&::-webkit-details-marker]:hidden">
+                      <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+                        <span className="shrink-0 text-2xl font-bold text-[var(--color-ice)]/40">
+                          {String(day.dayNumber).padStart(2, "0")}
+                        </span>
+                        <span className="truncate text-lg font-bold text-[var(--color-mist)] sm:text-xl">
+                          {day.title}
+                        </span>
+                      </div>
+                      <span
+                        className="shrink-0 text-[var(--color-slate)] transition-transform duration-300 group-open:rotate-180"
+                        aria-hidden="true"
+                      >
+                        <ChevronIcon />
                       </span>
-                      <span className="truncate text-lg font-bold text-[var(--color-mist)] sm:text-xl">
-                        {day.title}
-                      </span>
+                    </summary>
+                    <div className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-surface-hover-a)] px-5 pb-6 pt-0 sm:px-6">
+                      <div className="mt-5 space-y-3">
+                        <p className="leading-relaxed text-[var(--color-slate)]">
+                          {day.description}
+                        </p>
+                        {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (
+                          <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--color-ice)]/80">
+                            {day.attractions && day.attractions.length > 0 && (
+                              <li>Attractions: {day.attractions.join(", ")}</li>
+                            )}
+                            {day.meals.length > 0 && (
+                              <li>Meals: {day.meals.join(", ")}</li>
+                            )}
+                            {day.accommodation && (
+                              <li>{day.accommodation}</li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
                     </div>
-                    <span
-                      className="shrink-0 text-[var(--color-slate)] transition-transform duration-300 group-open:rotate-180"
-                      aria-hidden="true"
-                    >
-                      <ChevronIcon />
-                    </span>
-                  </summary>
-                  <div className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-surface-hover-a)] px-5 pb-6 pt-0 sm:px-6">
-                    <div className="mt-5 space-y-3">
-                      <p className="leading-relaxed text-[var(--color-slate)]">
-                        {day.description}
-                      </p>
-                      {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (
-                        <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--color-ice)]/80">
-                          {day.attractions && day.attractions.length > 0 && (
-                            <li>Attractions: {day.attractions.join(", ")}</li>
-                          )}
-                          {day.meals.length > 0 && (
-                            <li>Meals: {day.meals.join(", ")}</li>
-                          )}
-                          {day.accommodation && (
-                            <li>{day.accommodation}</li>
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </details>
-              ))}
+                  </details>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Guides */}
+          {upcomingGuides.length > 0 && (
+            <div id="guides" className="space-y-6">
+              <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
+                Your Guides
+              </h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {upcomingGuides.map((guide) => (
+                  <GuideCard
+                    key={guide.staffId}
+                    guide={guide}
+                    ledDates={upcoming.filter((dep) => dep.guideId === guide.staffId)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Kashrut */}
-          <div className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
+          <div id="kashrut" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
             <h2 className="text-xl font-bold text-[var(--color-mist)]">
               Kashrut &amp; What to Know
             </h2>
@@ -199,53 +250,71 @@ export default function TourPageView({
           </div>
 
           {/* Inclusions / Exclusions */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-            <div className="glass-panel rounded-2xl p-6 sm:p-8">
-              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]">
-                <span className="text-[var(--color-ice)]" aria-hidden="true">
-                  ✓
-                </span>
-                What&apos;s Included
-              </h3>
-              <ul className="space-y-4">
-                {tour.inclusions.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span
-                      className="mt-0.5 text-sm text-[var(--color-ice)]"
-                      aria-hidden="true"
+          {hasInclusions && (
+            <div id="included" className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+              <div className="glass-panel rounded-2xl p-6 sm:p-8">
+                <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]">
+                  <span className="text-[var(--color-ice)]" aria-hidden="true">
+                    ✓
+                  </span>
+                  What&apos;s Included
+                </h3>
+                <ul className="space-y-4">
+                  {tour.inclusions.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span
+                        className="mt-0.5 text-sm text-[var(--color-ice)]"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      <span className="text-[var(--color-slate)]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="glass-panel rounded-2xl p-6 sm:p-8">
+                <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]/60">
+                  <span aria-hidden="true">✕</span>
+                  Not Included
+                </h3>
+                <ul className="space-y-4">
+                  {tour.exclusions.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-3 opacity-60"
                     >
-                      ✓
-                    </span>
-                    <span className="text-[var(--color-slate)]">{item}</span>
-                  </li>
-                ))}
-              </ul>
+                      <span className="mt-0.5 text-sm" aria-hidden="true">
+                        ✕
+                      </span>
+                      <span className="text-[var(--color-slate)]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="glass-panel rounded-2xl p-6 sm:p-8">
-              <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]/60">
-                <span aria-hidden="true">✕</span>
-                Not Included
-              </h3>
-              <ul className="space-y-4">
-                {tour.exclusions.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-3 opacity-60"
-                  >
-                    <span className="mt-0.5 text-sm" aria-hidden="true">
-                      ✕
-                    </span>
-                    <span className="text-[var(--color-slate)]">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          )}
+
+          {/* Cancellation policy */}
+          <div id="cancellation" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
+            <h2 className="text-xl font-bold text-[var(--color-mist)]">Cancellation Policy</h2>
+            <ul className="space-y-3">
+              {cancellationTerms.map((term, index) => (
+                <li key={`${index}-${term}`} className="flex items-start gap-3">
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{term}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Sticky booking */}
-        <aside className="relative">
-          <div className="glass-panel-elevated sticky top-28 rounded-2xl p-6 shadow-2xl sm:p-8">
+        {/* Sticky booking — top offset clears the site header plus the section nav */}
+        <aside id="dates" className="relative">
+          <div className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8">
             <div className="mb-6">
               <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                 Starting from
@@ -284,34 +353,43 @@ export default function TourPageView({
               )}
               {upcoming.map((dep) => {
                 const seats = availableSeats(dep);
+                const guide = dep.guideId ? guideById.get(dep.guideId) : undefined;
                 return (
                   <li
                     key={dep.departureId}
-                    className="flex items-center justify-between rounded-lg border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-3 py-2.5 text-[15px]"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-hairline)] bg-[var(--color-surface-hover-a)] px-3 py-2.5 text-[15px]"
                   >
-                    <span className="text-[var(--color-mist)]">
-                      {new Date(dep.startDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <DepartureStatusPill
-                      status={dep.status}
-                      seats={seats}
-                      lowSeatsThreshold={lowSeatsThreshold}
-                    />
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[var(--color-mist)]">
+                        {new Date(dep.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                      {guide && (
+                        <p className="truncate text-xs text-[var(--color-slate)]">
+                          Guide: {guide.name}
+                        </p>
+                      )}
+                      <DepartureStatusPill
+                        status={dep.status}
+                        seats={seats}
+                        lowSeatsThreshold={lowSeatsThreshold}
+                      />
+                    </div>
+                    {isDepartureBookable(dep) && (
+                      <a
+                        href={bookHref(dep.departureId)}
+                        className="shrink-0 rounded-lg bg-[var(--color-success)] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_14px_rgba(16,185,129,0.2)] transition-all hover:bg-[var(--color-success-dark)] active:scale-[0.98]"
+                      >
+                        Book
+                      </a>
+                    )}
                   </li>
                 );
               })}
             </ul>
-
-            <a
-              href={tour.slug ? `/tours/${tour.slug}/book` : "#"}
-              className="mb-3 block rounded-xl bg-[var(--color-success)] px-4 py-4 text-center text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all hover:bg-[var(--color-success-dark)] active:scale-[0.98]"
-            >
-              Book This Trip
-            </a>
             <a
               href="tel:18008470700"
               className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]"
@@ -424,6 +502,40 @@ function TourHeroGallery({
         ))}
       </div>
     </section>
+  );
+}
+
+function GuideCard({ guide, ledDates }: { guide: Staff; ledDates: Departure[] }) {
+  return (
+    <div className="glass-panel flex gap-4 rounded-2xl p-5 sm:p-6">
+      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[var(--color-surface-hover-b)]">
+        {guide.photo ? (
+          <SafeImage src={guide.photo} alt={guide.name} sizes="80px" className="object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--color-ice)]/60">
+            {guide.name.charAt(0)}
+          </span>
+        )}
+      </div>
+      <div className="min-w-0 space-y-2">
+        <p className="text-lg font-bold text-[var(--color-mist)]">{guide.name}</p>
+        {guide.bio && (
+          <p className="text-[15px] leading-relaxed text-[var(--color-slate)]">{guide.bio}</p>
+        )}
+        <p className="text-xs font-semibold text-[var(--color-ice)]/80">
+          Leading{" "}
+          {ledDates
+            .map((dep) =>
+              new Date(dep.startDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            )
+            .join(" · ")}
+        </p>
+      </div>
+    </div>
   );
 }
 

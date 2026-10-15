@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourEditorForm from "@/components/admin/TourEditorForm";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
-import { getDeparturesForTour } from "@/lib/data/tours";
+import { getDeparturesForTour, getGuidesForDepartures } from "@/lib/data/tours";
 
 export async function generateMetadata({
   params,
@@ -25,6 +25,7 @@ export default async function EditTourPage({
   if (!tour) notFound();
 
   const departures = await getDeparturesForTour(tourId);
+  const guides = await getGuidesForDepartures(departures);
 
   return (
     <div>
@@ -36,7 +37,12 @@ export default async function EditTourPage({
           Manage departures →
         </Link>
       </div>
-      <TourEditorForm mode="edit" tourId={tourId} initialTour={tour} departures={departures} />
+      <TourEditorForm
+        mode="edit"
+        tourId={tourId} initialTour={tour}
+        departures={departures}
+        guides={guides}
+      />
     </div>
   );
 }

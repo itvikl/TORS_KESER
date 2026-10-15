@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
-import { getAllTours, getDeparturesForTour, getTourBySlug } from "@/lib/data/tours";
+import {
+  getAllTours,
+  getDeparturesForTour,
+  getGuidesForDepartures,
+  getTourBySlug,
+} from "@/lib/data/tours";
 import { getSiteSettings } from "@/lib/data/admin/settings";
 
 // Tour pages are prerendered (generateStaticParams below), and without this
@@ -45,11 +50,13 @@ export default async function TourDetailPage({
     getDeparturesForTour(tour.tourId),
     getSiteSettings(),
   ]);
+  const guides = await getGuidesForDepartures(departures);
 
   return (
     <TourPageView
       tour={tour}
       departures={departures}
+      guides={guides}
       lowSeatsThreshold={settings.lowSeatsThreshold}
     />
   );

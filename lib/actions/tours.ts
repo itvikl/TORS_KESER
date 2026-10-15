@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { TourInputSchema } from "@/lib/validation/tour";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import {
   archiveTourDoc,
   createTourDoc,
+  duplicateTourDoc,
   isSlugTaken,
   setTourSortOrders,
   setTourStatusDoc,
@@ -71,4 +73,13 @@ export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: bool
   revalidatePath("/");
   updateTag(HOME_TOURS_CACHE_TAG);
   return { ok: true };
+}
+
+/** Creates a draft copy of a tour (content only, no departures) and opens it in the editor. */
+export async function duplicateTour(tourId: string): Promise<{ ok: false; error: string }> {
+  await requireAdminSession();
+  const newTourId = await duplicateTourDoc(tourId);
+  if (!newTourId) return { ok: false, error: "Tour not found." };
+  revalidatePath("/admin/tours");
+  redirect(`/admin/tours/${newTourId}`);
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import TourPageView from "@/components/marketing/TourPageView";
-import type { Departure, Tour } from "@/lib/types";
+import type { Departure, Staff, Tour } from "@/lib/types";
 
 /**
  * Bare iframe target for the admin tour editor's live preview (PRD FR-25).
@@ -17,13 +17,21 @@ import type { Departure, Tour } from "@/lib/types";
  * load the frame at all.
  */
 export default function PreviewFramePage() {
-  const [payload, setPayload] = useState<{ tour: Tour; departures: Departure[] } | null>(null);
+  const [payload, setPayload] = useState<{
+    tour: Tour;
+    departures: Departure[];
+    guides: Staff[];
+  } | null>(null);
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type !== "tour-preview-update") return;
-      setPayload({ tour: event.data.tour, departures: event.data.departures ?? [] });
+      setPayload({
+        tour: event.data.tour,
+        departures: event.data.departures ?? [],
+        guides: event.data.guides ?? [],
+      });
     }
 
     window.addEventListener("message", onMessage);
@@ -42,6 +50,11 @@ export default function PreviewFramePage() {
   }
 
   return (
-    <TourPageView tour={payload.tour} departures={payload.departures} previewMode />
+    <TourPageView
+      tour={payload.tour}
+      departures={payload.departures}
+      guides={payload.guides}
+      previewMode
+    />
   );
 }

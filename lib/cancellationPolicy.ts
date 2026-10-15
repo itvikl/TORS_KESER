@@ -28,6 +28,21 @@ export const DEFAULT_CANCELLATION_TIERS: CancellationTier[] = [
 
 export const DEFAULT_ADMIN_FEE = 47;
 
+/**
+ * Customer-facing wording of the default tiers above — pre-fills the tour
+ * editor's "Cancellation policy" field and is shown on tour pages whose
+ * own field is blank. Free text from here on: editing a tour's copy does
+ * not change quoteCancellation()'s numbers.
+ */
+export const DEFAULT_CANCELLATION_POLICY_TEXT = [
+  `A $${DEFAULT_ADMIN_FEE} per-person administration fee applies to any cancellation after registration.`,
+  "45–60 working days before departure: 30% of the tour price.",
+  "21–44 working days before departure: 50% of the tour price.",
+  "7–20 working days before departure: 75% of the tour price.",
+  "Less than 7 working days before departure: 100% of the tour price.",
+  "Working days exclude Fridays, Saturdays and Jewish holidays.",
+].join("\n");
+
 function isWeekend(date: Date): boolean {
   const day = date.getDay();
   return day === 5 || day === 6; // Friday, Saturday

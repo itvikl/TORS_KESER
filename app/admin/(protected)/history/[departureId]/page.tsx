@@ -33,11 +33,21 @@ export default async function DepartureRegistrantsPage({
         ← Back to history
       </Link>
 
-      <div className="mt-3 mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-ink">{tour?.title ?? "Departure"}</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          {formatDate(departure.startDate)} – {formatDate(departure.endDate)}
-        </p>
+      <div className="mt-3 mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{tour?.title ?? "Departure"}</h1>
+          <p className="mt-1 text-sm text-ink-muted">
+            {formatDate(departure.startDate)} – {formatDate(departure.endDate)}
+          </p>
+        </div>
+        {registrants.length > 0 && (
+          <a
+            href={`/admin/bookings/${departure.tourId}/${departure.departureId}/export`}
+            className="shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+          >
+            Export to Excel
+          </a>
+        )}
       </div>
 
       {registrants.length === 0 ? (

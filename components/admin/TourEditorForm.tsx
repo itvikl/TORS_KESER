@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Departure, ItineraryDay, Tour, TourStatus } from "@/lib/types";
+import type { Departure, ItineraryDay, Staff, Tour, TourStatus } from "@/lib/types";
 import { COUNTRIES } from "@/lib/countries";
 import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChecklist";
 import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
+import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 
 const BLANK_TOUR: Tour = {
   tourId: "",
@@ -40,6 +42,7 @@ const BLANK_TOUR: Tour = {
   },
   itineraryDays: [],
   status: "draft",
+  cancellationPolicy: DEFAULT_CANCELLATION_POLICY_TEXT,
 };
 
 function slugify(value: string): string {
@@ -80,14 +83,23 @@ export default function TourEditorForm({
   tourId,
   initialTour,
   departures = [],
+  guides = [],
 }: {
   mode: "create" | "edit";
   tourId?: string;
   initialTour?: Tour;
   departures?: Departure[];
+  guides?: Staff[];
 }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<Tour>(initialTour ?? BLANK_TOUR);
+  const [draft, setDraft] = useState<Tour>(() =>
+    initialTour
+      ? {
+          ...initialTour,
+          cancellationPolicy: initialTour.cancellationPolicy ?? DEFAULT_CANCELLATION_POLICY_TEXT,
+        }
+      : BLANK_TOUR
+  );
   const [savedTourId, setSavedTourId] = useState<string | undefined>(tourId);
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
@@ -105,7 +117,7 @@ export default function TourEditorForm({
   function postPreview() {
     if (!frameReady.current) return;
     iframeRef.current?.contentWindow?.postMessage(
-      { type: "tour-preview-update", tour: cleaned, departures },
+      { type: "tour-preview-update", tour: cleaned, departures, guides },
       window.location.origin
     );
   }
@@ -125,7 +137,7 @@ export default function TourEditorForm({
   useEffect(() => {
     postPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cleaned, departures]);
+  }, [cleaned, departures, guides]);
 
   function set<K extends keyof Tour>(key: K, value: Tour[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -212,6 +224,7 @@ export default function TourEditorForm({
               {mode === "create" ? "New tour" : draft.title || "Untitled tour"}
             </h1>
           </div>
+          {savedTourId && <DuplicateTourButton tourId={savedTourId} />}
         </div>
 
         <PublishChecklist items={checklist} />
@@ -448,6 +461,24 @@ export default function TourEditorForm({
                 />
               </Field>
             </div>
+            <Field
+              label="Cancellation policy"
+              hint="shown on the tour page, one term per line — display only, doesn't change refund calculations"
+            >
+              <textarea
+                className={inputClass}
+                rows={6}
+                value={draft.cancellationPolicy ?? ""}
+                onChange={(e) => set("cancellationPolicy", e.target.value)}
+              />
+            </Field>
+            <button
+              type="button"
+              onClick={() => set("cancellationPolicy", DEFAULT_CANCELLATION_POLICY_TEXT)}
+              className="text-xs font-medium text-navy hover:text-navy-light"
+            >
+              Reset to the standard policy
+            </button>
           </Section>
 
           <Section title="Kashrut & need to know">
