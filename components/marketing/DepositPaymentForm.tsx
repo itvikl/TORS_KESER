@@ -56,12 +56,16 @@ export default function DepositPaymentForm({
   clientSecret,
   amount,
   onSuccess,
+  forceLight = false,
 }: {
   clientSecret: string;
   amount: number;
   onSuccess: () => void;
+  /** For surfaces without the site theme toggle (the admin panel, always light). */
+  forceLight?: boolean;
 }) {
-  const appearance = useStripeAppearance();
+  const siteAppearance = useStripeAppearance();
+  const appearance = forceLight ? LIGHT_APPEARANCE : siteAppearance;
 
   return (
     <Elements

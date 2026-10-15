@@ -7,6 +7,7 @@ import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellatio
 import { createBooking } from "@/lib/actions/bookings";
 import { createDepositPaymentIntent } from "@/lib/actions/payments";
 import { uploadPassportScan } from "@/lib/actions/uploads";
+import { sanitizeName, sanitizePassport, sanitizePhone, PASSPORT_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_MAX_LENGTH } from "@/lib/validation/fields";
 import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 
 interface TravelerDraft {
@@ -319,7 +320,7 @@ export default function BookingForm({
                   <TextField
                     label="First name"
                     value={traveler.firstName}
-                    onChange={(v) => updateTraveler(index, { firstName: v })}
+                    onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })}
                     onBlur={() => touch(`traveler-${index}-firstName`)}
                     error={
                       touched[`traveler-${index}-firstName`] && !traveler.firstName.trim()
@@ -333,7 +334,7 @@ export default function BookingForm({
                   <TextField
                     label="Last name"
                     value={traveler.lastName}
-                    onChange={(v) => updateTraveler(index, { lastName: v })}
+                    onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })}
                     onBlur={() => touch(`traveler-${index}-lastName`)}
                     error={
                       touched[`traveler-${index}-lastName`] && !traveler.lastName.trim()
@@ -362,7 +363,9 @@ export default function BookingForm({
                   <TextField
                     label="Passport number"
                     value={traveler.passport}
-                    onChange={(v) => updateTraveler(index, { passport: v })}
+                    onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })}
+                    maxLength={PASSPORT_MAX_LENGTH}
+                    inputMode="numeric"
                     name={`traveler-${index}-passport`}
                     autoComplete="off"
                   />
@@ -370,7 +373,7 @@ export default function BookingForm({
                     <TextField
                       label="Rooming with"
                       value={traveler.roomWith}
-                      onChange={(v) => updateTraveler(index, { roomWith: v })}
+                      onChange={(v) => updateTraveler(index, { roomWith: sanitizeName(v) })}
                       name={`traveler-${index}-roomWith`}
                     />
                   )}
@@ -407,7 +410,8 @@ export default function BookingForm({
             <TextField
               label="Your name"
               value={contactName}
-              onChange={setContactName}
+              onChange={(v) => setContactName(sanitizeName(v))}
+              maxLength={NAME_MAX_LENGTH}
               onBlur={() => touch("contactName")}
               error={touched.contactName && !contactName.trim() ? "Name is required." : undefined}
               name="contactName"
@@ -433,7 +437,9 @@ export default function BookingForm({
               label="Phone"
               type="tel"
               value={contactPhone}
-              onChange={setContactPhone}
+              onChange={(v) => setContactPhone(sanitizePhone(v))}
+              maxLength={PHONE_MAX_LENGTH}
+              inputMode="tel"
               name="contactPhone"
               autoComplete="tel"
             />
@@ -770,6 +776,8 @@ function TextField({
   required = false,
   min,
   max,
+  maxLength,
+  inputMode,
 }: {
   label: string;
   value: string;
@@ -785,6 +793,8 @@ function TextField({
   /** For type="date" — bounds the native picker (e.g. no future date of birth). */
   min?: string;
   max?: string;
+  maxLength?: number;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   const id = useId();
   const fieldId = name ?? id;
@@ -809,6 +819,8 @@ function TextField({
         required={required}
         min={min}
         max={max}
+        maxLength={maxLength}
+        inputMode={inputMode}
         aria-invalid={!!error}
         className="glacier-field w-full"
       />

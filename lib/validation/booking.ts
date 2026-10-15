@@ -1,4 +1,10 @@
 import * as z from "zod";
+import {
+  NAME_MAX_LENGTH,
+  NAME_PATTERN,
+  PASSPORT_PATTERN,
+  PHONE_PATTERN,
+} from "@/lib/validation/fields";
 
 export const RoomConfigurationSchema = z.object({
   doubleRooms: z.number().int().min(0),
@@ -7,15 +13,26 @@ export const RoomConfigurationSchema = z.object({
 });
 
 export const TravelerInputSchema = z.object({
-  firstName: z.string().min(1, { error: "First name is required." }),
-  lastName: z.string().min(1, { error: "Last name is required." }),
+  firstName: z
+    .string()
+    .min(1, { error: "First name is required." })
+    .max(NAME_MAX_LENGTH)
+    .regex(NAME_PATTERN, { error: "First name can only contain letters." }),
+  lastName: z
+    .string()
+    .min(1, { error: "Last name is required." })
+    .max(NAME_MAX_LENGTH)
+    .regex(NAME_PATTERN, { error: "Last name can only contain letters." }),
   dob: z
     .string()
     .optional()
     .refine((v) => !v || v <= new Date().toISOString().slice(0, 10), {
       error: "Date of birth can't be in the future.",
     }),
-  passport: z.string().optional(),
+  passport: z
+    .string()
+    .regex(PASSPORT_PATTERN, { error: "Passport number must be up to 10 digits." })
+    .optional(),
   passportScanUrl: z.string().optional(),
   occupancy: z.enum(["double", "single", "triple", "child"]),
   roomWith: z.string().optional(),
@@ -37,7 +54,10 @@ export const BookingInputSchema = z.object({
     .min(1, { error: "At least one traveler is required." }),
   contactName: z.string().min(1, { error: "Name is required." }),
   contactEmail: z.email({ error: "Enter a valid email." }),
-  contactPhone: z.string().optional(),
+  contactPhone: z
+    .string()
+    .regex(PHONE_PATTERN, { error: "Enter a valid phone number." })
+    .optional(),
   contactPreference: z.enum(["callback", "pay_online"], {
     error: "Choose how you'd like to complete payment.",
   }),

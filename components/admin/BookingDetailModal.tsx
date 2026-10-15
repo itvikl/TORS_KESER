@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getBookingTravelers } from "@/lib/actions/bookings";
+import { createAdminPaymentIntent } from "@/lib/actions/payments";
+import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 import { formatUsd } from "@/lib/pricing";
 import type { AdminBookingRow } from "@/lib/data/admin/bookings";
-import type { BookingStatus, RoomConfiguration, Traveler } from "@/lib/types";
+import type { Booking, BookingStatus, RoomConfiguration, Traveler } from "@/lib/types";
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
   pending_payment: "bg-gold/15 text-terracotta-dark",
@@ -191,6 +194,10 @@ export default function BookingDetailModal({
             )}
           </Card>
 
+          {booking.balanceAmount > 0 &&
+            booking.status !== "cancelled" &&
+            booking.status !== "refunded" && <AdminChargeCard booking={booking} />}
+
           <Card title={`Travelers (${booking.travelerCount})`}>
             {error ? (
               <p className="text-sm text-terracotta-dark">{error}</p>
@@ -238,6 +245,100 @@ export default function BookingDetailModal({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Lets staff key in the customer's card (e.g. after a callback request). Card data goes straight to Stripe Elements — never touches our server. */
+function AdminChargeCard({ booking }: { booking: Booking }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [amountInput, setAmountInput] = useState(String(booking.balanceAmount));
+  const [session, setSession] = useState<{ clientSecret: string; amount: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function start() {
+    setStarting(true);
+    setError(null);
+    const result = await createAdminPaymentIntent(booking.bookingId, Number(amountInput));
+    setStarting(false);
+    if (result.ok) setSession({ clientSecret: result.clientSecret, amount: result.amount });
+    else setError(result.error);
+  }
+
+  function handleSuccess() {
+    setDone(true);
+    setSession(null);
+    // The webhook records the payment asynchronously — give it a moment, then refresh the figures.
+    setTimeout(() => router.refresh(), 2500);
+  }
+
+  if (done) {
+    return (
+      <Card title="Charge customer">
+        <p className="text-sm font-medium text-olive">
+          Payment submitted. The booking will update in a moment.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card title="Charge customer">
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+        >
+          Enter card details &amp; pay for customer
+        </button>
+      ) : session ? (
+        <div className="space-y-3">
+          <p className="text-xs text-ink-muted">
+            Charging {formatUsd(session.amount)} to {booking.contactName}&apos;s card.
+          </p>
+          <DepositPaymentForm
+            clientSecret={session.clientSecret}
+            amount={session.amount}
+            onSuccess={handleSuccess}
+            forceLight
+          />
+          <button
+            type="button"
+            onClick={() => setSession(null)}
+            className="text-xs font-semibold text-ink-muted hover:underline"
+          >
+            ← Change amount
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <label className="block text-sm text-ink-muted">
+            Amount to charge (USD, up to {formatUsd(booking.balanceAmount)})
+            <input
+              type="number"
+              min={1}
+              max={booking.balanceAmount}
+              step="0.01"
+              value={amountInput}
+              onChange={(e) => setAmountInput(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-ink"
+            />
+          </label>
+          {error && <p className="text-sm text-terracotta-dark">{error}</p>}
+          <button
+            type="button"
+            disabled={starting}
+            onClick={start}
+            className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
+          >
+            {starting ? "Starting…" : "Continue to card details"}
+          </button>
+        </div>
+      )}
+    </Card>
   );
 }
 

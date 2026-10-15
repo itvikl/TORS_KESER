@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { sanitizeName, sanitizePassport, sanitizePhone, PASSPORT_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_MAX_LENGTH } from "@/lib/validation/fields";
 import { useRouter } from "next/navigation";
 import {
   availableSeats,
@@ -206,10 +207,10 @@ export default function BookingManualForm({
                 Traveler {index + 1} · {traveler.occupancy}
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <TextField label="First name" value={traveler.firstName} onChange={(v) => updateTraveler(index, { firstName: v })} />
-                <TextField label="Last name" value={traveler.lastName} onChange={(v) => updateTraveler(index, { lastName: v })} />
+                <TextField label="First name" value={traveler.firstName} onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
+                <TextField label="Last name" value={traveler.lastName} onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
                 <TextField label="Date of birth" type="date" value={traveler.dob} onChange={(v) => updateTraveler(index, { dob: v })} />
-                <TextField label="Passport number" value={traveler.passport} onChange={(v) => updateTraveler(index, { passport: v })} />
+                <TextField label="Passport number" value={traveler.passport} onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })} maxLength={PASSPORT_MAX_LENGTH} inputMode="numeric" />
                 <TextField label="Dietary needs" value={traveler.dietary} onChange={(v) => updateTraveler(index, { dietary: v })} />
               </div>
             </div>
@@ -219,9 +220,9 @@ export default function BookingManualForm({
 
       <Section title="Contact & status">
         <div className="grid gap-4 sm:grid-cols-2">
-          <TextField label="Contact name" value={contactName} onChange={setContactName} />
+          <TextField label="Contact name" value={contactName} onChange={(v) => setContactName(sanitizeName(v))} maxLength={NAME_MAX_LENGTH} />
           <TextField label="Email" type="email" value={contactEmail} onChange={setContactEmail} />
-          <TextField label="Phone" type="tel" value={contactPhone} onChange={setContactPhone} />
+          <TextField label="Phone" type="tel" value={contactPhone} onChange={(v) => setContactPhone(sanitizePhone(v))} maxLength={PHONE_MAX_LENGTH} inputMode="tel" />
           <Field label="Contact preference">
             <select
               value={contactPreference}
@@ -330,17 +331,23 @@ function TextField({
   value,
   onChange,
   type = "text",
+  maxLength,
+  inputMode,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  maxLength?: number;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   return (
     <Field label={label}>
       <input
         type={type}
         value={value}
+        maxLength={maxLength}
+        inputMode={inputMode}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
       />

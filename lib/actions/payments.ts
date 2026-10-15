@@ -2,6 +2,7 @@
 
 import { stripeServer } from "@/lib/stripe/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { requireAdminSession } from "@/lib/auth/dal";
 import type { Booking } from "@/lib/types";
 
 export type CreatePaymentIntentResult =
@@ -86,6 +87,45 @@ export async function createDepositPaymentIntent(
   }
 
   return createPaymentIntentForAmount(bookingRef, booking, booking.initialPaymentAmount, "initial");
+}
+
+/**
+ * Admin-only: starts a PaymentIntent so staff can key in the customer's card
+ * (e.g. after a "call me back" booking) via Stripe Elements. Any amount up to
+ * the remaining balance is allowed. Status still changes only via the webhook.
+ */
+export async function createAdminPaymentIntent(
+  bookingId: string,
+  amount: number
+): Promise<CreatePaymentIntentResult> {
+  await requireAdminSession();
+
+  const bookingRef = adminDb().collection("bookings").doc(bookingId);
+  const snap = await bookingRef.get();
+  if (!snap.exists) {
+    return { ok: false, error: "Booking not found." };
+  }
+
+  const booking = snap.data() as Booking;
+  if (booking.status === "cancelled" || booking.status === "refunded") {
+    return { ok: false, error: "This booking is no longer active." };
+  }
+  if (booking.balanceAmount <= 0) {
+    return { ok: false, error: "This booking is already paid in full." };
+  }
+  if (!Number.isFinite(amount) || amount < 1 || amount > booking.balanceAmount) {
+    return {
+      ok: false,
+      error: `Amount must be between $1 and the remaining balance ($${booking.balanceAmount}).`,
+    };
+  }
+
+  return createPaymentIntentForAmount(
+    bookingRef,
+    booking,
+    amount,
+    booking.status === "pending_payment" ? "initial" : "balance"
+  );
 }
 
 /**
