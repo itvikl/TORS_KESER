@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import PageHeader from "@/components/marketing/PageHeader";
 import { getSiteContent } from "@/lib/data/siteContent";
 import { getApprovedReviews } from "@/lib/data/reviews";
@@ -30,6 +31,17 @@ export default async function TestimonialsPage() {
               key={review.reviewId}
               className="glass-card rounded-3xl p-6 shadow-2xl backdrop-blur-lg duration-300 sm:p-8"
             >
+              {review.photo && (
+                <div className="relative mb-5 aspect-[3/2] overflow-hidden rounded-2xl">
+                  <Image
+                    src={review.photo}
+                    alt={`${review.customerName} on ${tour?.title ?? "a Keshertours trip"}`}
+                    fill
+                    sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"
+                    className="object-cover"
+                  />
+                </div>
+              )}
               <blockquote className="text-[15px] leading-7 text-[var(--color-mist)]">
                 &ldquo;{review.body}&rdquo;
               </blockquote>
