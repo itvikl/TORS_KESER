@@ -4,6 +4,8 @@ import { getAllLeadsAdmin } from "@/lib/data/admin/leads";
 import LeadStatusSelect from "@/components/admin/LeadStatusSelect";
 import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
 import type { Lead } from "@/lib/types";
+import { IconLink } from "@/components/admin/IconAction";
+import { AdminIcon } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Leads" };
 
@@ -25,8 +27,9 @@ export default async function AdminLeadsPage() {
             // eslint-disable-next-line @next/next/no-html-link-for-pages
             <a
               href="/admin/leads/export"
-              className="rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm"
+              className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm"
             >
+              <AdminIcon name="download" className="h-4 w-4" />
               Export to Excel
             </a>
           )}
@@ -92,12 +95,7 @@ export default async function AdminLeadsPage() {
                     })}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/leads/${lead.leadId}`}
-                      className="text-sm font-medium text-navy hover:text-navy-light"
-                    >
-                      Edit
-                    </Link>
+                    <IconLink href={`/admin/leads/${lead.leadId}`} icon="edit" label="Edit" />
                   </td>
                 </tr>
               ))}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllStaffAdmin } from "@/lib/data/admin/staff";
+import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Team" };
 
@@ -45,12 +46,7 @@ export default async function AdminStaffTeamPage() {
                     {member.role === "guide" ? "Guide" : "Kashrut supervisor"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/staff/team/${member.staffId}`}
-                      className="text-sm font-medium text-navy hover:text-navy-light"
-                    >
-                      Edit
-                    </Link>
+                    <IconLink href={`/admin/staff/team/${member.staffId}`} icon="edit" label="Edit" />
                   </td>
                 </tr>
               ))}

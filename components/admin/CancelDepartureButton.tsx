@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cancelDeparture } from "@/lib/actions/departures";
+import { IconButton } from "@/components/admin/IconAction";
 
 export default function CancelDepartureButton({
   departureId,
@@ -46,12 +47,6 @@ export default function CancelDepartureButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => setConfirming(true)}
-      className="text-sm font-medium text-ink-muted hover:text-terracotta-dark"
-    >
-      Cancel
-    </button>
+    <IconButton icon="ban" label="Cancel this date" tone="danger" onClick={() => setConfirming(true)} />
   );
 }

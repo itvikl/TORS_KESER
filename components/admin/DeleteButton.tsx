@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DeleteResult } from "@/lib/actions/deletions";
+import { AdminIcon } from "@/components/admin/IconAction";
 
 /**
  * Permanent-delete button for admin edit pages: asks to confirm, runs the
@@ -66,8 +67,9 @@ export default function DeleteButton({
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="rounded-lg border border-line bg-white px-3.5 py-2 text-sm font-semibold text-terracotta-dark transition-colors hover:bg-terracotta/5"
+          className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-3.5 py-2 text-sm font-semibold text-terracotta-dark transition-colors hover:bg-terracotta/5"
         >
+          <AdminIcon name="trash" className="h-4 w-4" />
           Delete
         </button>
       )}

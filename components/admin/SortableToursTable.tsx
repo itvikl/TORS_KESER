@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import {
   DndContext,
   type DragEndEvent,
@@ -22,6 +21,7 @@ import { formatUsd } from "@/lib/pricing";
 import type { Tour, TourStatus } from "@/lib/types";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import ArchiveTourButton from "@/components/admin/ArchiveTourButton";
+import { IconLink } from "@/components/admin/IconAction";
 
 export interface UpcomingCapacity {
   departureCount: number;
@@ -149,26 +149,10 @@ function SortableTourRow({ tour, capacity }: TourRowData) {
         )}
       </td>
       <td className="px-4 py-3 text-right">
-        <div className="flex justify-end gap-3">
-          <Link
-            href={`/admin/tours/${tour.tourId}/preview`}
-            className="text-sm font-medium text-ink-muted hover:text-ink"
-            target="_blank"
-          >
-            Preview
-          </Link>
-          <Link
-            href={`/admin/tours/${tour.tourId}/departures`}
-            className="text-sm font-medium text-navy hover:text-navy-light"
-          >
-            Departures
-          </Link>
-          <Link
-            href={`/admin/tours/${tour.tourId}`}
-            className="text-sm font-medium text-navy hover:text-navy-light"
-          >
-            Edit
-          </Link>
+        <div className="flex items-center justify-end gap-1">
+          <IconLink href={`/admin/tours/${tour.tourId}/preview`} icon="eye" label="Preview" newTab />
+          <IconLink href={`/admin/tours/${tour.tourId}/departures`} icon="calendar" label="Departure dates" />
+          <IconLink href={`/admin/tours/${tour.tourId}`} icon="edit" label="Edit" />
           <DuplicateTourButton tourId={tour.tourId} variant="link" />
           {tour.status !== "archived" && (
             <ArchiveTourButton tourId={tour.tourId} title={tour.title} />

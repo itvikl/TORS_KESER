@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteAdminAccount } from "@/lib/actions/adminUsers";
+import { IconButton } from "@/components/admin/IconAction";
 
 /** Row action on Admin accounts — asks to confirm, then removes the login entirely. */
 export default function DeleteAdminAccountButton({ uid, email }: { uid: string; email: string | null }) {
@@ -45,13 +46,7 @@ export default function DeleteAdminAccountButton({ uid, email }: { uid: string; 
 
   return (
     <span className="inline-flex flex-col items-end">
-      <button
-        type="button"
-        onClick={() => setConfirming(true)}
-        className="text-sm font-medium text-ink-muted hover:text-terracotta-dark"
-      >
-        Delete
-      </button>
+      <IconButton icon="trash" label="Delete account" tone="danger" onClick={() => setConfirming(true)} />
       {error && <span className="mt-1 text-xs text-terracotta-dark">{error}</span>}
     </span>
   );

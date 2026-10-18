@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllBlogPostsAdmin } from "@/lib/data/admin/blog";
 import type { BlogPost } from "@/lib/types";
+import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Blog" };
 
@@ -64,12 +65,7 @@ export default async function AdminBlogPage() {
                       : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/blog/${post.postId}`}
-                      className="text-sm font-medium text-navy hover:text-navy-light"
-                    >
-                      Edit
-                    </Link>
+                    <IconLink href={`/admin/blog/${post.postId}`} icon="edit" label="Edit" />
                   </td>
                 </tr>
               ))}

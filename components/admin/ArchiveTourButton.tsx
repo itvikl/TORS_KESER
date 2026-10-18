@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { archiveTour } from "@/lib/actions/tours";
+import { IconButton } from "@/components/admin/IconAction";
 
 /** FR-43: no raw delete in the admin — archiving is the only removal action, and stays reachable/301-able. */
 export default function ArchiveTourButton({ tourId, title }: { tourId: string; title: string }) {
@@ -38,13 +39,5 @@ export default function ArchiveTourButton({ tourId, title }: { tourId: string; t
     );
   }
 
-  return (
-    <button
-      type="button"
-      onClick={() => setConfirming(true)}
-      className="text-sm font-medium text-ink-muted hover:text-terracotta-dark"
-    >
-      Archive
-    </button>
-  );
+  return <IconButton icon="archive" label="Archive" tone="danger" onClick={() => setConfirming(true)} />;
 }
