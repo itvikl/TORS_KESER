@@ -5,6 +5,9 @@ import { getLeadByIdAdmin } from "@/lib/data/admin/leads";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import LeadForm from "@/components/admin/LeadForm";
 import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
+import { getAdminSession } from "@/lib/auth/dal";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteLead } from "@/lib/actions/deletions";
 
 export async function generateMetadata({
   params,
@@ -20,6 +23,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ leadI
   const { leadId } = await params;
   const [lead, tours] = await Promise.all([getLeadByIdAdmin(leadId), getAllToursAdmin()]);
   if (!lead) notFound();
+  const isAdmin = (await getAdminSession())?.role === "admin";
   tours.sort((a, b) => a.title.localeCompare(b.title));
 
   const formatDate = (iso: string) =>
@@ -36,6 +40,11 @@ export default async function EditLeadPage({ params }: { params: Promise<{ leadI
       <Link href="/admin/leads" className="text-sm font-medium text-navy hover:text-navy-light">
         ← All leads
       </Link>
+      {isAdmin && (
+        <div className="mb-4 flex justify-end">
+          <DeleteButton action={deleteLead.bind(null, leadId)} what="this lead" redirectTo="/admin/leads" />
+        </div>
+      )}
       <div className="mb-6 mt-2">
         <h1 className="text-2xl font-bold tracking-tight text-ink">
           {lead.name ?? lead.email ?? lead.phone ?? "Lead"}

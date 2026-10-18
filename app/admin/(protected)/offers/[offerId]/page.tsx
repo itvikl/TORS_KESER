@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import OfferEditorForm from "@/components/admin/OfferEditorForm";
 import { getOfferByIdAdmin } from "@/lib/data/admin/offers";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
+import { getAdminSession } from "@/lib/auth/dal";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteOffer } from "@/lib/actions/deletions";
 
 export async function generateMetadata({
   params,
@@ -22,11 +25,17 @@ export default async function EditOfferPage({
   const { offerId } = await params;
   const [offer, tours] = await Promise.all([getOfferByIdAdmin(offerId), getAllToursAdmin()]);
   if (!offer) notFound();
+  const isAdmin = (await getAdminSession())?.role === "admin";
 
   tours.sort((a, b) => a.title.localeCompare(b.title));
 
   return (
     <div>
+      {isAdmin && (
+        <div className="mb-4 flex justify-end">
+          <DeleteButton action={deleteOffer.bind(null, offerId)} what="this offer" redirectTo="/admin/offers" />
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-ink">{offer.title}</h1>
       </div>

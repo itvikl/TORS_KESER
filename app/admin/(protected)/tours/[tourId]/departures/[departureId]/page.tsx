@@ -4,6 +4,9 @@ import { getTourByIdAdmin } from "@/lib/data/admin/tours";
 import { getDepartureByIdAdmin } from "@/lib/data/admin/departures";
 import { getAllStaffAdmin } from "@/lib/data/admin/staff";
 import DepartureEditorForm from "@/components/admin/DepartureEditorForm";
+import { getAdminSession } from "@/lib/auth/dal";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteDeparture } from "@/lib/actions/deletions";
 
 export async function generateMetadata({
   params,
@@ -27,9 +30,15 @@ export default async function EditDeparturePage({
     getAllStaffAdmin(),
   ]);
   if (!tour || !departure || departure.tourId !== tourId) notFound();
+  const isAdmin = (await getAdminSession())?.role === "admin";
 
   return (
     <div>
+      {isAdmin && (
+        <div className="mb-4 flex justify-end">
+          <DeleteButton action={deleteDeparture.bind(null, departureId, tourId)} what="this departure date" redirectTo={`/admin/tours/${tourId}/departures`} />
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-ink">
           Edit departure — {tour.title}
