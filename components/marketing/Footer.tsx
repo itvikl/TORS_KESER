@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
+import { telHref } from "@/lib/sitePhone";
 
 // Country names must match lib/countries.ts's COUNTRIES exactly — these
 // deep-link into the homepage's existing country filter (TourFilterProvider).
@@ -27,7 +28,7 @@ const COLUMNS = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ phone }: { phone: string }) {
   return (
     <footer className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)] transition-colors">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -38,10 +39,10 @@ export default function Footer() {
               Travel the world the Jewish way.
             </p>
             <a
-              href="tel:18008470700"
+              href={telHref(phone)}
               className="mt-4 inline-block text-sm font-semibold text-[var(--color-ice)] transition-colors hover:brightness-110"
             >
-              1-800-847-0700
+              {phone}
             </a>
           </div>
 

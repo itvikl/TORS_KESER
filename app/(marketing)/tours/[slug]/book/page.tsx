@@ -6,6 +6,7 @@ import PageHeader from "@/components/marketing/PageHeader";
 import { getDeparturesForTour, getTourBySlug } from "@/lib/data/tours";
 import { getSiteSettings } from "@/lib/data/admin/settings";
 import { hasPlannedDeparture, isDepartureBookable } from "@/lib/departureAvailability";
+import { PhoneLink } from "@/components/marketing/SitePhone";
 
 export async function generateMetadata({
   params,
@@ -51,12 +52,7 @@ export default async function BookTourPage({
           <div className="glass-panel rounded-3xl p-8 text-center sm:p-10">
             <p className="text-lg leading-8 text-[var(--color-slate)]">
               The next date for this tour will be published soon. Call us at{" "}
-              <a
-                href="tel:18008470700"
-                className="font-bold text-[var(--color-ice)] transition hover:brightness-110"
-              >
-                1-800-847-0700
-              </a>{" "}
+              <PhoneLink className="font-bold text-[var(--color-ice)] transition hover:brightness-110" />{" "}
               and we&apos;ll let you know the moment it&apos;s live.
             </p>
           </div>
@@ -64,12 +60,7 @@ export default async function BookTourPage({
           <div className="glass-panel rounded-3xl p-8 text-center sm:p-10">
             <p className="text-lg leading-8 text-[var(--color-slate)]">
               There are no open departure dates for this tour right now. Call us at{" "}
-              <a
-                href="tel:18008470700"
-                className="font-bold text-[var(--color-ice)] transition hover:brightness-110"
-              >
-                1-800-847-0700
-              </a>{" "}
+              <PhoneLink className="font-bold text-[var(--color-ice)] transition hover:brightness-110" />{" "}
               and we&apos;ll help you find the right trip.
             </p>
           </div>

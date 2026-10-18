@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
 import ThemeToggle from "@/components/marketing/ThemeToggle";
+import { telHref } from "@/lib/sitePhone";
 
 const NAV_LINKS = [
   { href: "/#featured-tours", label: "Tours" },
@@ -13,7 +14,7 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Header() {
+export default function Header({ phone }: { phone: string }) {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--color-border-hairline)] bg-[var(--color-surface-elevated)] backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--color-surface-elevated-hover)] transition-colors">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:gap-6 lg:px-8">
@@ -37,11 +38,11 @@ export default function Header() {
         <div className="flex shrink-0 items-center gap-3">
           <ThemeToggle />
           <a
-            href="tel:18008470700"
+            href={telHref(phone)}
             className="flex shrink-0 items-center gap-2 rounded-full bg-[var(--color-ice)] px-3 py-2 text-[14px] font-bold text-[var(--color-ice-ink)] transition-all hover:brightness-110 active:scale-95 sm:px-4 sm:py-2.5 sm:text-[15px]"
           >
             <span aria-hidden="true">☎</span>
-            <span className="hidden sm:inline">1-800-847-0700</span>
+            <span className="hidden sm:inline">{phone}</span>
             <span className="sm:hidden">Call</span>
           </a>
         </div>

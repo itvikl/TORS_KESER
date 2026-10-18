@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/marketing/PageHeader";
 import { getBookingSummary } from "@/lib/data/bookings";
 import { formatUsd } from "@/lib/pricing";
+import { PhoneLink } from "@/components/marketing/SitePhone";
 
 export const metadata: Metadata = { title: "Payment received" };
 
@@ -52,12 +53,7 @@ export default async function BookingSuccessPage({
             </div>
           </dl>
 
-          <a
-            href="tel:18008470700"
-            className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
-          >
-            Questions? Call 1-800-847-0700
-          </a>
+          <PhoneLink className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110" prefix="Questions? Call " />
         </div>
 
         <p className="mt-6 text-center text-sm text-[var(--color-slate)]">

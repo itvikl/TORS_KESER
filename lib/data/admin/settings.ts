@@ -2,12 +2,13 @@ import "server-only";
 import type { SiteSettings } from "@/lib/types";
 import type { SiteSettingsInput } from "@/lib/validation/settings";
 import { adminDb } from "@/lib/firebase/admin";
+import { DEFAULT_SITE_PHONE } from "@/lib/sitePhone";
 
 const SETTINGS_COLLECTION = "siteSettings";
 const SETTINGS_DOC_ID = "default";
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  phone: "1-800-847-0700",
+  phone: DEFAULT_SITE_PHONE,
   phoneAlt: "1-212-481-3721",
   email: undefined,
   defaultDepositAmount: 0,
@@ -32,5 +33,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function updateSiteSettings(input: SiteSettingsInput): Promise<void> {
-  await adminDb().collection(SETTINGS_COLLECTION).doc(SETTINGS_DOC_ID).set(input);
+  // A blank alternate phone is saved as "" (not left out): getSiteSettings
+  // merges DEFAULT_SETTINGS over missing fields, so leaving it out would
+  // bring the default number back instead of removing it.
+  await adminDb()
+    .collection(SETTINGS_COLLECTION)
+    .doc(SETTINGS_DOC_ID)
+    .set({ ...input, phoneAlt: input.phoneAlt ?? "" });
 }
