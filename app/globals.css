@@ -43,18 +43,21 @@
 
   --color-scheme: dark;
 
-  /* Admin / legacy aliases (kept for admin chrome only — not theme-switched) */
+  /* Admin / legacy aliases (kept for admin chrome only — not theme-switched).
+     sand/ink/line are the admin surface palette and are used nowhere in the
+     marketing pages, so they are tuned purely for the admin shell: a cool
+     blue-white ground rather than the original warm sand. */
   --color-navy: #1b3a5c;
   --color-navy-light: #2a5080;
   --color-terracotta: #c1622d;
   --color-terracotta-dark: #a34f22;
-  --color-sand: #f7f1e6;
-  --color-sand-warm: #f0e6d2;
+  --color-sand: #f5f8fc;
+  --color-sand-warm: #e9eff7;
   --color-olive: #6b7a4f;
   --color-gold: #c9a24b;
-  --color-ink: #241f18;
-  --color-ink-muted: #5a5245;
-  --color-line: #e4d9c2;
+  --color-ink: #16202b;
+  --color-ink-muted: #4e6076;
+  --color-line: #d5e0ec;
 
   --background: var(--color-glacier);
   --foreground: var(--color-mist);
