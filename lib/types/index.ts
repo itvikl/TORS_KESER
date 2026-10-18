@@ -119,6 +119,8 @@ export interface Staff {
   role: StaffRole;
   bio?: string;
   photo?: string;
+  /** Picks the placeholder avatar (male/female silhouette) when there's no photo. */
+  gender?: "male" | "female";
 }
 
 export interface Review {

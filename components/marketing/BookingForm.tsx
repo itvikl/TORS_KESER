@@ -10,6 +10,8 @@ import { uploadPassportScan } from "@/lib/actions/uploads";
 import { sanitizeName, sanitizePassport, sanitizePhone, PASSPORT_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_MAX_LENGTH } from "@/lib/validation/fields";
 import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 import { ONLINE_PAYMENTS_ENABLED } from "@/lib/onlinePayments";
+import { PhoneLink } from "@/components/marketing/SitePhone";
+import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
 
 interface TravelerDraft {
   firstName: string;
@@ -246,9 +248,10 @@ export default function BookingForm({
                     </span>
                     <AssuranceBadge assurance={d.bookingAssurance ?? "conditional"} />
                   </span>
-                  <SeatAvailabilityBadge
+                  <DepartureStatusPill
+                    status={d.status}
                     seats={availableSeats(d)}
-                    threshold={lowSeatsThreshold}
+                    lowSeatsThreshold={lowSeatsThreshold}
                   />
                 </label>
               ))}
@@ -652,12 +655,7 @@ function Confirmation({
         We look forward to welcoming you
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[var(--color-slate)]">{message}</p>
-      <a
-        href="tel:18008470700"
-        className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
-      >
-        Questions? Call 1-800-847-0700
-      </a>
+      <PhoneLink className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110" prefix="Questions? Call " />
     </div>
   );
 }
@@ -928,30 +926,6 @@ function PassportUploadField({
 }
 
 /** Exact number + "last spots" only at/below threshold — otherwise a vague, non-numeric message. */
-function SeatAvailabilityBadge({
-  seats,
-  threshold,
-}: {
-  seats: number;
-  threshold: number;
-}) {
-  if (seats <= threshold) {
-    return (
-      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
-        <span className="rounded-full bg-[var(--color-lilac)]/20 px-2 py-0.5 text-[var(--color-lilac)]">
-          Last spots
-        </span>
-        <span className="text-[var(--color-slate)]">{seats} spots left</span>
-      </span>
-    );
-  }
-  return (
-    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-slate)]">
-      Plenty of spots available
-    </span>
-  );
-}
-
 /** Per-departure trust badge, shown inline in the date list — each departure carries its own assurance. */
 function AssuranceBadge({ assurance }: { assurance: "conditional" | "guaranteed" }) {
   if (assurance === "guaranteed") {

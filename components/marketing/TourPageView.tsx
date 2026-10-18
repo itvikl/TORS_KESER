@@ -4,9 +4,12 @@ import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailabi
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import TourSectionNav, { type TourSectionLink } from "@/components/marketing/TourSectionNav";
 import TestimonialCard from "@/components/marketing/TestimonialCard";
+import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
+import GuideAvatar from "@/components/marketing/GuideAvatar";
 import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
+import { PhoneLink } from "@/components/marketing/SitePhone";
 
 /**
  * KashrutDetails.patYisrael/chalavYisrael are each a 3-way value
@@ -415,8 +418,9 @@ export default function TourPageView({
                         })}
                       </p>
                       {guide && (
-                        <p className="truncate text-xs text-[var(--color-slate)]">
-                          Guide: {guide.name}
+                        <p className="flex min-w-0 items-center gap-2 text-xs text-[var(--color-slate)]">
+                          <GuideAvatar guide={guide} className="h-7 w-7" sizes="28px" />
+                          <span className="truncate">Guide: {guide.name}</span>
                         </p>
                       )}
                       <DepartureStatusPill
@@ -437,12 +441,7 @@ export default function TourPageView({
                 );
               })}
             </ul>
-            <a
-              href="tel:18008470700"
-              className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]"
-            >
-              Call 1-800-847-0700
-            </a>
+            <PhoneLink className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
 
             <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6">
               <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4">
@@ -555,15 +554,7 @@ function TourHeroGallery({
 function GuideCard({ guide, ledDates }: { guide: Staff; ledDates: Departure[] }) {
   return (
     <div className="glass-panel flex gap-4 rounded-2xl p-5 sm:p-6">
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[var(--color-surface-hover-b)]">
-        {guide.photo ? (
-          <SafeImage src={guide.photo} alt={guide.name} sizes="80px" className="object-cover" />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--color-ice)]/60">
-            {guide.name.charAt(0)}
-          </span>
-        )}
-      </div>
+      <GuideAvatar guide={guide} className="h-20 w-20" sizes="80px" />
       <div className="min-w-0 space-y-2">
         <p className="text-lg font-bold text-[var(--color-mist)]">{guide.name}</p>
         {guide.bio && (
@@ -657,39 +648,3 @@ function ChevronIcon() {
   );
 }
 
-function DepartureStatusPill({
-  status,
-  seats,
-  lowSeatsThreshold,
-}: {
-  status: Departure["status"];
-  seats: number;
-  lowSeatsThreshold: number;
-}) {
-  if (status === "soldout" || seats <= 0) {
-    return (
-      <span className="rounded-full bg-[var(--color-surface-hover-b)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-slate)]">
-        Sold Out
-      </span>
-    );
-  }
-  if (status === "cancelled") {
-    return (
-      <span className="rounded-full bg-[var(--color-danger)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-danger)]">
-        Cancelled
-      </span>
-    );
-  }
-  if (seats <= lowSeatsThreshold) {
-    return (
-      <span className="rounded-full bg-[var(--color-lilac)]/20 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-lilac)]">
-        Only {seats} spots left
-      </span>
-    );
-  }
-  return (
-    <span className="rounded-full bg-[var(--color-ice)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-ice)]">
-      Available
-    </span>
-  );
-}
