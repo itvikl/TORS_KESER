@@ -6,6 +6,7 @@ export const StaffInputSchema = z.object({
   role: z.enum(["guide", "kashrutSupervisor"]),
   bio: z.string().optional(),
   photo: z.string().optional(),
+  gender: z.enum(["male", "female"]).optional(),
 });
 
 export type StaffInput = z.infer<typeof StaffInputSchema>;

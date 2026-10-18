@@ -6,6 +6,7 @@ import { getDeparturesForTour } from "@/lib/data/tours";
 import { getAllStaffAdmin } from "@/lib/data/admin/staff";
 import { availableSeats, type Departure } from "@/lib/types";
 import CancelDepartureButton from "@/components/admin/CancelDepartureButton";
+import { IconLink } from "@/components/admin/IconAction";
 
 export async function generateMetadata({
   params,
@@ -103,12 +104,7 @@ export default async function TourDeparturesPage({
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-3">
-                      <Link
-                        href={`/admin/tours/${tourId}/departures/${departure.departureId}`}
-                        className="text-sm font-medium text-navy hover:text-navy-light"
-                      >
-                        Edit
-                      </Link>
+                      <IconLink href={`/admin/tours/${tourId}/departures/${departure.departureId}`} icon="edit" label="Edit" />
                       {departure.status !== "cancelled" && (
                         <CancelDepartureButton
                           departureId={departure.departureId}

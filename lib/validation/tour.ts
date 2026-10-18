@@ -40,6 +40,7 @@ export const TourInputSchema = z.object({
   isSpecialOffer: z.boolean().optional(),
   inclusions: z.array(z.string()),
   exclusions: z.array(z.string()),
+  importantToKnow: z.array(z.string()).optional(),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),

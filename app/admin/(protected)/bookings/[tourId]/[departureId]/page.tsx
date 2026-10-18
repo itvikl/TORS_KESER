@@ -5,6 +5,7 @@ import { getBookingsForDepartureAdmin } from "@/lib/data/admin/bookings";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
 import BookingsTable from "@/components/admin/BookingsTable";
 import MarkDepartureViewed from "@/components/admin/MarkDepartureViewed";
+import { AdminIcon } from "@/components/admin/IconAction";
 
 export async function generateMetadata({
   params,
@@ -62,8 +63,9 @@ export default async function DepartureBookingsPage({
         {rows.length > 0 && (
           <a
             href={`/admin/bookings/${tourId}/${departureId}/export`}
-            className="shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+            className="inline-flex items-center gap-2 shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
           >
+            <AdminIcon name="download" className="h-4 w-4" />
             Export to Excel
           </a>
         )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPastDeparturesAdmin, parseHistoryDateFilter } from "@/lib/data/admin/history";
+import { AdminIcon } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "History" };
 
@@ -37,8 +38,9 @@ export default async function AdminHistoryPage({
         </div>
         <a
           href={exportHref}
-          className="shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+          className="inline-flex items-center gap-2 shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
         >
+          <AdminIcon name="download" className="h-4 w-4" />
           Export to Excel
         </a>
       </div>

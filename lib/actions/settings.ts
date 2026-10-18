@@ -23,6 +23,8 @@ export async function saveSettings(
 
   await updateSiteSettings(parsed.data);
   revalidatePath("/admin/settings");
+  // The phone number is in the header/footer of every public page.
+  revalidatePath("/", "layout");
 
   return { ok: true };
 }

@@ -8,6 +8,7 @@ import { calculatePriceBreakdown } from "@/lib/pricing";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { ManualBookingInputSchema, PublicBookingInputSchema } from "@/lib/validation/booking";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
+import { ONLINE_PAYMENTS_ENABLED } from "@/lib/onlinePayments";
 import type { Booking, BookingStatus, Departure, Tour, Traveler } from "@/lib/types";
 import type { BookingInput } from "@/lib/validation/booking";
 
@@ -204,6 +205,8 @@ export async function createBooking(input: unknown): Promise<CreateBookingResult
   if (!parsed.success) {
     return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   }
+  // Card payment is switched off (lib/onlinePayments.ts) — staff call every customer back.
+  if (!ONLINE_PAYMENTS_ENABLED) parsed.data.contactPreference = "callback";
 
   const core = await createBookingCore(parsed.data, {
     mode: "public",

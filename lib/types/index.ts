@@ -73,6 +73,8 @@ export interface Tour {
   isSpecialOffer?: boolean;
   inclusions: string[];
   exclusions: string[];
+  /** "Important to Know" on the tour page — group minimums, passport validity, price-change terms, etc. */
+  importantToKnow?: string[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];
@@ -117,6 +119,8 @@ export interface Staff {
   role: StaffRole;
   bio?: string;
   photo?: string;
+  /** Picks the placeholder avatar (male/female silhouette) when there's no photo. */
+  gender?: "male" | "female";
 }
 
 export interface Review {
@@ -224,7 +228,11 @@ export interface Lead {
   groupSize?: number;
   source: LeadSource;
   status: "new" | "contacted" | "converted" | "closed";
+  /** Staff-only notes (follow-ups, what was discussed) — never shown to the customer. */
+  notes?: string;
   createdAt: string;
+  /** Set when staff edit the lead in admin. */
+  updatedAt?: string;
 }
 
 export interface BlogPost {

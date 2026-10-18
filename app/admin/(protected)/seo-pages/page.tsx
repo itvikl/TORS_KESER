@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllSeoPagesAdmin } from "@/lib/data/admin/seoPages";
 import type { SeoLandingPage } from "@/lib/types";
+import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "SEO Landing Pages" };
 
@@ -53,12 +54,7 @@ export default async function AdminSeoPagesPage() {
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{page.tourIds.length}</td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/seo-pages/${page.pageId}`}
-                      className="text-sm font-medium text-navy hover:text-navy-light"
-                    >
-                      Edit
-                    </Link>
+                    <IconLink href={`/admin/seo-pages/${page.pageId}`} icon="edit" label="Edit" />
                   </td>
                 </tr>
               ))}

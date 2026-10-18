@@ -9,6 +9,9 @@ import { createDepositPaymentIntent } from "@/lib/actions/payments";
 import { uploadPassportScan } from "@/lib/actions/uploads";
 import { sanitizeName, sanitizePassport, sanitizePhone, PASSPORT_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_MAX_LENGTH } from "@/lib/validation/fields";
 import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
+import { ONLINE_PAYMENTS_ENABLED } from "@/lib/onlinePayments";
+import { PhoneLink } from "@/components/marketing/SitePhone";
+import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
 
 interface TravelerDraft {
   firstName: string;
@@ -245,9 +248,10 @@ export default function BookingForm({
                     </span>
                     <AssuranceBadge assurance={d.bookingAssurance ?? "conditional"} />
                   </span>
-                  <SeatAvailabilityBadge
+                  <DepartureStatusPill
+                    status={d.status}
                     seats={availableSeats(d)}
-                    threshold={lowSeatsThreshold}
+                    lowSeatsThreshold={lowSeatsThreshold}
                   />
                 </label>
               ))}
@@ -488,6 +492,17 @@ export default function BookingForm({
               </div>
             )}
 
+            {!ONLINE_PAYMENTS_ENABLED && (
+              <div className="rounded-xl border border-[var(--color-ice)] bg-[var(--color-ice)]/10 p-4 text-[15px]">
+                <p className="font-semibold text-[var(--color-mist)]">No payment is taken online</p>
+                <p className="mt-1 text-[var(--color-slate)]">
+                  Book now and a representative will call you within one business day to confirm
+                  the details and arrange payment.
+                </p>
+              </div>
+            )}
+
+            {ONLINE_PAYMENTS_ENABLED && (
             <fieldset className="space-y-3">
               <legend className="mb-1 text-sm font-semibold text-[var(--color-mist)]">
                 How would you like to complete payment?
@@ -533,8 +548,9 @@ export default function BookingForm({
                 </span>
               </label>
             </fieldset>
+            )}
 
-            {!isGuaranteed && contactPreference === "pay_online" && (
+            {ONLINE_PAYMENTS_ENABLED && !isGuaranteed && contactPreference === "pay_online" && (
               <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4">
                 <div className="flex items-baseline justify-between">
                   <label htmlFor="paymentAmount" className="text-sm font-semibold text-[var(--color-mist)]">
@@ -600,7 +616,11 @@ export default function BookingForm({
                 onClick={handleSubmit}
                 className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60 sm:w-auto"
               >
-                {submitting ? "Submitting…" : "Submit Registration"}
+                {submitting
+                  ? "Submitting…"
+                  : ONLINE_PAYMENTS_ENABLED
+                    ? "Submit Registration"
+                    : "Book — We'll Call You"}
               </button>
             </div>
           </div>
@@ -635,12 +655,7 @@ function Confirmation({
         We look forward to welcoming you
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[var(--color-slate)]">{message}</p>
-      <a
-        href="tel:18008470700"
-        className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110"
-      >
-        Questions? Call 1-800-847-0700
-      </a>
+      <PhoneLink className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110" prefix="Questions? Call " />
     </div>
   );
 }
@@ -911,30 +926,6 @@ function PassportUploadField({
 }
 
 /** Exact number + "last spots" only at/below threshold — otherwise a vague, non-numeric message. */
-function SeatAvailabilityBadge({
-  seats,
-  threshold,
-}: {
-  seats: number;
-  threshold: number;
-}) {
-  if (seats <= threshold) {
-    return (
-      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
-        <span className="rounded-full bg-[var(--color-lilac)]/20 px-2 py-0.5 text-[var(--color-lilac)]">
-          Last spots
-        </span>
-        <span className="text-[var(--color-slate)]">{seats} spots left</span>
-      </span>
-    );
-  }
-  return (
-    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-slate)]">
-      Plenty of spots available
-    </span>
-  );
-}
-
 /** Per-departure trust badge, shown inline in the date list — each departure carries its own assurance. */
 function AssuranceBadge({ assurance }: { assurance: "conditional" | "guaranteed" }) {
   if (assurance === "guaranteed") {

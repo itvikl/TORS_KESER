@@ -29,6 +29,7 @@ const BLANK_TOUR: Tour = {
   isSpecialOffer: false,
   inclusions: [],
   exclusions: [],
+  importantToKnow: [],
   pricing: {
     pricePerPersonDouble: 0,
     pricePerPersonSingle: 0,
@@ -62,6 +63,7 @@ function cleanTour(tour: Tour): Tour {
     themeTags: clean(tour.themeTags),
     inclusions: clean(tour.inclusions),
     exclusions: clean(tour.exclusions),
+    importantToKnow: clean(tour.importantToKnow ?? []),
     itineraryDays: tour.itineraryDays.map((day, index) => ({
       ...day,
       dayNumber: index + 1,
@@ -503,14 +505,19 @@ export default function TourEditorForm({
                 />
               </Field>
             </div>
-            <Field label="Notes" hint="optional">
+            <Field label="Notes" hint="optional — blank lines start a new paragraph">
               <textarea
                 className={inputClass}
-                rows={2}
+                rows={5}
                 value={draft.kashrutDetails.notes ?? ""}
                 onChange={(e) => setKashrut("notes", e.target.value)}
               />
             </Field>
+            <ListTextarea
+              label="Important to know (one per line)"
+              value={draft.importantToKnow ?? []}
+              onChange={(v) => set("importantToKnow", v)}
+            />
           </Section>
 
           <Section title="Included / not included">

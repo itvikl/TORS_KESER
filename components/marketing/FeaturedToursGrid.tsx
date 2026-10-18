@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTourFilter } from "@/components/marketing/TourFilterProvider";
 import TourCard from "@/components/marketing/TourCard";
+import { PhoneLink } from "@/components/marketing/SitePhone";
 
 const INITIAL_VISIBLE = 12;
 
@@ -85,9 +86,7 @@ export default function FeaturedToursGrid() {
           {hasMonthFilter
             ? "No tours depart in those months right now"
             : "No tours match that country right now"} — call us at{" "}
-          <a href="tel:18008470700" className="font-semibold text-[var(--color-ice)]">
-            1-800-847-0700
-          </a>
+          <PhoneLink className="font-semibold text-[var(--color-ice)]" />
           .
         </p>
       ) : (

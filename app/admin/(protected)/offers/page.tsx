@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllOffersAdmin } from "@/lib/data/admin/offers";
 import type { SpecialOffer } from "@/lib/types";
+import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Special Offers" };
 
@@ -50,12 +51,7 @@ export default async function AdminOffersPage() {
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{offer.validUntil ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/offers/${offer.offerId}`}
-                      className="text-sm font-medium text-navy hover:text-navy-light"
-                    >
-                      Edit
-                    </Link>
+                    <IconLink href={`/admin/offers/${offer.offerId}`} icon="edit" label="Edit" />
                   </td>
                 </tr>
               ))}

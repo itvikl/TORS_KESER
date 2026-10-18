@@ -6,6 +6,7 @@ import ReviewStatusButtons from "@/components/admin/ReviewStatusButtons";
 import TestimonialDestinationsPanel from "@/components/admin/TestimonialDestinationsPanel";
 import { getTestimonialGroups } from "@/lib/data/reviews";
 import type { Review } from "@/lib/types";
+import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Reviews" };
 
@@ -71,12 +72,7 @@ export default async function AdminReviewsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-3">
                       <ReviewStatusButtons review={review} />
-                      <Link
-                        href={`/admin/reviews/${review.reviewId}`}
-                        className="text-sm font-medium text-navy hover:text-navy-light"
-                      >
-                        Edit
-                      </Link>
+                      <IconLink href={`/admin/reviews/${review.reviewId}`} icon="edit" label="Edit" />
                     </div>
                   </td>
                 </tr>

@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setReviewStatus } from "@/lib/actions/reviews";
 import type { Review } from "@/lib/types";
+import { IconButton } from "@/components/admin/IconAction";
 
 export default function ReviewStatusButtons({ review }: { review: Review }) {
   const router = useRouter();
@@ -17,26 +18,24 @@ export default function ReviewStatusButtons({ review }: { review: Review }) {
   }
 
   return (
-    <div className="flex justify-end gap-3">
+    <div className="flex items-center justify-end gap-1">
       {review.status !== "approved" && (
-        <button
-          type="button"
+        <IconButton
+          icon="check"
+          label="Approve (show on site)"
+          tone="success"
           disabled={pending}
           onClick={() => change("approved")}
-          className="text-sm font-medium text-olive hover:underline disabled:opacity-60"
-        >
-          Approve
-        </button>
+        />
       )}
       {review.status !== "rejected" && (
-        <button
-          type="button"
+        <IconButton
+          icon="x"
+          label="Reject (hide from site)"
+          tone="danger"
           disabled={pending}
           onClick={() => change("rejected")}
-          className="text-sm font-medium text-terracotta-dark hover:underline disabled:opacity-60"
-        >
-          Reject
-        </button>
+        />
       )}
     </div>
   );

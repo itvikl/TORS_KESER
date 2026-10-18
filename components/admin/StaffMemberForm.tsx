@@ -60,6 +60,20 @@ export default function StaffMemberForm({
           <option value="kashrutSupervisor">Kashrut supervisor</option>
         </select>
       </Field>
+      <Field label="Gender">
+        <select
+          value={draft.gender ?? ""}
+          onChange={(e) => set("gender", (e.target.value || undefined) as Staff["gender"])}
+          className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
+        >
+          <option value="">Not set</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        <p className="mt-1 text-xs text-ink-muted">
+          Used for the placeholder avatar on tour pages when there&apos;s no photo.
+        </p>
+      </Field>
       <Field label="Bio">
         <textarea
           value={draft.bio ?? ""}

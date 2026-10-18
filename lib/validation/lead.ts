@@ -41,5 +41,6 @@ export const ManualLeadInputSchema = z.object({
   ),
   tourId: optionalText(),
   status: z.enum(["new", "contacted", "converted", "closed"]),
+  notes: optionalText(),
 });
 export type ManualLeadInput = z.infer<typeof ManualLeadInputSchema>;

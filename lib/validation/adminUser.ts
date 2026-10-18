@@ -6,3 +6,13 @@ export const UpdateUserRoleInputSchema = z.object({
 });
 
 export type UpdateUserRoleInput = z.infer<typeof UpdateUserRoleInputSchema>;
+
+/** "Add account": the password is only needed when the email has no login yet. */
+export const AddAdminAccountInputSchema = UpdateUserRoleInputSchema.extend({
+  password: z.preprocess(
+    (v) => (typeof v === "string" && v === "" ? undefined : v),
+    z.string().min(8, { error: "Password must be at least 8 characters." }).optional()
+  ),
+});
+
+export type AddAdminAccountInput = z.infer<typeof AddAdminAccountInputSchema>;

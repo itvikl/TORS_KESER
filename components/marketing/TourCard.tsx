@@ -12,7 +12,8 @@ export default function TourCard({
   image: string;
 }) {
   return (
-    <div className="relative">
+    // h-full on both wrappers so every card stretches to its grid row's height.
+    <div className="relative h-full">
       {tour.isSpecialOffer && (
         <div className="absolute -top-3 left-6 z-10 rounded-full bg-[var(--color-offer-gold)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[#0f1524] shadow-lg">
           Special Offer
@@ -20,7 +21,7 @@ export default function TourCard({
       )}
       <Link
         href={`/tours/${tour.slug}`}
-        className="glass-card group flex flex-col overflow-hidden rounded-3xl shadow-2xl backdrop-blur-lg duration-500"
+        className="glass-card group flex h-full flex-col overflow-hidden rounded-3xl shadow-2xl backdrop-blur-lg duration-500"
       >
         <div className="relative h-72 overflow-hidden">
           <SafeImage
@@ -42,7 +43,10 @@ export default function TourCard({
             </span>
           </div>
 
-          <p className="mb-8 text-sm leading-relaxed text-[var(--color-slate)]">{tour.summary}</p>
+          {/* Clamped to 4 lines (about the typical summary's length) so one long summary can't stretch a whole row. */}
+          <p className="mb-8 line-clamp-4 text-sm leading-relaxed text-[var(--color-slate)]">
+            {tour.summary}
+          </p>
 
           <div className="mt-auto flex items-center justify-between border-t border-[var(--color-border-hairline-faint)] pt-4">
             <div className="text-xs font-semibold text-[var(--color-slate)]">

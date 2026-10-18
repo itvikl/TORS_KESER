@@ -74,9 +74,15 @@ export interface TourBookingSummary {
   newCount: number;
 }
 
-/** Registrant counts grouped by tour, for the admin bookings landing page. */
-export async function getBookingCountsByTourAdmin(): Promise<TourBookingSummary[]> {
-  const rows = await getAllBookingsAdmin();
+/**
+ * Registrant counts grouped by tour, for the admin bookings landing page.
+ * Pass `rows` when the caller already has getAllBookingsAdmin() (the
+ * landing page also lists the latest bookings) to skip a second full read.
+ */
+export async function getBookingCountsByTourAdmin(
+  rows?: AdminBookingRow[]
+): Promise<TourBookingSummary[]> {
+  rows ??= await getAllBookingsAdmin();
   const byTour = new Map<string, TourBookingSummary>();
 
   for (const row of rows) {

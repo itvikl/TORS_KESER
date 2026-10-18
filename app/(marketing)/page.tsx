@@ -15,7 +15,7 @@ import {
 } from "@/lib/data/tours";
 import { getSiteContent } from "@/lib/data/siteContent";
 import { getLatestBlogPosts } from "@/lib/data/blog";
-import { hasPlannedDeparture } from "@/lib/departureAvailability";
+import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { bySortOrder } from "@/lib/tourSort";
 import {
   HOME_TOURS_CACHE_TAG,
@@ -61,8 +61,11 @@ const getHomeData = unstable_cache(
 
     // Tours with no departure planned at all are hidden from the listing/search
     // (but their page stays reachable by direct URL — see /tours/[slug]).
+    // Only upcoming dates are passed on, so the card's "Departs …" and the
+    // month filter never use a date that has already gone.
     const toursWithDepartures = toursWithAllDepartures
-      .filter(({ departures }) => hasPlannedDeparture(departures))
+      .map(({ tour, departures }) => ({ tour, departures: departures.filter(isDeparturePlanned) }))
+      .filter(({ departures }) => departures.length > 0)
       .sort((a, b) => bySortOrder(a.tour, b.tour))
       .map(({ tour, departures }, index) => ({
         tour,
