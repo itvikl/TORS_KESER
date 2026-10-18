@@ -193,6 +193,30 @@ export async function getMediaLibrary(): Promise<MediaLibrary> {
   return { items: list, categories };
 }
 
+/**
+ * True when a custom category or a tour country already uses this name
+ * (case-insensitive). Reads only category names and tour countries, not the
+ * whole library.
+ */
+export async function mediaCategoryNameTaken(name: string, exceptId?: string): Promise<boolean> {
+  const wanted = name.trim().toLowerCase();
+  const [categoriesSnap, toursSnap] = await Promise.all([
+    adminDb().collection(CATEGORIES_COLLECTION).select("name").get(),
+    adminDb().collection("tours").select("countries").get(),
+  ]);
+  const customTaken = categoriesSnap.docs.some(
+    (doc) =>
+      doc.id !== exceptId &&
+      String((doc.data() as { name?: string }).name ?? "").toLowerCase() === wanted
+  );
+  if (customTaken) return true;
+  return toursSnap.docs.some((doc) =>
+    ((doc.data() as { countries?: string[] }).countries ?? []).some(
+      (country) => country.toLowerCase() === wanted
+    )
+  );
+}
+
 export async function createMediaCategoryDoc(name: string): Promise<string> {
   const ref = adminDb().collection(CATEGORIES_COLLECTION).doc();
   await ref.set({ categoryId: ref.id, name, createdAt: new Date().toISOString() });
@@ -209,12 +233,17 @@ export async function deleteMediaCategoryDoc(categoryId: string): Promise<void> 
     .collection(ASSETS_COLLECTION)
     .where("categoryIds", "array-contains", categoryId)
     .get();
-  const batch = adminDb().batch();
-  assigned.docs.forEach((doc) =>
-    batch.update(doc.ref, { categoryIds: FieldValue.arrayRemove(categoryId) })
-  );
-  batch.delete(adminDb().collection(CATEGORIES_COLLECTION).doc(categoryId));
-  await batch.commit();
+  // Firestore caps a batch at 500 writes — chunk the unassignments, then
+  // delete the category itself last so a partial failure leaves it visible.
+  const BATCH_LIMIT = 450;
+  for (let i = 0; i < assigned.docs.length; i += BATCH_LIMIT) {
+    const batch = adminDb().batch();
+    assigned.docs
+      .slice(i, i + BATCH_LIMIT)
+      .forEach((doc) => batch.update(doc.ref, { categoryIds: FieldValue.arrayRemove(categoryId) }));
+    await batch.commit();
+  }
+  await adminDb().collection(CATEGORIES_COLLECTION).doc(categoryId).delete();
 }
 
 export async function mediaCategoryExists(categoryId: string): Promise<boolean> {

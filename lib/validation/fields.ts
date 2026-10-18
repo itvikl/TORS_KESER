@@ -8,13 +8,13 @@ export const PASSPORT_MAX_LENGTH = 10;
 export const NAME_MAX_LENGTH = 50;
 export const PHONE_MAX_LENGTH = 20;
 
-export const PASSPORT_PATTERN = /^\d{1,10}$/;
+export const PASSPORT_PATTERN = /^[A-Z0-9]{1,10}$/;
 export const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s'’.-]*$/u;
 export const PHONE_PATTERN = /^\+?[\d\s()-]{5,20}$/;
 
-/** Digits only, at most 10. */
+/** Latin letters (uppercased) and digits, at most 10 — many countries' passport numbers mix both. */
 export function sanitizePassport(value: string): string {
-  return value.replace(/\D/g, "").slice(0, PASSPORT_MAX_LENGTH);
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, PASSPORT_MAX_LENGTH);
 }
 
 /** Letters (any language), spaces, apostrophe, hyphen, dot — no digits or other symbols. */

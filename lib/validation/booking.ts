@@ -31,7 +31,7 @@ export const TravelerInputSchema = z.object({
     }),
   passport: z
     .string()
-    .regex(PASSPORT_PATTERN, { error: "Passport number must be up to 10 digits." })
+    .regex(PASSPORT_PATTERN, { error: "Passport number can only contain letters and digits (up to 10)." })
     .optional(),
   passportScanUrl: z.string().optional(),
   occupancy: z.enum(["double", "single", "triple", "child"]),

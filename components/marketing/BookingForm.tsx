@@ -372,7 +372,6 @@ export default function BookingForm({
                     value={traveler.passport}
                     onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })}
                     maxLength={PASSPORT_MAX_LENGTH}
-                    inputMode="numeric"
                     name={`traveler-${index}-passport`}
                     autoComplete="off"
                   />

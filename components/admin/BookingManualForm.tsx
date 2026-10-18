@@ -210,7 +210,7 @@ export default function BookingManualForm({
                 <TextField label="First name" value={traveler.firstName} onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
                 <TextField label="Last name" value={traveler.lastName} onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
                 <TextField label="Date of birth" type="date" value={traveler.dob} onChange={(v) => updateTraveler(index, { dob: v })} />
-                <TextField label="Passport number" value={traveler.passport} onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })} maxLength={PASSPORT_MAX_LENGTH} inputMode="numeric" />
+                <TextField label="Passport number" value={traveler.passport} onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })} maxLength={PASSPORT_MAX_LENGTH} />
                 <TextField label="Dietary needs" value={traveler.dietary} onChange={(v) => updateTraveler(index, { dietary: v })} />
               </div>
             </div>

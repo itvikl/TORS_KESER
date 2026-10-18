@@ -7,6 +7,7 @@ import {
   getMediaLibrary,
   isCountryCategoryId,
   mediaCategoryExists,
+  mediaCategoryNameTaken,
   renameMediaCategoryDoc,
   setImagesCategoryDoc,
   type MediaLibrary,
@@ -34,8 +35,7 @@ export async function createMediaCategory(name: string): Promise<MediaCategoryRe
   const clean = cleanName(name);
   if (!clean) return { ok: false, error: "Enter a category name (up to 60 characters)." };
 
-  const { categories } = await getMediaLibrary();
-  if (categories.some((c) => c.name.toLowerCase() === clean.toLowerCase())) {
+  if (await mediaCategoryNameTaken(clean)) {
     return { ok: false, error: "A category with this name already exists." };
   }
 
@@ -53,6 +53,9 @@ export async function renameMediaCategory(
   }
   const clean = cleanName(name);
   if (!clean) return { ok: false, error: "Enter a category name (up to 60 characters)." };
+  if (await mediaCategoryNameTaken(clean, categoryId)) {
+    return { ok: false, error: "A category with this name already exists." };
+  }
 
   await renameMediaCategoryDoc(categoryId, clean);
   return { ok: true, categoryId };
