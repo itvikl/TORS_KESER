@@ -3,6 +3,7 @@ import PageHeader from "@/components/marketing/PageHeader";
 import TourCard from "@/components/marketing/TourCard";
 import { getSpecialOffers } from "@/lib/data/offers";
 import { getDeparturesForTour, getSpecialOfferTours } from "@/lib/data/tours";
+import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
@@ -16,13 +17,16 @@ export default async function SpecialOffersPage() {
     getSiteContent("special-offers"),
   ]);
 
-  const tours = await Promise.all(
-    specialOfferTours.map(async (tour) => ({
-      tour,
-      nextDeparture: (await getDeparturesForTour(tour.tourId))[0],
-      image: tour.heroImage || tour.gallery[0] || "",
-    }))
-  );
+  // Same rule as the home page: a special offer with no upcoming date isn't listed.
+  const tours = (
+    await Promise.all(
+      specialOfferTours.map(async (tour) => ({
+        tour,
+        nextDeparture: (await getDeparturesForTour(tour.tourId)).find(isDeparturePlanned),
+        image: tour.heroImage || tour.gallery[0] || "",
+      }))
+    )
+  ).filter(({ nextDeparture }) => nextDeparture);
 
   const isEmpty = offers.length === 0 && tours.length === 0;
 
