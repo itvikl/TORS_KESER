@@ -75,9 +75,8 @@ export default function TourPageView({
     { id: "overview", label: "Overview" },
     ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
     ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
-    { id: "kashrut", label: "Kashrut" },
+    { id: "kashrut", label: importantToKnow.length > 0 ? "Kashrut & What to Know" : "Kashrut" },
     ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
-    ...(importantToKnow.length > 0 ? [{ id: "important", label: "Important to Know" }] : []),
     ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
     { id: "cancellation", label: "Cancellation Policy" },
     { id: "dates", label: "Dates & Booking", mobileOnly: true },
@@ -255,6 +254,24 @@ export default function TourPageView({
                 {tour.kashrutDetails.notes}
               </p>
             )}
+            {importantToKnow.length > 0 && (
+              <div className="border-t border-[var(--color-border-hairline)] pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
+                  Important to know
+                </h3>
+                <ul className="mt-3 space-y-3">
+                  {importantToKnow.map((item, index) => (
+                    <li key={`${index}-${item}`} className="flex items-start gap-3">
+                      <span
+                        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
+                        aria-hidden="true"
+                      />
+                      <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Inclusions / Exclusions */}
@@ -300,24 +317,6 @@ export default function TourPageView({
                   ))}
                 </ul>
               </div>
-            </div>
-          )}
-
-          {/* Important to know */}
-          {importantToKnow.length > 0 && (
-            <div id="important" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
-              <h2 className="text-xl font-bold text-[var(--color-mist)]">Important to Know</h2>
-              <ul className="space-y-3">
-                {importantToKnow.map((item, index) => (
-                  <li key={`${index}-${item}`} className="flex items-start gap-3">
-                    <span
-                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
-                      aria-hidden="true"
-                    />
-                    <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{item}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
 
