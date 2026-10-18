@@ -1,12 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getBookingCountsByTourAdmin } from "@/lib/data/admin/bookings";
+import { getAllBookingsAdmin, getBookingCountsByTourAdmin } from "@/lib/data/admin/bookings";
 import BookingsTourList from "@/components/admin/BookingsTourList";
+import BookingsTable from "@/components/admin/BookingsTable";
+
+const LATEST_COUNT = 10;
 
 export const metadata: Metadata = { title: "Bookings" };
 
-export default async function AdminBookingsPage() {
-  const rows = await getBookingCountsByTourAdmin();
+export default async function AdminBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ latest?: string }>;
+}) {
+  const { latest } = await searchParams;
+  const bookings = await getAllBookingsAdmin(); // newest first
+  const rows = await getBookingCountsByTourAdmin(bookings);
+  const showAll = latest === "all";
+  const latestBookings = showAll ? bookings : bookings.slice(0, LATEST_COUNT);
   const totalRegistrants = rows.reduce((sum, r) => sum + r.registrantCount, 0);
 
   return (
@@ -33,7 +44,27 @@ export default async function AdminBookingsPage() {
           No registrations yet.
         </p>
       ) : (
-        <BookingsTourList rows={rows} />
+        <>
+          <section className="mb-10">
+            <div className="mb-3 flex items-baseline justify-between gap-4">
+              <h2 className="text-lg font-bold text-ink">
+                {showAll ? "All bookings" : "Latest bookings"}
+              </h2>
+              {bookings.length > LATEST_COUNT && (
+                <Link
+                  href={showAll ? "/admin/bookings" : "/admin/bookings?latest=all"}
+                  className="text-sm font-medium text-navy hover:text-navy-light"
+                >
+                  {showAll ? `Show latest ${LATEST_COUNT}` : `Show all ${bookings.length}`}
+                </Link>
+              )}
+            </div>
+            <BookingsTable rows={latestBookings} />
+          </section>
+
+          <h2 className="mb-3 text-lg font-bold text-ink">By tour</h2>
+          <BookingsTourList rows={rows} />
+        </>
       )}
     </div>
   );
