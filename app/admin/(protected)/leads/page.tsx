@@ -2,12 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllLeadsAdmin } from "@/lib/data/admin/leads";
 import LeadStatusSelect from "@/components/admin/LeadStatusSelect";
+import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
 import type { Lead } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Leads" };
 
 export default async function AdminLeadsPage() {
-  const rows = await getAllLeadsAdmin();
+  const rows = await getAllLeadsAdmin(); // newest first
 
   return (
     <div>
@@ -15,15 +16,27 @@ export default async function AdminLeadsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Leads</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            {rows.length} lead{rows.length === 1 ? "" : "s"}
+            {rows.length} lead{rows.length === 1 ? "" : "s"} · newest first
           </p>
         </div>
-        <Link
-          href="/admin/leads/new"
-          className="shrink-0 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
-        >
-          + New lead
-        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          {rows.length > 0 && (
+            // A file download (route handler), not a page — <Link> would try a client-side navigation.
+            // eslint-disable-next-line @next/next/no-html-link-for-pages
+            <a
+              href="/admin/leads/export"
+              className="rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm"
+            >
+              Export to Excel
+            </a>
+          )}
+          <Link
+            href="/admin/leads/new"
+            className="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+          >
+            + New lead
+          </Link>
+        </div>
       </div>
 
       {rows.length === 0 ? (
@@ -32,21 +45,28 @@ export default async function AdminLeadsPage() {
         </p>
       ) : (
         <div className="overflow-hidden overflow-x-auto rounded-xl border border-line bg-white">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="w-full min-w-[960px] text-left text-sm">
             <thead className="border-b border-line bg-sand-warm/60 text-xs font-semibold uppercase tracking-wide text-ink-muted">
               <tr>
                 <th className="px-4 py-3">Contact</th>
                 <th className="px-4 py-3">Tour / Destination</th>
                 <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Notes</th>
                 <th className="px-4 py-3">Received</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {rows.map(({ lead, tour }) => (
                 <tr key={lead.leadId} className="align-top">
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-ink">{lead.name ?? "—"}</p>
+                    <Link
+                      href={`/admin/leads/${lead.leadId}`}
+                      className="font-semibold text-ink hover:text-navy"
+                    >
+                      {lead.name ?? "—"}
+                    </Link>
                     {lead.email && <p className="text-xs text-ink-muted">{lead.email}</p>}
                     {lead.phone && <p className="text-xs text-ink-muted">{lead.phone}</p>}
                   </td>
@@ -60,11 +80,24 @@ export default async function AdminLeadsPage() {
                     <LeadStatusSelect leadId={lead.leadId} status={lead.status} />
                   </td>
                   <td className="px-4 py-3 text-ink-muted">
+                    <p className="line-clamp-2 max-w-56 text-xs" title={lead.notes}>
+                      {lead.notes ?? "—"}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">
                     {new Date(lead.createdAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
                     })}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/leads/${lead.leadId}`}
+                      className="text-sm font-medium text-navy hover:text-navy-light"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -76,17 +109,10 @@ export default async function AdminLeadsPage() {
   );
 }
 
-const SOURCE_LABELS: Record<Lead["source"], string> = {
-  contact: "Contact form",
-  custom: "Custom tour",
-  evergreen: "Evergreen",
-  manual: "Manual",
-};
-
 function SourceBadge({ source }: { source: Lead["source"] }) {
   return (
     <span className="inline-block rounded-full bg-sand-warm px-2.5 py-0.5 text-xs font-semibold text-ink-muted">
-      {SOURCE_LABELS[source]}
+      {LEAD_SOURCE_LABELS[source]}
     </span>
   );
 }

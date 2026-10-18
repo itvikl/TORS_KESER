@@ -26,3 +26,8 @@ export async function getAllLeadsAdmin(): Promise<AdminLeadRow[]> {
   rows.sort((a, b) => b.lead.createdAt.localeCompare(a.lead.createdAt));
   return rows;
 }
+
+export async function getLeadByIdAdmin(leadId: string): Promise<Lead | null> {
+  const doc = await adminDb().collection(LEADS_COLLECTION).doc(leadId).get();
+  return doc.exists ? (doc.data() as Lead) : null;
+}

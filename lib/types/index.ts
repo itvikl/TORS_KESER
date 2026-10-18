@@ -224,7 +224,11 @@ export interface Lead {
   groupSize?: number;
   source: LeadSource;
   status: "new" | "contacted" | "converted" | "closed";
+  /** Staff-only notes (follow-ups, what was discussed) — never shown to the customer. */
+  notes?: string;
   createdAt: string;
+  /** Set when staff edit the lead in admin. */
+  updatedAt?: string;
 }
 
 export interface BlogPost {

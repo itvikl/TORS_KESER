@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
 import {
@@ -72,6 +73,54 @@ export async function createLeadManually(
 
   await saveLead({ ...parsed.data, source: "manual" });
   revalidatePath("/admin/leads");
+  redirect("/admin/leads");
+}
+
+/** Fields staff can edit — the same ones ManualLeadInputSchema validates. */
+const EDITABLE_LEAD_FIELDS = [
+  "name",
+  "email",
+  "phone",
+  "country",
+  "message",
+  "destination",
+  "groupSize",
+  "tourId",
+  "status",
+  "notes",
+] as const;
+
+/**
+ * Bound (with the lead id) as the `action` of the admin lead edit form.
+ * Every editable field is written, and a field left blank is removed —
+ * otherwise clearing a field in the form would silently keep the old value.
+ * Source and received date stay as they were.
+ */
+export async function updateLead(
+  leadId: string,
+  _prevState: LeadFormState,
+  formData: FormData
+): Promise<LeadFormState> {
+  await requireAdminSession();
+
+  const parsed = ManualLeadInputSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { ok: false, errors: zodErrors(parsed.error.issues) };
+  }
+
+  const ref = adminDb().collection("leads").doc(leadId);
+  if (!(await ref.get()).exists) {
+    return { ok: false, errors: { form: ["This lead no longer exists."] } };
+  }
+
+  const patch: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+  for (const field of EDITABLE_LEAD_FIELDS) {
+    patch[field] = parsed.data[field] ?? FieldValue.delete();
+  }
+  await ref.update(patch);
+
+  revalidatePath("/admin/leads");
+  revalidatePath(`/admin/leads/${leadId}`);
   redirect("/admin/leads");
 }
 
