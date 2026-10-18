@@ -73,6 +73,8 @@ export interface Tour {
   isSpecialOffer?: boolean;
   inclusions: string[];
   exclusions: string[];
+  /** "Important to Know" on the tour page — group minimums, passport validity, price-change terms, etc. */
+  importantToKnow?: string[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];
