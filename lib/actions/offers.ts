@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { OfferInputSchema } from "@/lib/validation/offer";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -21,6 +22,7 @@ export async function saveOffer(input: unknown, offerId?: string): Promise<SaveO
   const savedId = offerId
     ? await updateOfferDoc(offerId, parsed.data)
     : await createOfferDoc(parsed.data);
+  await syncContentMediaSafely("specialOffers", savedId);
 
   revalidatePath("/admin/offers");
   revalidatePath(`/admin/offers/${savedId}`);

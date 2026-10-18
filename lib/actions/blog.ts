@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { BlogPostInputSchema } from "@/lib/validation/blogPost";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -24,6 +25,7 @@ export async function saveBlogPost(input: unknown, postId?: string): Promise<Sav
   }
 
   const savedId = postId ? await updateBlogPostDoc(postId, data) : await createBlogPostDoc(data);
+  await syncContentMediaSafely("blogPosts", savedId);
 
   revalidatePath("/admin/blog");
   revalidatePath(`/admin/blog/${savedId}`);

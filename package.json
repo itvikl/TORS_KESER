@@ -15,6 +15,7 @@
     "migrate-legacy-tours": "tsx scripts/migrate-legacy-tours.ts",
     "migrate-legacy-blog": "tsx scripts/migrate-legacy-blog.ts",
     "migrate-legacy-testimonials": "tsx scripts/migrate-legacy-testimonials.ts",
+    "index-media-library": "tsx scripts/migrate/index-media-library.ts",
     "deploy:apphosting": "firebase deploy --only apphosting --project kesertors"
   },
   "dependencies": {

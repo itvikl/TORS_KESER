@@ -2,6 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { TourInputSchema } from "@/lib/validation/tour";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -42,6 +43,7 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
   }
 
   const savedId = tourId ? await updateTourDoc(tourId, data) : await createTourDoc(data);
+  await syncContentMediaSafely("tours", savedId);
 
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${savedId}`);
@@ -80,6 +82,7 @@ export async function duplicateTour(tourId: string): Promise<{ ok: false; error:
   await requireAdminSession();
   const newTourId = await duplicateTourDoc(tourId);
   if (!newTourId) return { ok: false, error: "Tour not found." };
+  await syncContentMediaSafely("tours", newTourId);
   revalidatePath("/admin/tours");
   redirect(`/admin/tours/${newTourId}`);
 }

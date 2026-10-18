@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { StaffInputSchema } from "@/lib/validation/staff";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -22,6 +23,7 @@ export async function saveStaffMember(input: unknown, staffId?: string): Promise
   const savedId = staffId
     ? await updateStaffDoc(staffId, parsed.data)
     : await createStaffDoc(parsed.data);
+  await syncContentMediaSafely("staff", savedId);
 
   revalidatePath("/admin/staff/team");
 

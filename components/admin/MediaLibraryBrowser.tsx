@@ -1,42 +1,38 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   createMediaCategory,
   deleteMediaCategory,
-  listMediaLibrary,
+  deleteUnusedImages,
+  listMediaCategories,
+  listMediaPage,
   renameMediaCategory,
   setImagesCategory,
 } from "@/lib/actions/mediaLibrary";
 import { uploadImage } from "@/lib/actions/uploads";
 import type {
   MediaCategory,
-  MediaLibrary,
+  MediaCategoryList,
   MediaLibraryItem,
 } from "@/lib/data/admin/mediaLibrary";
 
-/** Pseudo-folders alongside real categories. */
+/** Pseudo-folders alongside real categories — same values as ALL_MEDIA / UNCATEGORIZED_MEDIA on the server. */
 const ALL = "__all";
 const UNCATEGORIZED = "__uncategorized";
-
-function inCategory(item: MediaLibraryItem, id: string): boolean {
-  if (id === ALL) return true;
-  if (id === UNCATEGORIZED) {
-    return item.manualCategoryIds.length === 0 && item.autoCategoryIds.length === 0;
-  }
-  return item.manualCategoryIds.includes(id) || item.autoCategoryIds.includes(id);
-}
 
 /**
  * Category-first image library: opens on a grid of folders (custom
  * categories, then one per tour country), and clicking one shows its
- * images. "pick" mode (inside MediaLibraryPicker) selects images for a
- * form field; "manage" mode (the Image Library page) creates/renames/deletes
- * categories and assigns images to them. Both can upload straight into the
- * open category.
+ * images, a page at a time as you scroll. "pick" mode (inside
+ * MediaLibraryPicker) selects images for a form field; "manage" mode (the
+ * Image Library page) creates/renames/deletes categories, assigns images to
+ * them, and deletes unused images. Both can upload straight into the open
+ * category.
  *
- * Plain <img> rather than next/image: legacy URLs from the old site aren't
- * in next.config's remotePatterns, and these are admin-only thumbnails.
+ * Every library image is in our Storage bucket (see lib/media/assets.ts), so
+ * thumbnails go through next/image and load small, resized copies.
  */
 export default function MediaLibraryBrowser({
   mode,
@@ -48,7 +44,7 @@ export default function MediaLibraryBrowser({
   /** pick mode: called with the chosen URLs (once for single, on "Add selected" for multiple). */
   onPick?: (urls: string[]) => void;
 }) {
-  const [library, setLibrary] = useState<MediaLibrary | null>(null);
+  const [categoryList, setCategoryList] = useState<MediaCategoryList | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -56,42 +52,115 @@ export default function MediaLibraryBrowser({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
+  // Images of the open scope, loaded page by page.
+  const [items, setItems] = useState<MediaLibraryItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(false);
+  const loadedScope = useRef<string | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Searching from the folder view searches every image.
+  const scope = categoryId ?? (query.trim() ? ALL : null);
+
+  const reloadCategories = useCallback(async () => {
     try {
-      setLibrary(await listMediaLibrary());
+      setCategoryList(await listMediaCategories());
       setLoadError(null);
     } catch {
       setLoadError("Couldn't load the image library.");
     }
   }, []);
 
+  /** Loads the page after `cursor` (or the first); `untilEnd` keeps going — search is client-side, so it needs everything. */
+  const loadPage = useCallback(
+    async (forScope: string, cursor: string | null, untilEnd = false) => {
+      setPageLoading(true);
+      try {
+        let next: string | null = cursor;
+        do {
+          const page = await listMediaPage(forScope, next);
+          // Ignore a late answer for a scope the user already left.
+          if (loadedScope.current !== forScope) return;
+          const isFirst = next === null;
+          setItems((prev) => (isFirst ? page.items : [...prev, ...page.items]));
+          setNextCursor(page.nextCursor);
+          next = page.nextCursor;
+        } while (untilEnd && next);
+      } catch {
+        setLoadError("Couldn't load images.");
+      } finally {
+        setPageLoading(false);
+      }
+    },
+    []
+  );
+
+  /** Switches the grid to a new scope (category, ALL, UNCATEGORIZED, or null = folders). */
+  function showScope(nextScope: string | null, untilEnd = false) {
+    if (nextScope === loadedScope.current) return;
+    loadedScope.current = nextScope;
+    setItems([]);
+    setNextCursor(null);
+    if (nextScope) void loadPage(nextScope, null, untilEnd);
+  }
+
+  function changeQuery(value: string) {
+    setQuery(value);
+    if (!value.trim()) {
+      if (categoryId === null) showScope(null);
+      return;
+    }
+    if (categoryId === null) showScope(ALL, true);
+    else if (nextCursor && !pageLoading && loadedScope.current) {
+      void loadPage(loadedScope.current, nextCursor, true);
+    }
+  }
+
+  /** Re-fetches counts and restarts the open scope from its first page (after any change). */
+  const reload = useCallback(async () => {
+    const tasks: Promise<void>[] = [reloadCategories()];
+    if (loadedScope.current) tasks.push(loadPage(loadedScope.current, null));
+    await Promise.all(tasks);
+  }, [reloadCategories, loadPage]);
+
   useEffect(() => {
-    listMediaLibrary()
-      .then(setLibrary)
+    listMediaCategories()
+      .then(setCategoryList)
       .catch(() => setLoadError("Couldn't load the image library."));
   }, []);
 
-  const categories = useMemo(() => library?.categories ?? [], [library]);
+  // Next page when the end of the grid scrolls into view.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!scope || !nextCursor || pageLoading || !sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) void loadPage(scope, nextCursor);
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [scope, nextCursor, pageLoading, loadPage]);
+
+  const categories = useMemo(() => categoryList?.categories ?? [], [categoryList]);
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const current = categoryId ? categoryById.get(categoryId) : undefined;
-  const items = useMemo(() => library?.items ?? [], [library]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // Searching from the folder view searches every image.
-    const scope = categoryId ?? ALL;
+    if (!q) return items;
     return items.filter((item) => {
-      if (!inCategory(item, scope)) return false;
-      if (!q) return true;
       const names = [...item.manualCategoryIds, ...item.autoCategoryIds]
         .map((id) => categoryById.get(id)?.name ?? "")
         .join(" ");
       return `${item.usedIn.join(" ")} ${names}`.toLowerCase().includes(q);
     });
-  }, [items, categoryId, query, categoryById]);
+  }, [items, query, categoryById]);
 
   function openCategory(id: string | null) {
     setCategoryId(id);
+    showScope(id);
     // Picking keeps its selection across folders; managing acts per folder.
     if (mode === "manage") setSelected([]);
     setQuery("");
@@ -118,7 +187,7 @@ export default function MediaLibraryBrowser({
     setBusy(false);
   }
 
-  const showFolders = categoryId === null && !query.trim();
+  const showFolders = scope === null;
   const canAssignHere = Boolean(current);
 
   return (
@@ -151,7 +220,7 @@ export default function MediaLibraryBrowser({
         <input
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => changeQuery(e.target.value)}
           placeholder={categoryId === null ? "Search all images…" : "Search in this category…"}
           className="min-w-44 flex-1 rounded-lg border border-line px-3 py-2 text-sm text-ink outline-none focus:border-navy"
         />
@@ -196,13 +265,15 @@ export default function MediaLibraryBrowser({
       <div className="min-h-0 flex-1 overflow-y-auto p-5">
         {message && <p className="mb-3 text-sm font-medium text-terracotta-dark">{message}</p>}
         {loadError && <p className="text-sm font-medium text-terracotta-dark">{loadError}</p>}
-        {!loadError && library === null && <p className="text-sm text-ink-muted">Loading images…</p>}
+        {!loadError && categoryList === null && (
+          <p className="text-sm text-ink-muted">Loading images…</p>
+        )}
 
-        {library !== null && showFolders && (
+        {categoryList !== null && showFolders && (
           <FolderGrid
             categories={categories}
-            allCount={items.length}
-            uncategorizedCount={items.filter((i) => inCategory(i, UNCATEGORIZED)).length}
+            allCount={categoryList.totalCount}
+            uncategorizedCount={categoryList.uncategorizedCount}
             onOpen={openCategory}
             onCreate={(name) =>
               run(async () => {
@@ -215,9 +286,9 @@ export default function MediaLibraryBrowser({
           />
         )}
 
-        {library !== null && !showFolders && (
+        {categoryList !== null && !showFolders && (
           <>
-            {visible.length === 0 && (
+            {visible.length === 0 && !pageLoading && !nextCursor && (
               <p className="text-sm text-ink-muted">
                 {query.trim()
                   ? "No images match."
@@ -235,6 +306,8 @@ export default function MediaLibraryBrowser({
                 />
               ))}
             </ul>
+            <div ref={sentinelRef} aria-hidden="true" />
+            {pageLoading && <p className="mt-3 text-sm text-ink-muted">Loading images…</p>}
           </>
         )}
       </div>
@@ -286,6 +359,20 @@ export default function MediaLibraryBrowser({
                     Remove from {current.name}
                   </button>
                 )}
+                <DeleteImagesButton
+                  count={selected.length}
+                  disabled={busy}
+                  onDelete={() =>
+                    run(async () => {
+                      const result = await deleteUnusedImages(selected);
+                      setSelected([]);
+                      await reload();
+                      return result.inUse > 0
+                        ? `Deleted ${result.deleted}. ${result.inUse} image(s) are used on the site and were kept — remove them from their page first.`
+                        : `Deleted ${result.deleted} image(s).`;
+                    })
+                  }
+                />
               </>
             )}
             {mode === "pick" && (
@@ -452,8 +539,13 @@ function ImageTile({
         }`}
       >
         <span className="relative block aspect-[4/3] bg-sand-warm">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+          <Image
+            src={item.url}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 200px, 45vw"
+            className="object-cover"
+          />
           {isSelected && (
             <span className="absolute end-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-navy text-xs font-bold text-white">
               {selectedIndex + 1}
@@ -471,6 +563,53 @@ function ImageTile({
         )}
       </button>
     </li>
+  );
+}
+
+function DeleteImagesButton({
+  count,
+  disabled,
+  onDelete,
+}: {
+  count: number;
+  disabled: boolean;
+  onDelete: () => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm">
+        <span className="text-ink-muted">
+          Delete {count} image{count === 1 ? "" : "s"} for good? Images used on the site are kept.
+        </span>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => {
+            setConfirming(false);
+            onDelete();
+          }}
+          className="font-semibold text-terracotta-dark hover:underline disabled:opacity-60"
+        >
+          Delete
+        </button>
+        <button type="button" onClick={() => setConfirming(false)} className="text-ink-muted hover:underline">
+          Cancel
+        </button>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => setConfirming(true)}
+      className="rounded-lg border border-line px-3.5 py-2 text-sm font-semibold text-terracotta-dark transition-colors hover:bg-sand-warm disabled:opacity-60"
+    >
+      Delete images
+    </button>
   );
 }
 
@@ -531,7 +670,10 @@ function CategoryActions({
   if (confirming) {
     return (
       <span className="inline-flex items-center gap-2 text-sm">
-        <span className="text-ink-muted">Delete &ldquo;{category.name}&rdquo;? Images stay in the library.</span>
+        <span className="text-ink-muted">
+          Delete &ldquo;{category.name}&rdquo;? Its images stay in the library (uncategorized if this
+          was their only category).
+        </span>
         <button
           type="button"
           disabled={disabled}

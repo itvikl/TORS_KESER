@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { ReviewInputSchema } from "@/lib/validation/review";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -23,6 +24,7 @@ export async function saveReview(input: unknown, reviewId?: string): Promise<Sav
   const savedId = reviewId
     ? await updateReviewDoc(reviewId, parsed.data)
     : await createReviewDoc(parsed.data);
+  await syncContentMediaSafely("reviews", savedId);
 
   revalidatePath("/admin/reviews");
   revalidatePath(`/admin/reviews/${savedId}`);

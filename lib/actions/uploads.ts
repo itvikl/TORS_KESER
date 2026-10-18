@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { adminStorage } from "@/lib/firebase/admin";
+import { recordUploadedImage } from "@/lib/data/admin/mediaLibrary";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES: Record<string, string> = {
@@ -56,6 +57,14 @@ export async function uploadImage(formData: FormData, folder = "tours"): Promise
   const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
     path
   )}?alt=media&token=${downloadToken}`;
+
+  // Index it for the image library. A failure here mustn't lose the upload —
+  // the next save of the content using it indexes it too (syncContentMedia).
+  try {
+    await recordUploadedImage(url);
+  } catch (error) {
+    console.error("Failed to index uploaded image", error);
+  }
 
   return { ok: true, url };
 }
