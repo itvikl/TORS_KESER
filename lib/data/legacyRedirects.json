@@ -401,72 +401,72 @@
   },
   {
     "source": "/testemonials-australia-new-zealand",
-    "destination": "/testimonials",
+    "destination": "/testimonials#australia-new-zealand",
     "permanent": true
   },
   {
     "source": "/testemonials-baltic-sea",
-    "destination": "/testimonials",
+    "destination": "/testimonials#baltic-sea",
     "permanent": true
   },
   {
     "source": "/testemonials-canada-alaska",
-    "destination": "/testimonials",
+    "destination": "/testimonials#canada-alaska",
     "permanent": true
   },
   {
     "source": "/testemonials-china",
-    "destination": "/testimonials",
+    "destination": "/testimonials#china",
     "permanent": true
   },
   {
     "source": "/testemonials-costa-rica",
-    "destination": "/testimonials",
+    "destination": "/testimonials#costa-rica",
     "permanent": true
   },
   {
     "source": "/testemonials-japan",
-    "destination": "/testimonials",
+    "destination": "/testimonials#japan",
     "permanent": true
   },
   {
     "source": "/testemonials-morocco-2",
-    "destination": "/testimonials",
+    "destination": "/testimonials#morocco",
     "permanent": true
   },
   {
     "source": "/testemonials-morocco-3",
-    "destination": "/testimonials",
+    "destination": "/testimonials#morocco",
     "permanent": true
   },
   {
     "source": "/testemonials-peru-2",
-    "destination": "/testimonials",
+    "destination": "/testimonials#peru",
     "permanent": true
   },
   {
     "source": "/testemonials-spain-portugal",
-    "destination": "/testimonials",
+    "destination": "/testimonials#spain-portugal",
     "permanent": true
   },
   {
     "source": "/testemonials-tanzania",
-    "destination": "/testimonials",
+    "destination": "/testimonials#tanzania",
     "permanent": true
   },
   {
     "source": "/testemonials-vietnam-and-cambodia",
-    "destination": "/testimonials",
+    "destination": "/testimonials#vietnam-cambodia",
     "permanent": true
   },
   {
     "source": "/testemonials-western-europe",
-    "destination": "/testimonials",
+    "destination": "/testimonials#western-europe",
     "permanent": true
   },
   {
     "source": "/testimonials-morocco",
-    "destination": "/testimonials",
+    "destination": "/testimonials#morocco",
     "permanent": true
   },
   {

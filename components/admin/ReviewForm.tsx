@@ -10,7 +10,7 @@ const BLANK: Review = {
   reviewId: "",
   tourId: "",
   customerName: "",
-  rating: 5,
+  rating: undefined,
   photo: undefined,
   body: "",
   status: "approved",
@@ -18,10 +18,13 @@ const BLANK: Review = {
 
 export default function ReviewForm({
   tours,
+  destinations = [],
   reviewId,
   initialReview,
 }: {
   tours: Tour[];
+  /** Destinations already in use — suggested in the Destination field. */
+  destinations?: string[];
   /** Present when editing an existing review; omitted when creating a new one. */
   reviewId?: string;
   initialReview?: Review;
@@ -78,10 +81,11 @@ export default function ReviewForm({
         </Field>
         <Field label="Rating" error={errors.rating}>
           <select
-            value={draft.rating}
-            onChange={(e) => set("rating", Number(e.target.value))}
+            value={draft.rating ?? ""}
+            onChange={(e) => set("rating", e.target.value ? Number(e.target.value) : undefined)}
             className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
           >
+            <option value="">No rating given</option>
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
                 {n} star{n === 1 ? "" : "s"}
@@ -90,6 +94,25 @@ export default function ReviewForm({
           </select>
         </Field>
       </div>
+
+      <Field label="Destination" error={errors.destination}>
+        <input
+          value={draft.destination ?? ""}
+          onChange={(e) => set("destination", e.target.value || undefined)}
+          list="review-destinations"
+          placeholder="e.g. China, Spain & Portugal — blank uses the tour's first country"
+          maxLength={60}
+          className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
+        />
+        <datalist id="review-destinations">
+          {destinations.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        <p className="mt-1 text-xs text-ink-muted">
+          Groups the letter on the Testimonials page and shows it on tours visiting that destination.
+        </p>
+      </Field>
 
       <Field label="Review text" error={errors.body}>
         <textarea

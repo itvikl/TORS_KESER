@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import * as cheerio from "cheerio";
 import { COUNTRIES } from "../../lib/countries";
 import type { Review, Tour } from "../../lib/types";
+import { FieldValue } from "firebase-admin/firestore";
 import {
   ASSETS_COLLECTION,
   CATEGORIES_COLLECTION,
@@ -28,10 +29,13 @@ import {
  * The pages mix two layouts:
  *   a) text…, signature, "Tours to X >" link, [photo]   (photo follows its letter)
  *   b) <strong>heading</strong>, text…, [photo]         (no link; photo ends it)
- * Both are handled. Letters already in Firestore (matched by body text) are
- * skipped, but get the photo if they're missing one. Photos are copied into
- * Storage (reviews/legacy/…) and indexed in the image library under a
- * "Testimonials" category. New reviews are written as approved, 5 stars.
+ * Both are handled. Every letter gets the old page's destination ("China",
+ * "Spain & Portugal", …) — /testimonials groups by it, as the old site did.
+ * Letters already in Firestore (matched by body text) are not duplicated;
+ * they get their destination, their photo if missing, and lose the 5-star
+ * rating the first migration made up (the old site had no ratings). Photos
+ * are copied into Storage (reviews/legacy/…) and indexed in the image
+ * library under a "Testimonials" category. New reviews are approved, unrated.
  *
  * Dry run by default (writes scripts/migrate/output/testimonials-import-preview.json).
  * Run with: npx tsx scripts/migrate/import-legacy-testimonials.ts [--commit]
@@ -56,6 +60,17 @@ async function fetchHtml(url: string): Promise<string> {
   return res.text();
 }
 
+/** "TESTIMONIALS – SPAIN & PORTUGAL" → "Spain & Portugal". */
+function destinationFromTitle(title: string): string | undefined {
+  const raw = title.split(/[–-]/).slice(1).join("-").trim();
+  if (!raw) return undefined;
+  return raw
+    .toLowerCase()
+    .split(" ")
+    .map((word, i) => (i > 0 && ["and", "of", "the"].includes(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+    .join(" ");
+}
+
 function clean(text: string): string {
   return text.replace(/ /g, " ").replace(/\s+/g, " ").trim();
 }
@@ -68,7 +83,8 @@ function parsePage(url: string, html: string): Letter[] {
   const $ = cheerio.load(html);
   const countryHint = clean($("h1.section_title").first().text());
   const letters: Letter[] = [];
-  let current: Letter | null = null;
+  // Widened on purpose: close() and open() reassign it, which TS narrowing can't see.
+  let current = null as Letter | null;
 
   const close = () => {
     if (current && current.lines.length) letters.push(current);
@@ -195,7 +211,7 @@ async function main() {
   });
 
   const toCreate: { review: Review; photoUrl?: string }[] = [];
-  const photoForExisting: { review: Review; photoUrl: string }[] = [];
+  const updateExisting: { review: Review; destination?: string; photoUrl?: string }[] = [];
   const unmatched: string[] = [];
   let alreadyThere = 0;
 
@@ -212,10 +228,17 @@ async function main() {
 
     for (const letter of letters) {
       const { customerName, body } = splitSignature(letter.lines);
+      const destination = destinationFromTitle(letter.countryHint);
       const match = existingByBody.get(normalizeBody(body));
       if (match) {
-        alreadyThere++;
-        if (!match.photo && letter.photoUrl) photoForExisting.push({ review: match, photoUrl: letter.photoUrl });
+        if (match.reviewId) {
+          alreadyThere++;
+          updateExisting.push({
+            review: match,
+            destination,
+            photoUrl: !match.photo ? letter.photoUrl : undefined,
+          });
+        }
         continue;
       }
       const country =
@@ -229,16 +252,21 @@ async function main() {
       existingByBody.set(normalizeBody(body), { body } as Review);
       const reviewId = `legacy-${slug}-${createHash("sha1").update(body).digest("hex").slice(0, 8)}`;
       toCreate.push({
-        review: { reviewId, tourId: tour.tourId, customerName, rating: 5, body, status: "approved" },
+        review: { reviewId, tourId: tour.tourId, customerName, body, status: "approved", destination },
         photoUrl: letter.photoUrl,
       });
     }
   }
 
-  const newPhotos = toCreate.filter((r) => r.photoUrl).length + photoForExisting.length;
+  // Legacy reviews the old pages no longer show (e.g. the India page is gone) still lose the made-up rating.
+  const touched = new Set(updateExisting.map((u) => u.review.reviewId));
+  const otherLegacy = existing.filter((r) => r.reviewId.startsWith("legacy-") && !touched.has(r.reviewId));
+  const missingPhotos = updateExisting.filter((u) => u.photoUrl).length;
+  const newPhotos = toCreate.filter((r) => r.photoUrl).length + missingPhotos;
   console.log(
     `\nNew testimonials: ${toCreate.length} (${toCreate.filter((r) => r.photoUrl).length} with photo)` +
-      `\nAlready imported: ${alreadyThere} (${photoForExisting.length} get their missing photo)` +
+      `\nAlready imported: ${alreadyThere} — destination set, made-up rating removed, ${missingPhotos} get their missing photo` +
+      `\nOther legacy reviews (rating removed only): ${otherLegacy.length}` +
       `\nPhotos to copy into Storage: ${newPhotos}` +
       `\nUnmatched to a tour (skipped): ${unmatched.length}`
   );
@@ -249,7 +277,7 @@ async function main() {
   mkdirSync("scripts/migrate/output", { recursive: true });
   writeFileSync(
     "scripts/migrate/output/testimonials-import-preview.json",
-    JSON.stringify({ toCreate, photoForExisting, unmatched }, null, 2),
+    JSON.stringify({ toCreate, updateExisting, otherLegacy, unmatched }, null, 2),
     "utf-8"
   );
   console.log("Preview: scripts/migrate/output/testimonials-import-preview.json");
@@ -297,10 +325,19 @@ async function main() {
     await db.collection("reviews").doc(review.reviewId).set(review);
     console.log(`  created ${review.reviewId} — ${review.customerName}`);
   }
-  for (const { review, photoUrl } of photoForExisting) {
-    const photo = await copyPhoto(photoUrl, review.reviewId, `Review: ${review.customerName}`);
-    if (photo) await db.collection("reviews").doc(review.reviewId).update({ photo });
-    console.log(`  photo added to ${review.reviewId}`);
+  for (const { review, destination, photoUrl } of updateExisting) {
+    const patch: Record<string, unknown> = { rating: FieldValue.delete() };
+    if (destination) patch.destination = destination;
+    if (photoUrl) {
+      const photo = await copyPhoto(photoUrl, review.reviewId, `Review: ${review.customerName}`);
+      if (photo) patch.photo = photo;
+    }
+    await db.collection("reviews").doc(review.reviewId).update(patch);
+    console.log(`  updated ${review.reviewId}${patch.photo ? " (+photo)" : ""}`);
+  }
+  for (const review of otherLegacy) {
+    await db.collection("reviews").doc(review.reviewId).update({ rating: FieldValue.delete() });
+    console.log(`  rating removed from ${review.reviewId}`);
   }
   console.log("Done.");
 }

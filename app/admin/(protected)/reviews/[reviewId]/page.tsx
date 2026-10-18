@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ReviewForm from "@/components/admin/ReviewForm";
-import { getReviewByIdAdmin } from "@/lib/data/admin/reviews";
+import { getAllReviewsAdmin, getReviewByIdAdmin } from "@/lib/data/admin/reviews";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 
 export async function generateMetadata({
@@ -20,7 +20,11 @@ export default async function EditReviewPage({
   params: Promise<{ reviewId: string }>;
 }) {
   const { reviewId } = await params;
-  const [review, tours] = await Promise.all([getReviewByIdAdmin(reviewId), getAllToursAdmin()]);
+  const [review, tours, reviews] = await Promise.all([
+    getReviewByIdAdmin(reviewId),
+    getAllToursAdmin(),
+    getAllReviewsAdmin(),
+  ]);
   if (!review) notFound();
   tours.sort((a, b) => a.title.localeCompare(b.title));
 
@@ -32,7 +36,14 @@ export default async function EditReviewPage({
           Editing an existing review — changes appear on the public testimonials page once approved.
         </p>
       </div>
-      <ReviewForm tours={tours} reviewId={reviewId} initialReview={review} />
+      <ReviewForm
+        tours={tours}
+        destinations={Array.from(
+          new Set(reviews.map((r) => r.destination?.trim()).filter((d): d is string => !!d))
+        ).sort()}
+        reviewId={reviewId}
+        initialReview={review}
+      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import type { Departure, Staff, Tour } from "@/lib/types";
+import type { Departure, Review, Staff, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import TourSectionNav, { type TourSectionLink } from "@/components/marketing/TourSectionNav";
+import TestimonialCard from "@/components/marketing/TestimonialCard";
 import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
@@ -39,6 +40,7 @@ export default function TourPageView({
   tour,
   departures,
   guides = [],
+  testimonials = [],
   previewMode = false,
   lowSeatsThreshold = 5,
 }: {
@@ -46,6 +48,8 @@ export default function TourPageView({
   departures: Departure[];
   /** Staff records for the guides assigned (Departure.guideId) to this tour's departures. */
   guides?: Staff[];
+  /** Approved reviews for this tour's destinations (lib/data/reviews.ts getApprovedReviewsForTour). */
+  testimonials?: Review[];
   /** True when rendered inside the admin's preview pane for an unpublished draft. */
   previewMode?: boolean;
   /** At/below this remaining-seats count, the departure pill shows the exact number. Defaults to the site's pre-existing behavior for the preview contexts that don't fetch SiteSettings. */
@@ -64,6 +68,7 @@ export default function TourPageView({
     .map((line) => line.trim())
     .filter(Boolean);
   const hasItinerary = tour.itineraryDays.length > 0;
+  const shownTestimonials = testimonials.slice(0, 4);
   const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
   const sections: TourSectionLink[] = [
     { id: "overview", label: "Overview" },
@@ -71,6 +76,7 @@ export default function TourPageView({
     ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
     { id: "kashrut", label: "Kashrut" },
     ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
+    ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
     { id: "cancellation", label: "Cancellation Policy" },
     { id: "dates", label: "Dates & Booking", mobileOnly: true },
   ];
@@ -291,6 +297,28 @@ export default function TourPageView({
                     </li>
                   ))}
                 </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Testimonials */}
+          {shownTestimonials.length > 0 && (
+            <div id="testimonials" className="space-y-6">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
+                  What Travelers Say
+                </h2>
+                <a
+                  href="/testimonials"
+                  className="text-sm font-semibold text-[var(--color-ice)] hover:underline"
+                >
+                  All testimonials &rarr;
+                </a>
+              </div>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {shownTestimonials.map((review) => (
+                  <TestimonialCard key={review.reviewId} review={review} />
+                ))}
               </div>
             </div>
           )}

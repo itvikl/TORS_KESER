@@ -245,8 +245,13 @@ async function main() {
 
     // 5. Testimonials (old site misspells it "testemonials" on most pages,
     // but not all — e.g. /testimonials-morocco/ uses the correct spelling)
-    if (/^\/test[ei]monials(-[^/]+)?\/?$/.test(path)) {
-      add(path, "/testimonials", "old testimonials page -> /testimonials");
+    // Per-destination pages land on their section: /testemonials-spain-portugal
+    // -> /testimonials#spain-portugal (lib/testimonials.ts destinationSlug;
+    // "-2" duplicates and the inconsistent "-and-" are dropped to match).
+    const testimonials = path.match(/^\/test[ei]monials(?:-([^/]+))?\/?$/);
+    if (testimonials) {
+      const anchor = testimonials[1]?.replace(/-\d+$/, "").replace(/-and-/g, "-");
+      add(path, anchor ? `/testimonials#${anchor}` : "/testimonials", "old testimonials page -> /testimonials");
       continue;
     }
 

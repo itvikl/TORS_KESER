@@ -1,5 +1,6 @@
 import "server-only";
-import type { Review } from "@/lib/types";
+import type { Review, TestimonialDestination } from "@/lib/types";
+import { TESTIMONIAL_DESTINATIONS_COLLECTION } from "@/lib/testimonials";
 import type { ReviewInput } from "@/lib/validation/review";
 import { adminDb } from "@/lib/firebase/admin";
 
@@ -36,4 +37,14 @@ export async function updateReviewDoc(reviewId: string, input: ReviewInput): Pro
 
 export async function setReviewStatusDoc(reviewId: string, status: Review["status"]): Promise<void> {
   await adminDb().collection(REVIEWS_COLLECTION).doc(reviewId).update({ status });
+}
+
+/** Sets (or, with no image, clears back to the default) a /testimonials destination's photo. */
+export async function setTestimonialDestinationImageDoc(
+  slug: string,
+  name: string,
+  image: string | undefined
+): Promise<void> {
+  const destination: TestimonialDestination = { slug, name, image };
+  await adminDb().collection(TESTIMONIAL_DESTINATIONS_COLLECTION).doc(slug).set(destination);
 }

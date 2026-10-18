@@ -1,5 +1,12 @@
 import { createHash } from "node:crypto";
-import type { BlogPost, Review, SpecialOffer, Staff, Tour } from "@/lib/types";
+import type {
+  BlogPost,
+  Review,
+  SpecialOffer,
+  Staff,
+  TestimonialDestination,
+  Tour,
+} from "@/lib/types";
 
 /**
  * Shared (non-server-only) pieces of the image library index, so
@@ -19,7 +26,14 @@ export const COUNTRY_PREFIX = "country:";
 export const PRIVATE_STORAGE_PREFIXES = ["passport-scans/"];
 
 /** Content collections whose image fields feed the library's "used in" + countries. */
-export const CONTENT_COLLECTIONS = ["tours", "blogPosts", "specialOffers", "reviews", "staff"] as const;
+export const CONTENT_COLLECTIONS = [
+  "tours",
+  "blogPosts",
+  "specialOffers",
+  "reviews",
+  "staff",
+  "testimonialDestinations",
+] as const;
 export type ContentCollection = (typeof CONTENT_COLLECTIONS)[number];
 
 export interface MediaUsage {
@@ -153,6 +167,11 @@ export function contentImages(collection: ContentCollection, data: unknown): Con
       add(staff.photo, `Team: ${staff.name}`);
       break;
     }
+    case "testimonialDestinations": {
+      const destination = data as TestimonialDestination;
+      add(destination.image, `Testimonials: ${destination.name}`);
+      break;
+    }
   }
   return { images, countries: [] };
 }
@@ -200,6 +219,13 @@ export function replaceContentImages(
       break;
     case "staff":
       set("photo", (data as Staff).photo, swap((data as Staff).photo));
+      break;
+    case "testimonialDestinations":
+      set(
+        "image",
+        (data as TestimonialDestination).image,
+        swap((data as TestimonialDestination).image)
+      );
       break;
   }
   return Object.keys(patch).length ? patch : null;

@@ -3,12 +3,18 @@ import type { Metadata } from "next";
 import { getAllReviewsAdmin } from "@/lib/data/admin/reviews";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import ReviewStatusButtons from "@/components/admin/ReviewStatusButtons";
+import TestimonialDestinationsPanel from "@/components/admin/TestimonialDestinationsPanel";
+import { getTestimonialGroups } from "@/lib/data/reviews";
 import type { Review } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Reviews" };
 
 export default async function AdminReviewsPage() {
-  const [reviews, tours] = await Promise.all([getAllReviewsAdmin(), getAllToursAdmin()]);
+  const [reviews, tours, groups] = await Promise.all([
+    getAllReviewsAdmin(),
+    getAllToursAdmin(),
+    getTestimonialGroups(),
+  ]);
   const tourById = new Map(tours.map((t) => [t.tourId, t]));
 
   return (
@@ -39,6 +45,7 @@ export default async function AdminReviewsPage() {
               <tr>
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Tour</th>
+                <th className="px-4 py-3">Destination</th>
                 <th className="px-4 py-3">Rating</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3" />
@@ -54,7 +61,10 @@ export default async function AdminReviewsPage() {
                   <td className="px-4 py-3 text-ink-muted">
                     {tourById.get(review.tourId)?.title ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-ink-muted">{"★".repeat(review.rating)}</td>
+                  <td className="px-4 py-3 text-ink-muted">{review.destination || "—"}</td>
+                  <td className="px-4 py-3 text-ink-muted">
+                    {review.rating ? "★".repeat(review.rating) : "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={review.status} />
                   </td>
@@ -74,6 +84,12 @@ export default async function AdminReviewsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {groups.length > 0 && (
+        <TestimonialDestinationsPanel
+          destinations={groups.map((g) => ({ slug: g.slug, name: g.name, image: g.image, count: g.reviews.length }))}
+        />
       )}
     </div>
   );

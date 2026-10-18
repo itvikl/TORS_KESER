@@ -4,8 +4,9 @@ import * as z from "zod";
 export const ReviewInputSchema = z.object({
   tourId: z.string().min(1, { error: "Choose a tour." }),
   customerName: z.string().min(1, { error: "Customer name is required." }),
-  rating: z.number().int().min(1, { error: "Rating is required." }).max(5),
+  rating: z.number().int().min(1).max(5).optional(),
   photo: z.string().optional(),
+  destination: z.string().trim().max(60).optional(),
   body: z.string().min(1, { error: "Review text is required." }),
   status: z.enum(["pending", "approved", "rejected"]),
 });

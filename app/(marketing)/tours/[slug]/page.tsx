@@ -8,6 +8,7 @@ import {
   getTourBySlug,
 } from "@/lib/data/tours";
 import { getSiteSettings } from "@/lib/data/admin/settings";
+import { getApprovedReviewsForTour } from "@/lib/data/reviews";
 
 // Tour pages are prerendered (generateStaticParams below), and without this
 // they would stay frozen at build time forever — s-maxage=31536000. Photos
@@ -46,9 +47,10 @@ export default async function TourDetailPage({
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
-  const [departures, settings] = await Promise.all([
+  const [departures, settings, testimonials] = await Promise.all([
     getDeparturesForTour(tour.tourId),
     getSiteSettings(),
+    getApprovedReviewsForTour(tour),
   ]);
   const guides = await getGuidesForDepartures(departures);
 
@@ -57,6 +59,7 @@ export default async function TourDetailPage({
       tour={tour}
       departures={departures}
       guides={guides}
+      testimonials={testimonials}
       lowSeatsThreshold={settings.lowSeatsThreshold}
     />
   );

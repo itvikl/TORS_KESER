@@ -123,10 +123,26 @@ export interface Review {
   reviewId: string;
   tourId: string;
   customerName: string;
-  rating: number; // 1-5
+  /** 1-5, only when the customer actually gave one — letters migrated from the old site have none. */
+  rating?: number;
   photo?: string;
   body: string;
   status: "pending" | "approved" | "rejected";
+  /**
+   * Group on /testimonials ("China", "Spain & Portugal", …). Blank falls back
+   * to the tour's first country. Kept separate from tourId because the old
+   * site grouped by destination, not tour (e.g. a Belarus letter sits under
+   * "Western Europe").
+   */
+  destination?: string;
+}
+
+/** Per-destination settings for /testimonials, doc id = destinationSlug(name). */
+export interface TestimonialDestination {
+  slug: string;
+  name: string;
+  /** Header photo; blank falls back to the most-reviewed tour's hero image. */
+  image?: string;
 }
 
 export interface PriceBreakdown {
