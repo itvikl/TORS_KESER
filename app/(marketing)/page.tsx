@@ -24,13 +24,13 @@ import {
 } from "@/lib/data/homeCacheTags";
 
 const HERO_IMAGE =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuC43Nqq9_0gg6kRS_GIKae0tEB10U5ZlAJjEuQHGrs8j0H7ht2uc37RlfwfEKlREJPzoVwsZKOZ4MiPdxls__wOWt67DM5260igbf_nDkLeJMMJLj92m75BfBj6IO_uNEvaCEUKhrmR5vpXp698p6HQhfoA3dImkRz7ad4-7OVfVIR3pM0882ENZZpbqCTRNoa_VnhoJv4VtUPYaZRIe1DPlg10VFrPE9OvEJKPY-pVxYoMXZTJT1KNPccdWa4XpN5v_ShhrQTfNA";
+  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Fhome-hero-a18f8b00.jpg?alt=media&token=e03feebc-914d-423c-8b8b-bd7d3761658c";
 
 const FEATURED_IMAGES = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDc7rBnOzPiEmAC_daoXAbzzOeskIw6jL5Rd1ck2GlWGCr9oWa4PjLuViMRp4UL-GM9f1IN2ns2GE3_k77XIUHBqlNKm8R4-EZLXM0VZ8uSecUw87Z6bvtVQQLicP7oG5yNmU1RCB6YYzvLUerYj-W6TK3X-9zXdcsCgyFqcYS6kYVHJfxdxu_UjBKlX9sZ01oUZ8yGxyWAG5uJHM38hooAxDfjPoTz6dOPyGpt-2RX7zAlqGfRJaQ4PMNrvoP9ZwoKFUHeuThEBA",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCa4x6Ss99jVsY-xJyTBlCWdBCZaeI9wR4LTQ1nhcZRR3Q9SB_YapCQ-KVGXuLSQrUyh1yR6E1dTGhPKER1MPZFFeDtqakWP8vvejKommhPLQcl4ohHdcvQ6aN8LmJfzTn09jp7h1dLI9UbJGtAhFkIeESd0K7DxMyWl5aRYIBWWhQOggBC97Oq7_u9vtkSA9E3nOknAn_FghThVBaDONCMOrmq5oEn-zhqqdz9mOwYmcnQqpzJMOFbrvq70R-en-3Wp5HUxOkUcw",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCqYOxjJyRnKqt2oX-Y4WUfShhMXp5B73snPXKXFTy9h4a-em52vyyh45koyNmpGdHvCTdNCIDG5mwMNHjvvxwW-id9ZSJTDv2JwbonB_QLg0JiG8FW5i8GCIYYjVpNliOUYefN3Vxtm-xQbW8jyTiSCkE5FwYwr79iZvOqp1ScfIxy6MhikFf8Ee9wqKE3Rg0A6F4vev5zM6o43iz3gtbS8xXev2JgA8ml77LzeYdgvNmccqrAyh_q35e4PA5aN4BPQMuAxPKeNw",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCmwAwQFGrN_WnvmuAkHWrOQxpOkGZGJF7DMzBoZoaIjVevsSWszJJ596yhKQBpcAt7-JNqUNpVbfPceqWjPfZ2YPSLV1GUCsbA7TMibnCnmqeDHUFaxfFch9MAbuZWGzOet_VKaDNe7w6EZtUSuzgcplWs4sxUl9sjSyp5M0HrkMtA9dy0jFqMaOhqmrQozwPbE7pYho9UIWpKf51UrV_2LixExCNK-AJ55D8sOElPVPxGZ87tPlgo7t5TsnjLm4MTshm8-ceIHA",
+  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Ffeatured-1-7205ff78.jpg?alt=media&token=360c4321-21b6-4372-8d2f-4045624ae212",
+  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Ffeatured-2-ff82052e.jpg?alt=media&token=017f0ebe-5ad1-42ef-8226-be1d9256d61e",
+  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Ffeatured-3-3d7aa00c.jpg?alt=media&token=0004d87c-1962-447d-9813-8e517624ea26",
+  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Ffeatured-4-ee297270.jpg?alt=media&token=d6b29aee-b5ef-46f4-a015-c824e10b5bc4",
 ];
 
 /**
