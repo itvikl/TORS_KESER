@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import Link from "next/link";
 import PageHeader from "@/components/marketing/PageHeader";
 import { TextField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
@@ -19,19 +20,28 @@ export default function ContactContentForm({
   const [draft, setDraft] = useState<SiteContentContact>(initialContent);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const toast = useToast();
+  const { isDirty, markSaved } = useDirtyDraft(draft);
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
-    const result = await saveContactContent(draft);
+    let result;
+    try {
+      result = await saveContactContent(draft);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     setSaving(false);
     if (!result.ok) {
       setErrors(result.errors);
+      toast.error({ title: "Not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
     setErrors({});
-    setSaved(true);
+    markSaved(draft);
+    toast.success({ title: "Changes saved", description: "The page content was updated successfully." });
   }
 
   return (
@@ -58,7 +68,7 @@ export default function ContactContentForm({
           , not from here — that way Header, Footer, and Contact always show the same number.
         </p>
 
-        <SaveBar saving={saving} saved={saved} onSave={handleSave} />
+        <SaveBar saving={saving} dirty={isDirty} onSave={handleSave} />
       </div>
 
       <PreviewFrame>

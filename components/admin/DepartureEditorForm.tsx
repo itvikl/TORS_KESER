@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { saveDeparture, type BalancePaymentLink } from "@/lib/actions/departures";
 import {
   availableSeats,
@@ -49,7 +49,6 @@ export default function DepartureEditorForm({
   tour: Tour;
   staff: Staff[];
 }) {
-  const router = useRouter();
   const [draft, setDraft] = useState<DepartureDraft>(
     initialDeparture
       ? { ...initialDeparture, bookingAssurance: initialDeparture.bookingAssurance ?? "conditional" }
@@ -58,6 +57,9 @@ export default function DepartureEditorForm({
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
   const [balancePaymentLinks, setBalancePaymentLinks] = useState<BalancePaymentLink[] | null>(null);
+  const toast = useToast();
+  const navigate = useGuardedNavigate();
+  const { markSaved } = useDirtyDraft(draft);
 
   const guides = staff.filter((s) => s.role === "guide");
   const kashrutSupervisors = staff.filter((s) => s.role === "kashrutSupervisor");
@@ -70,12 +72,27 @@ export default function DepartureEditorForm({
     setSaving(true);
     setErrors({});
 
-    const result = await saveDeparture(draft, tourId, departureId);
+    let result;
+    try {
+      result = await saveDeparture(draft, tourId, departureId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Departure not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
+
+    markSaved(draft);
+    toast.success(
+      mode === "create"
+        ? { title: "Departure created", description: `${draft.startDate} was added to ${tour.title}.` }
+        : { title: "Departure saved", description: "Your changes were saved successfully." }
+    );
 
     if (result.balancePaymentLinks.length > 0) {
       // This departure just flipped to "guaranteed" and some customers already
@@ -86,7 +103,7 @@ export default function DepartureEditorForm({
       return;
     }
 
-    router.push(`/admin/tours/${tourId}/departures`);
+    await navigate(`/admin/tours/${tourId}/departures`, { skipConfirm: true });
   }
 
   if (balancePaymentLinks) {
@@ -118,7 +135,12 @@ export default function DepartureEditorForm({
                 />
                 <button
                   type="button"
-                  onClick={() => navigator.clipboard.writeText(link.url)}
+                  onClick={() =>
+                    navigator.clipboard.writeText(link.url).then(
+                      () => toast.success({ title: "Link copied", description: `Payment link for ${link.contactName} is on your clipboard.` }),
+                      () => toast.error("Couldn't copy — select the link and copy it manually.")
+                    )
+                  }
                   className="shrink-0 rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-sand-warm"
                 >
                   Copy
@@ -129,7 +151,7 @@ export default function DepartureEditorForm({
         </div>
         <button
           type="button"
-          onClick={() => router.push(`/admin/tours/${tourId}/departures`)}
+          onClick={() => navigate(`/admin/tours/${tourId}/departures`, { skipConfirm: true })}
           className="rounded-lg bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
         >
           Done

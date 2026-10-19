@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import HomeHeroContent from "@/components/marketing/HomeHeroContent";
 import HomeTrustSignals from "@/components/marketing/HomeTrustSignals";
 import HomeCtaSection from "@/components/marketing/HomeCtaSection";
@@ -12,7 +13,8 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
   const [draft, setDraft] = useState<SiteContentHome>(initialContent);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const toast = useToast();
+  const { isDirty, markSaved } = useDirtyDraft(draft);
 
   function set<K extends keyof SiteContentHome>(key: K, value: SiteContentHome[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -28,15 +30,23 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
-    const result = await saveHomeContent(draft);
+    let result;
+    try {
+      result = await saveHomeContent(draft);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     setSaving(false);
     if (!result.ok) {
       setErrors(result.errors);
+      toast.error({ title: "Not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
     setErrors({});
-    setSaved(true);
+    markSaved(draft);
+    toast.success({ title: "Changes saved", description: "The page content was updated successfully." });
   }
 
   return (
@@ -81,7 +91,7 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
           <TextField label="Secondary button" value={draft.ctaSecondaryButton} onChange={(v) => set("ctaSecondaryButton", v)} error={errors.ctaSecondaryButton} />
         </FieldGroup>
 
-        <SaveBar saving={saving} saved={saved} onSave={handleSave} />
+        <SaveBar saving={saving} dirty={isDirty} onSave={handleSave} />
       </div>
 
       <PreviewFrame>

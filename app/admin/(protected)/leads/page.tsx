@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllLeadsAdmin } from "@/lib/data/admin/leads";
 import LeadStatusSelect from "@/components/admin/LeadStatusSelect";
+import LeadMessagePreview from "@/components/admin/LeadMessagePreview";
 import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
 import type { Lead } from "@/lib/types";
 import { IconLink } from "@/components/admin/IconAction";
@@ -48,10 +49,11 @@ export default async function AdminLeadsPage() {
         </p>
       ) : (
         <div className="overflow-hidden overflow-x-auto rounded-xl border border-line bg-white">
-          <table className="w-full min-w-[960px] text-left text-sm">
+          <table className="w-full min-w-[1180px] text-left text-sm">
             <thead className="border-b border-line bg-sand-warm/60 text-xs font-semibold uppercase tracking-wide text-ink-muted">
               <tr>
                 <th className="px-4 py-3">Contact</th>
+                <th className="px-4 py-3">Message</th>
                 <th className="px-4 py-3">Tour / Destination</th>
                 <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Status</th>
@@ -72,6 +74,9 @@ export default async function AdminLeadsPage() {
                     </Link>
                     {lead.email && <p className="text-xs text-ink-muted">{lead.email}</p>}
                     {lead.phone && <p className="text-xs text-ink-muted">{lead.phone}</p>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <LeadMessagePreview message={lead.message} />
                   </td>
                   <td className="px-4 py-3 text-ink-muted">
                     {tour?.title ?? lead.destination ?? "—"}

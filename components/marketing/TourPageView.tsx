@@ -10,6 +10,7 @@ import { formatUsd } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
 import { PhoneLink } from "@/components/marketing/SitePhone";
+import { customSectionAnchor } from "@/lib/tourSections";
 
 /**
  * KashrutDetails.patYisrael/chalavYisrael are each a 3-way value
@@ -74,14 +75,28 @@ export default function TourPageView({
   const shownTestimonials = testimonials.slice(0, 4);
   const importantToKnow = (tour.importantToKnow ?? []).map((item) => item.trim()).filter(Boolean);
   const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
-  const sections: TourSectionLink[] = [
+  const customSections = (tour.customSections ?? [])
+    .map((section) => ({
+      ...section,
+      title: section.title.trim(),
+      items: section.items.map((item) => item.trim()).filter(Boolean),
+    }))
+    .filter((section) => section.title && section.items.length > 0);
+  const navHidden = new Set<string>(tour.navHiddenSections ?? []);
+  const pageSections: TourSectionLink[] = [
     { id: "overview", label: "Overview" },
     ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
     ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
     { id: "kashrut", label: importantToKnow.length > 0 ? "Kashrut & What to Know" : "Kashrut" },
     ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
+    ...customSections
+      .filter((section) => section.showInNav)
+      .map((section) => ({ id: customSectionAnchor(section.sectionId), label: section.title })),
     ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
     { id: "cancellation", label: "Cancellation Policy" },
+  ];
+  const sections: TourSectionLink[] = [
+    ...pageSections.filter((section) => !navHidden.has(section.id)),
     { id: "dates", label: "Dates & Booking", mobileOnly: true },
   ];
   const bookHref = (departureId: string) =>
@@ -322,6 +337,28 @@ export default function TourPageView({
               </div>
             </div>
           )}
+
+          {/* Admin-defined extra sections */}
+          {customSections.map((section) => (
+            <div
+              key={section.sectionId}
+              id={customSectionAnchor(section.sectionId)}
+              className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8"
+            >
+              <h2 className="text-xl font-bold text-[var(--color-mist)]">{section.title}</h2>
+              <ul className="space-y-3">
+                {section.items.map((item, index) => (
+                  <li key={`${index}-${item}`} className="flex items-start gap-3">
+                    <span
+                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
           {/* Testimonials */}
           {shownTestimonials.length > 0 && (

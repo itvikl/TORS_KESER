@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { useFormDirty, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveSettings, type SaveSettingsState } from "@/lib/actions/settings";
 import type { SiteSettings } from "@/lib/types";
 
@@ -9,12 +11,24 @@ const initialState: SaveSettingsState = { ok: true };
 export default function SettingsForm({ settings }: { settings: SiteSettings }) {
   const [state, formAction, pending] = useActionState(saveSettings, initialState);
   const errors = state.ok ? {} : state.errors;
+  const toast = useToast();
+  const { isDirty, markSaved, formProps } = useFormDirty();
+
+  // React to each completed submission (the initial state is skipped).
+  const lastState = useRef(state);
+  useEffect(() => {
+    if (state === lastState.current) return;
+    lastState.current = state;
+    if (state.ok) {
+      markSaved();
+      toast.success({ title: "Settings saved", description: "Your site settings were updated successfully." });
+    } else {
+      toast.error({ title: "Settings not saved", description: "Please fix the highlighted fields and try again." });
+    }
+  }, [state, markSaved, toast]);
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4 rounded-xl border border-line bg-white p-6">
-      {state.ok && (
-        <p className="rounded-lg bg-olive/10 px-3 py-2 text-sm font-medium text-olive">Saved.</p>
-      )}
+    <form action={formAction} {...formProps} className="max-w-xl space-y-4 rounded-xl border border-line bg-white p-6">
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Phone" name="phone" defaultValue={settings.phone} error={errors.phone} />
@@ -67,6 +81,7 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
       >
         {pending ? "Saving…" : "Save settings"}
       </button>
+      {isDirty && <span className="ms-3"><UnsavedIndicator /></span>}
     </form>
   );
 }

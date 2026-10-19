@@ -2,6 +2,7 @@ import "server-only";
 import type { Tour, TourStatus } from "@/lib/types";
 import type { TourInput } from "@/lib/validation/tour";
 import { adminDb } from "@/lib/firebase/admin";
+import { bySortOrder } from "@/lib/tourSort";
 
 /**
  * Admin-facing tours data layer — unlike lib/data/tours.ts (public site,
@@ -105,9 +106,25 @@ export async function duplicateTourDoc(tourId: string): Promise<string | null> {
     slugHistory: [],
     title: `${source.title} (Copy)`,
     status: "draft",
-    sortOrder: await getNextSortOrder(),
   };
-  await ref.set(copy);
+
+  // Place the copy directly under its original in the admin list, rather
+  // than at "max sortOrder + 1" — with many tours still lacking a sortOrder
+  // (sorted alphabetically after the ordered ones), that put copies far
+  // from the original and staff couldn't find them. Rewriting every tour's
+  // sortOrder from the current display order keeps everyone else's
+  // relative position unchanged.
+  const ordered = (await getAllToursAdmin()).sort(bySortOrder);
+  const sourceIndex = ordered.findIndex((t) => t.tourId === tourId);
+  ordered.splice(sourceIndex + 1, 0, copy);
+
+  const batch = adminDb().batch();
+  ordered.forEach((tour, index) => {
+    const tourRef = adminDb().collection(TOURS_COLLECTION).doc(tour.tourId);
+    if (tour.tourId === copy.tourId) batch.set(tourRef, { ...copy, sortOrder: index });
+    else if (tour.sortOrder !== index) batch.update(tourRef, { sortOrder: index });
+  });
+  await batch.commit();
   return ref.id;
 }
 

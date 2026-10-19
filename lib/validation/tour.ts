@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { COUNTRIES } from "@/lib/countries";
+import { TOUR_NAV_SECTION_IDS } from "@/lib/tourSections";
 
 const KashrutBooleanOrNotGuaranteed = z.union([z.boolean(), z.literal("not_guaranteed")]);
 
@@ -41,6 +42,17 @@ export const TourInputSchema = z.object({
   inclusions: z.array(z.string()),
   exclusions: z.array(z.string()),
   importantToKnow: z.array(z.string()).optional(),
+  customSections: z
+    .array(
+      z.object({
+        sectionId: z.string().min(1),
+        title: z.string().trim().min(1, { error: "Section title is required." }).max(60),
+        items: z.array(z.string()),
+        showInNav: z.boolean(),
+      })
+    )
+    .optional(),
+  navHiddenSections: z.array(z.enum(TOUR_NAV_SECTION_IDS)).optional(),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveSeoPage } from "@/lib/actions/seoPages";
 import type { SeoLandingPage, Tour } from "@/lib/types";
 
@@ -41,6 +43,8 @@ export default function SeoPageEditorForm({
   const [savedPageId, setSavedPageId] = useState(pageId);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const { isDirty, markSaved } = useDirtyDraft(draft);
 
   function set<K extends keyof SeoLandingPage>(key: K, value: SeoLandingPage[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -68,11 +72,19 @@ export default function SeoPageEditorForm({
     setErrors({});
 
     const payload = { ...draft, status };
-    const result = await saveSeoPage(payload, savedPageId);
+    let result;
+    try {
+      result = await saveSeoPage(payload, savedPageId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
 
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Landing page not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
 
@@ -81,7 +93,13 @@ export default function SeoPageEditorForm({
     }
     setSavedPageId(result.pageId);
     setDraft(payload);
+    markSaved(payload);
     setSaving(false);
+    toast.success(
+      status === "published"
+        ? { title: "Landing page published", description: "Your changes are now live on the site." }
+        : { title: "Draft saved", description: "The page was saved as a draft." }
+    );
   }
 
   return (
@@ -168,6 +186,7 @@ export default function SeoPageEditorForm({
         >
           Publish
         </button>
+        {isDirty && <span className="self-center"><UnsavedIndicator /></span>}
       </div>
     </div>
   );

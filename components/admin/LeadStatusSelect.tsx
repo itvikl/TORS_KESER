@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateLeadStatus } from "@/lib/actions/leads";
 import type { Lead } from "@/lib/types";
+import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 
 const STATUS_STYLES: Record<Lead["status"], string> = {
   new: "bg-gold/15 text-terracotta-dark",
@@ -28,17 +29,18 @@ export default function LeadStatusSelect({
 }) {
   const [status, setStatus] = useState(initialStatus);
   const [pending, startTransition] = useTransition();
-  const [failed, setFailed] = useState(false);
+  const toast = useToast();
 
   function handleChange(next: Lead["status"]) {
     const previous = status;
     setStatus(next);
-    setFailed(false);
     startTransition(async () => {
       const result = await updateLeadStatus(leadId, next).catch(() => ({ ok: false }));
       if (!result.ok) {
         setStatus(previous);
-        setFailed(true);
+        toast.error({ title: "Status not saved", description: "Couldn't update the lead — please try again." });
+      } else {
+        toast.success(`Lead marked as ${STATUS_LABELS[next].toLowerCase()}`);
       }
     });
   }
@@ -58,7 +60,6 @@ export default function LeadStatusSelect({
           </option>
         ))}
       </select>
-      {failed && <p className="mt-1 text-xs text-terracotta-dark">Couldn&apos;t save — try again.</p>}
     </div>
   );
 }

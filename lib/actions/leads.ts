@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
@@ -73,7 +72,7 @@ export async function createLeadManually(
 
   await saveLead({ ...parsed.data, source: "manual" });
   revalidatePath("/admin/leads");
-  redirect("/admin/leads");
+  return { ok: true };
 }
 
 /** Fields staff can edit — the same ones ManualLeadInputSchema validates. */
@@ -121,7 +120,7 @@ export async function updateLead(
 
   revalidatePath("/admin/leads");
   revalidatePath(`/admin/leads/${leadId}`);
-  redirect("/admin/leads");
+  return { ok: true };
 }
 
 const LEAD_STATUSES = ["new", "contacted", "converted", "closed"] as const;

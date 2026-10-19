@@ -5,6 +5,8 @@
  * (see components/marketing/TourPageView.tsx).
  */
 
+import type { TourNavSectionId } from "@/lib/tourSections";
+
 export type TravelStyle = "land" | "luxury" | "cruise" | "seminar";
 export type TourStatus = "draft" | "published" | "archived";
 /**
@@ -26,6 +28,16 @@ export type PaymentType = "deposit" | "balance" | "full" | "refund";
 export type LeadSource = "contact" | "custom" | "evergreen" | "manual";
 export type UserRole = "customer" | "staff" | "admin";
 export type StaffRole = "guide" | "kashrutSupervisor";
+export type { TourNavSectionId };
+
+/** Admin-defined extra section on the tour page — a heading plus bullet sentences. */
+export interface TourCustomSection {
+  sectionId: string;
+  title: string;
+  items: string[];
+  /** Whether the heading gets a tab in the tour page's secondary navbar. */
+  showInNav: boolean;
+}
 
 export interface KashrutDetails {
   supervisionLevel: string; // e.g. "Local Orthodox Rabbinate + company mashgiach"
@@ -75,6 +87,10 @@ export interface Tour {
   exclusions: string[];
   /** "Important to Know" on the tour page — group minimums, passport validity, price-change terms, etc. */
   importantToKnow?: string[];
+  /** Extra admin-defined sections, rendered after "What's Included" in this order. */
+  customSections?: TourCustomSection[];
+  /** Built-in sections whose heading is left out of the secondary navbar (the section still shows). */
+  navHiddenSections?: TourNavSectionId[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];
