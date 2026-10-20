@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Departure, ItineraryDay, Staff, Tour, TourStatus } from "@/lib/types";
+import type {
+  Departure,
+  ItineraryDay,
+  Staff,
+  Tour,
+  TourInfoCard,
+  TourInfoField,
+  TourStatus,
+} from "@/lib/types";
 import { COUNTRIES } from "@/lib/countries";
 import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChecklist";
 import { saveTour } from "@/lib/actions/tours";
@@ -30,6 +38,7 @@ const BLANK_TOUR: Tour = {
   inclusions: [],
   exclusions: [],
   importantToKnow: [],
+  infoCards: [],
   pricing: {
     pricePerPersonDouble: 0,
     pricePerPersonSingle: 0,
@@ -54,6 +63,29 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Moves the legacy importantToKnow list into its own info card, so it's edited like any other card. */
+function withInfoCards(tour: Tour): Tour {
+  const legacy = (tour.importantToKnow ?? []).filter((item) => item.trim());
+  if (legacy.length === 0) return { ...tour, infoCards: tour.infoCards ?? [] };
+  const card: TourInfoCard = {
+    cardId: crypto.randomUUID(),
+    title: "Important to Know",
+    fields: [],
+    items: legacy,
+  };
+  return { ...tour, importantToKnow: [], infoCards: [card, ...(tour.infoCards ?? [])] };
+}
+
+function newInfoField(): TourInfoField {
+  return { fieldId: crypto.randomUUID(), label: "", value: "" };
+}
+
+function cleanFields(fields: TourInfoField[]): TourInfoField[] {
+  return fields
+    .map((f) => ({ ...f, label: f.label.trim(), value: f.value.trim() }))
+    .filter((f) => f.label || f.value);
+}
+
 /** Trims/drops blank entries — the form keeps raw (possibly-blank) array entries while typing. */
 function cleanTour(tour: Tour): Tour {
   const clean = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
@@ -64,6 +96,18 @@ function cleanTour(tour: Tour): Tour {
     inclusions: clean(tour.inclusions),
     exclusions: clean(tour.exclusions),
     importantToKnow: clean(tour.importantToKnow ?? []),
+    kashrutDetails: {
+      ...tour.kashrutDetails,
+      title: tour.kashrutDetails.title?.trim() || undefined,
+      extraFields: cleanFields(tour.kashrutDetails.extraFields ?? []),
+    },
+    infoCards: (tour.infoCards ?? []).map((card) => ({
+      ...card,
+      title: card.title.trim(),
+      fields: cleanFields(card.fields),
+      notes: card.notes?.trim() || undefined,
+      items: clean(card.items),
+    })),
     itineraryDays: tour.itineraryDays.map((day, index) => ({
       ...day,
       dayNumber: index + 1,
@@ -96,10 +140,10 @@ export default function TourEditorForm({
   const router = useRouter();
   const [draft, setDraft] = useState<Tour>(() =>
     initialTour
-      ? {
+      ? withInfoCards({
           ...initialTour,
           cancellationPolicy: initialTour.cancellationPolicy ?? DEFAULT_CANCELLATION_POLICY_TEXT,
-        }
+        })
       : BLANK_TOUR
   );
   const [savedTourId, setSavedTourId] = useState<string | undefined>(tourId);
@@ -188,6 +232,32 @@ export default function TourEditorForm({
       "itineraryDays",
       draft.itineraryDays.filter((d) => d.dayId !== dayId)
     );
+  }
+
+  const infoCards = draft.infoCards ?? [];
+
+  function setInfoCards(cards: TourInfoCard[]) {
+    set("infoCards", cards);
+  }
+
+  function addInfoCard() {
+    setInfoCards([...infoCards, { cardId: crypto.randomUUID(), title: "", fields: [], items: [] }]);
+  }
+
+  function updateInfoCard(cardId: string, patch: Partial<TourInfoCard>) {
+    setInfoCards(infoCards.map((c) => (c.cardId === cardId ? { ...c, ...patch } : c)));
+  }
+
+  function moveInfoCard(index: number, delta: -1 | 1) {
+    const target = index + delta;
+    if (target < 0 || target >= infoCards.length) return;
+    const next = [...infoCards];
+    [next[index], next[target]] = [next[target], next[index]];
+    setInfoCards(next);
+  }
+
+  function removeInfoCard(cardId: string) {
+    setInfoCards(infoCards.filter((c) => c.cardId !== cardId));
   }
 
   async function handleSave(status?: TourStatus) {
@@ -483,7 +553,15 @@ export default function TourEditorForm({
             </button>
           </Section>
 
-          <Section title="Kashrut & need to know">
+          <Section title="Kashrut card">
+            <Field label="Card title" hint="blank shows “Kashrut”">
+              <input
+                className={inputClass}
+                placeholder="Kashrut"
+                value={draft.kashrutDetails.title ?? ""}
+                onChange={(e) => setKashrut("title", e.target.value)}
+              />
+            </Field>
             <Field label="Supervision level" error={errors["kashrutDetails.supervisionLevel"]}>
               <input
                 className={inputClass}
@@ -513,11 +591,38 @@ export default function TourEditorForm({
                 onChange={(e) => setKashrut("notes", e.target.value)}
               />
             </Field>
-            <ListTextarea
-              label="Important to know (one per line)"
-              value={draft.importantToKnow ?? []}
-              onChange={(v) => set("importantToKnow", v)}
+            <InfoFieldsEditor
+              label="More sub-titles"
+              fields={draft.kashrutDetails.extraFields ?? []}
+              onChange={(fields) => setKashrut("extraFields", fields)}
             />
+          </Section>
+
+          <Section title="More info cards">
+            <p className="text-xs text-ink-muted">
+              Each card appears on the tour page after the Kashrut card, in this order.
+            </p>
+            <div className="space-y-4">
+              {infoCards.map((card, index) => (
+                <InfoCardEditor
+                  key={card.cardId}
+                  card={card}
+                  index={index}
+                  count={infoCards.length}
+                  titleError={errors[`infoCards.${index}.title`]}
+                  onChange={(patch) => updateInfoCard(card.cardId, patch)}
+                  onMove={(delta) => moveInfoCard(index, delta)}
+                  onRemove={() => removeInfoCard(card.cardId)}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addInfoCard}
+              className="rounded-lg border border-dashed border-line px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:border-navy hover:text-navy"
+            >
+              + Add card
+            </button>
           </Section>
 
           <Section title="Included / not included">
@@ -744,6 +849,140 @@ function KashrutSelect({
       <option value="not_guaranteed">Not guaranteed at every destination</option>
       <option value="false">Not offered</option>
     </select>
+  );
+}
+
+function InfoFieldsEditor({
+  label,
+  fields,
+  onChange,
+}: {
+  label: string;
+  fields: TourInfoField[];
+  onChange: (fields: TourInfoField[]) => void;
+}) {
+  function update(fieldId: string, patch: Partial<TourInfoField>) {
+    onChange(fields.map((f) => (f.fieldId === fieldId ? { ...f, ...patch } : f)));
+  }
+  return (
+    <Field label={label} hint="sub-title + text, like Pat Yisrael">
+      <div className="space-y-2">
+        {fields.map((field) => (
+          <div key={field.fieldId} className="flex items-start gap-2">
+            <input
+              className={`${inputClass} sm:max-w-[40%]`}
+              placeholder="Sub-title"
+              value={field.label}
+              onChange={(e) => update(field.fieldId, { label: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Text"
+              value={field.value}
+              onChange={(e) => update(field.fieldId, { value: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(fields.filter((f) => f.fieldId !== field.fieldId))}
+              className="shrink-0 px-2 py-2 text-xs font-semibold text-terracotta-dark hover:underline"
+              aria-label="Remove sub-title"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...fields, newInfoField()])}
+          className="text-xs font-medium text-navy hover:text-navy-light"
+        >
+          + Add sub-title
+        </button>
+      </div>
+    </Field>
+  );
+}
+
+function InfoCardEditor({
+  card,
+  index,
+  count,
+  titleError,
+  onChange,
+  onMove,
+  onRemove,
+}: {
+  card: TourInfoCard;
+  index: number;
+  count: number;
+  titleError?: string[];
+  onChange: (patch: Partial<TourInfoCard>) => void;
+  onMove: (delta: -1 | 1) => void;
+  onRemove: () => void;
+}) {
+  const moveClass =
+    "rounded px-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-30 disabled:hover:text-ink-muted";
+  return (
+    <div className="rounded-lg border border-line p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-sm font-bold text-navy">{card.title.trim() || `Card ${index + 1}`}</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={index === 0}
+            onClick={() => onMove(-1)}
+            className={moveClass}
+            aria-label="Move card up"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            disabled={index === count - 1}
+            onClick={() => onMove(1)}
+            className={moveClass}
+            aria-label="Move card down"
+          >
+            ↓
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-xs font-semibold text-terracotta-dark hover:underline"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        <Field label="Card title" error={titleError}>
+          <input
+            className={inputClass}
+            placeholder="e.g. Important to Know"
+            value={card.title}
+            onChange={(e) => onChange({ title: e.target.value })}
+          />
+        </Field>
+        <InfoFieldsEditor
+          label="Sub-titles"
+          fields={card.fields}
+          onChange={(fields) => onChange({ fields })}
+        />
+        <Field label="Notes" hint="optional — blank lines start a new paragraph">
+          <textarea
+            className={inputClass}
+            rows={3}
+            value={card.notes ?? ""}
+            onChange={(e) => onChange({ notes: e.target.value })}
+          />
+        </Field>
+        <ListTextarea
+          label="Bullet points (one per line)"
+          value={card.items}
+          onChange={(items) => onChange({ items })}
+        />
+      </div>
+    </div>
   );
 }
 

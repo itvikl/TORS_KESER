@@ -1,4 +1,4 @@
-import type { Departure, Review, Staff, Tour } from "@/lib/types";
+import type { Departure, Review, Staff, Tour, TourInfoCard, TourInfoField } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
@@ -72,13 +72,16 @@ export default function TourPageView({
     .filter(Boolean);
   const hasItinerary = tour.itineraryDays.length > 0;
   const shownTestimonials = testimonials.slice(0, 4);
-  const importantToKnow = (tour.importantToKnow ?? []).map((item) => item.trim()).filter(Boolean);
+  const kashrutTitle = tour.kashrutDetails.title?.trim() || "Kashrut";
+  const kashrutExtraFields = visibleFields(tour.kashrutDetails.extraFields);
+  const infoCards = infoCardsOf(tour);
   const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
   const sections: TourSectionLink[] = [
     { id: "overview", label: "Overview" },
     ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
     ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
-    { id: "kashrut", label: importantToKnow.length > 0 ? "Kashrut & What to Know" : "Kashrut" },
+    { id: "kashrut", label: kashrutTitle },
+    ...infoCards.map((card) => ({ id: infoCardAnchor(card), label: card.title })),
     ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
     ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
     { id: "cancellation", label: "Cancellation Policy" },
@@ -223,59 +226,29 @@ export default function TourPageView({
 
           {/* Kashrut */}
           <div id="kashrut" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-[var(--color-mist)]">
-              Kashrut &amp; What to Know
-            </h2>
+            <h2 className="text-xl font-bold text-[var(--color-mist)]">{kashrutTitle}</h2>
             <dl className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-                  Supervision
-                </dt>
-                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
-                  {tour.kashrutDetails.supervisionLevel}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-                  Pat Yisrael
-                </dt>
-                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
-                  {kashrutStatusLabel(tour.kashrutDetails.patYisrael)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-                  Chalav Yisrael
-                </dt>
-                <dd className="mt-1 text-[15px] text-[var(--color-mist)]">
-                  {kashrutStatusLabel(tour.kashrutDetails.chalavYisrael)}
-                </dd>
-              </div>
+              <InfoFieldItem label="Supervision" value={tour.kashrutDetails.supervisionLevel} />
+              <InfoFieldItem label="Pat Yisrael" value={kashrutStatusLabel(tour.kashrutDetails.patYisrael)} />
+              <InfoFieldItem
+                label="Chalav Yisrael"
+                value={kashrutStatusLabel(tour.kashrutDetails.chalavYisrael)}
+              />
+              {kashrutExtraFields.map((field) => (
+                <InfoFieldItem key={field.fieldId} label={field.label} value={field.value} />
+              ))}
             </dl>
             {tour.kashrutDetails.notes && (
               <p className="whitespace-pre-line text-[15px] leading-relaxed text-[var(--color-slate)]">
                 {tour.kashrutDetails.notes}
               </p>
             )}
-            {importantToKnow.length > 0 && (
-              <div className="border-t border-[var(--color-border-hairline)] pt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-                  Important to know
-                </h3>
-                <ul className="mt-3 space-y-3">
-                  {importantToKnow.map((item, index) => (
-                    <li key={`${index}-${item}`} className="flex items-start gap-3">
-                      <span
-                        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
-                        aria-hidden="true"
-                      />
-                      <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
+
+          {/* Admin-defined info cards (Important to Know, etc.) */}
+          {infoCards.map((card) => (
+            <InfoCardPanel key={card.cardId} card={card} />
+          ))}
 
           {/* Inclusions / Exclusions */}
           {hasInclusions && (
@@ -364,13 +337,13 @@ export default function TourPageView({
 
         {/* Sticky booking — top offset clears the site header plus the section nav */}
         <aside id="dates" className="relative">
-          <div className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8">
-            <div className="mb-6">
+          <div className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8 lg:flex lg:max-h-[calc(100vh-11rem)] lg:flex-col lg:p-6">
+            <div className="mb-6 lg:mb-4 lg:shrink-0">
               <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                 Starting from
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-[var(--color-mist)]">
+                <span className="text-4xl font-bold text-[var(--color-mist)] lg:text-3xl">
                   {formatUsd(tour.pricing.pricePerPersonDouble)}
                 </span>
                 <span className="text-sm text-[var(--color-slate)]">/ per person</span>
@@ -382,7 +355,7 @@ export default function TourPageView({
             </div>
 
             {bookingHighlights.length > 0 && (
-              <div className="mb-6 space-y-4 border-y border-[var(--color-border-hairline-faint)] py-6">
+              <div className="mb-6 space-y-4 border-y border-[var(--color-border-hairline-faint)] py-6 lg:mb-4 lg:shrink-0 lg:space-y-2 lg:py-4">
                 {bookingHighlights.map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]" aria-hidden="true" />
@@ -392,10 +365,11 @@ export default function TourPageView({
               </div>
             )}
 
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)] lg:shrink-0">
               Departure Dates
             </h3>
-            <ul className="mb-6 space-y-2">
+            {/* On desktop the dates scroll inside the card so the whole card (and its Book buttons) fits the viewport */}
+            <ul className="mb-6 space-y-2 lg:mb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
               {upcoming.length === 0 && (
                 <li className="text-[15px] text-[var(--color-slate)]">
                   The next date for this tour will be published soon.
@@ -441,10 +415,10 @@ export default function TourPageView({
                 );
               })}
             </ul>
-            <PhoneLink className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
+            <PhoneLink className="flex items-center justify-center gap-2 lg:shrink-0 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
 
-            <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6">
-              <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4">
+            <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6 lg:mt-4 lg:shrink-0 lg:pt-4">
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4 lg:p-3">
                 <span className="mt-0.5 text-[var(--color-ice)]" aria-hidden="true">
                   ✓
                 </span>
@@ -460,6 +434,77 @@ export default function TourPageView({
         </aside>
       </section>
     </article>
+  );
+}
+
+function visibleFields(fields: TourInfoField[] | undefined): TourInfoField[] {
+  return (fields ?? []).filter((f) => f.label.trim() || f.value.trim());
+}
+
+/** Cards to render, including a tour's legacy importantToKnow list if it hasn't been re-saved since info cards existed. */
+function infoCardsOf(tour: Tour): TourInfoCard[] {
+  const legacy = (tour.importantToKnow ?? []).map((item) => item.trim()).filter(Boolean);
+  const cards: TourInfoCard[] = [
+    ...(legacy.length > 0
+      ? [{ cardId: "important-to-know", title: "Important to Know", fields: [], items: legacy }]
+      : []),
+    ...(tour.infoCards ?? []),
+  ];
+  return cards
+    .map((card) => ({
+      ...card,
+      title: card.title.trim(),
+      fields: visibleFields(card.fields),
+      items: card.items.map((item) => item.trim()).filter(Boolean),
+    }))
+    .filter((card) => card.title && (card.fields.length > 0 || card.notes?.trim() || card.items.length > 0));
+}
+
+function infoCardAnchor(card: TourInfoCard): string {
+  return `info-${card.cardId}`;
+}
+
+function InfoFieldItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
+        {label}
+      </dt>
+      <dd className="mt-1 whitespace-pre-line text-[15px] text-[var(--color-mist)]">{value}</dd>
+    </div>
+  );
+}
+
+function InfoCardPanel({ card }: { card: TourInfoCard }) {
+  return (
+    <div id={infoCardAnchor(card)} className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
+      <h2 className="text-xl font-bold text-[var(--color-mist)]">{card.title}</h2>
+      {card.fields.length > 0 && (
+        <dl className="grid gap-4 sm:grid-cols-2">
+          {card.fields.map((field) => (
+            <InfoFieldItem key={field.fieldId} label={field.label} value={field.value} />
+          ))}
+        </dl>
+      )}
+      {card.notes?.trim() && (
+        <p className="whitespace-pre-line text-[15px] leading-relaxed text-[var(--color-slate)]">
+          {card.notes}
+        </p>
+      )}
+      {card.items.length > 0 && (
+        <ul className="space-y-3">
+          {card.items.map((item, index) => (
+            <li key={`${index}-${item}`} className="flex items-start gap-3">
+              <span
+                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]"
+                aria-hidden="true"
+              />
+              <span className="text-[15px] leading-relaxed text-[var(--color-slate)]">{item}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

@@ -27,11 +27,31 @@ export type LeadSource = "contact" | "custom" | "evergreen" | "manual";
 export type UserRole = "customer" | "staff" | "admin";
 export type StaffRole = "guide" | "kashrutSupervisor";
 
+/** A labeled row on a tour-page info card, e.g. "Supervision" → "Local Rabbinate". */
+export interface TourInfoField {
+  fieldId: string;
+  label: string;
+  value: string;
+}
+
 export interface KashrutDetails {
+  /** Card header on the tour page; blank falls back to "Kashrut". */
+  title?: string;
   supervisionLevel: string; // e.g. "Local Orthodox Rabbinate + company mashgiach"
   patYisrael: boolean | "not_guaranteed";
   chalavYisrael: boolean | "not_guaranteed";
+  /** Admin-added sub-titled rows shown after Supervision / Pat Yisrael / Chalav Yisrael. */
+  extraFields?: TourInfoField[];
   notes?: string;
+}
+
+/** Admin-defined card on the tour page (e.g. "Important to Know"), shown after the Kashrut card. */
+export interface TourInfoCard {
+  cardId: string;
+  title: string;
+  fields: TourInfoField[];
+  notes?: string;
+  items: string[];
 }
 
 export interface TourPricing {
@@ -73,8 +93,10 @@ export interface Tour {
   isSpecialOffer?: boolean;
   inclusions: string[];
   exclusions: string[];
-  /** "Important to Know" on the tour page — group minimums, passport validity, price-change terms, etc. */
+  /** Legacy "Important to Know" list — the editor converts it into an infoCards entry on load, so new saves leave it empty. */
   importantToKnow?: string[];
+  /** Extra cards after Kashrut (Important to Know, visas, packing…), in display order. */
+  infoCards?: TourInfoCard[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];

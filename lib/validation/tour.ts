@@ -13,6 +13,20 @@ export const ItineraryDayInputSchema = z.object({
   attractions: z.array(z.string()).optional(),
 });
 
+const TourInfoFieldSchema = z.object({
+  fieldId: z.string().min(1),
+  label: z.string(),
+  value: z.string(),
+});
+
+export const TourInfoCardSchema = z.object({
+  cardId: z.string().min(1),
+  title: z.string().min(1, { error: "Card title is required." }),
+  fields: z.array(TourInfoFieldSchema),
+  notes: z.string().optional(),
+  items: z.array(z.string()),
+});
+
 /**
  * Mirrors lib/types.ts Tour, minus tourId/slugHistory (both are assigned by
  * the data layer, not editable in the form — see lib/data/admin/tours.ts).
@@ -41,6 +55,7 @@ export const TourInputSchema = z.object({
   inclusions: z.array(z.string()),
   exclusions: z.array(z.string()),
   importantToKnow: z.array(z.string()).optional(),
+  infoCards: z.array(TourInfoCardSchema).optional(),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),
@@ -50,9 +65,11 @@ export const TourInputSchema = z.object({
     balanceDueDaysBeforeDeparture: z.number().int().min(0),
   }),
   kashrutDetails: z.object({
+    title: z.string().optional(),
     supervisionLevel: z.string().min(1, { error: "Supervision level is required." }),
     patYisrael: KashrutBooleanOrNotGuaranteed,
     chalavYisrael: KashrutBooleanOrNotGuaranteed,
+    extraFields: z.array(TourInfoFieldSchema).optional(),
     notes: z.string().optional(),
   }),
   itineraryDays: z.array(ItineraryDayInputSchema),
