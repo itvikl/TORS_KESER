@@ -15,7 +15,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
-import { MFA_ENROLLMENT_REQUIRED } from "@/lib/auth/mfa";
+import { EMAIL_CODE_INVALID, EMAIL_CODE_SENT, EMAIL_CODE_UNDELIVERABLE } from "@/lib/auth/mfa";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink outline-none focus:border-navy";
@@ -23,24 +23,25 @@ const buttonClass =
   "w-full rounded-lg bg-navy px-4 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-60";
 
 /**
- * Sign-in steps: password → (authenticator code | first-time authenticator
- * setup). Accounts that have enrolled TOTP get Firebase's
- * multi-factor-auth-required error after the password and must enter a code.
- * When the server requires 2FA (ADMIN_REQUIRE_2FA) and the account has none
- * yet, /api/auth/session answers MFA_ENROLLMENT_REQUIRED and the account
- * enrolls here, then signs in again with its first code.
+ * Sign-in steps: password → second factor. Accounts with an authenticator app
+ * get Firebase's multi-factor-auth-required error after the password and
+ * enter its code ("code"). When the server requires 2FA (ADMIN_REQUIRE_2FA)
+ * and the account has no app, /api/auth/session emails a code instead
+ * ("email"); from there the account can also switch to setting up an
+ * authenticator app ("enroll"), then signs in again with its first code.
  */
 type Step =
   | { kind: "password" }
   | { kind: "code"; resolver: MultiFactorResolver }
+  | { kind: "email"; user: User; sentTo: string }
   | { kind: "enroll"; user: User; secret: TotpSecret; qrDataUrl: string };
 
-async function createSession(user: User): Promise<Response> {
+async function createSession(user: User, emailCode?: string): Promise<Response> {
   const idToken = await user.getIdToken();
   return fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ idToken, emailCode }),
   });
 }
 
@@ -54,15 +55,32 @@ export default function LoginForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  async function finishSignIn(user: User) {
-    const response = await createSession(user);
+  /** Throws on anything but success or a pending emailed code, after signing the Firebase user out. */
+  async function finishSignIn(user: User, emailCode?: string) {
+    const response = await createSession(user, emailCode);
     if (response.ok) {
       router.push("/admin");
       router.refresh();
       return;
     }
     const body = await response.json().catch(() => null);
-    if (body?.error === MFA_ENROLLMENT_REQUIRED) {
+    if (body?.error === EMAIL_CODE_SENT) {
+      setCode("");
+      setStep({ kind: "email", user, sentTo: body.sentTo });
+      setSubmitting(false);
+      return;
+    }
+    if (body?.error === EMAIL_CODE_INVALID) {
+      throw new Error(EMAIL_CODE_INVALID);
+    }
+    await signOut(auth);
+    throw new Error(body?.error === EMAIL_CODE_UNDELIVERABLE ? EMAIL_CODE_UNDELIVERABLE : "not-authorized");
+  }
+
+  async function startEnrollment(user: User) {
+    setError(null);
+    setSubmitting(true);
+    try {
       const session = await multiFactor(user).getSession();
       const secret = await TotpMultiFactorGenerator.generateSecret(session);
       const qrDataUrl = await QRCode.toDataURL(
@@ -71,11 +89,42 @@ export default function LoginForm() {
       );
       setCode("");
       setStep({ kind: "enroll", user, secret, qrDataUrl });
-      setSubmitting(false);
-      return;
+    } catch {
+      setError("Couldn't start authenticator setup. Sign in again and retry.");
     }
-    await signOut(auth);
-    throw new Error("not-authorized");
+    setSubmitting(false);
+  }
+
+  async function handleEmailCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (step.kind !== "email") return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      await finishSignIn(step.user, code.trim());
+    } catch (err) {
+      if ((err as Error).message === EMAIL_CODE_INVALID) {
+        setError("That code is wrong or expired. Check the email, or send a new code.");
+      } else {
+        setStep({ kind: "password" });
+        setError("Sign-in expired. Sign in again.");
+      }
+      setSubmitting(false);
+    }
+  }
+
+  async function resendEmailCode() {
+    if (step.kind !== "email") return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      await finishSignIn(step.user);
+      setNotice(null);
+    } catch {
+      setStep({ kind: "password" });
+      setError("Couldn't send a new code. Sign in again.");
+      setSubmitting(false);
+    }
   }
 
   async function handlePassword(e: React.FormEvent) {
@@ -94,7 +143,11 @@ export default function LoginForm() {
         setSubmitting(false);
         return;
       }
-      setError("Invalid email/password, or this account isn't authorized for admin access.");
+      setError(
+        (err as Error).message === EMAIL_CODE_UNDELIVERABLE
+          ? "Couldn't email your sign-in code. Try again in a minute, or ask an admin."
+          : "Invalid email/password, or this account isn't authorized for admin access."
+      );
       setSubmitting(false);
     }
   }
@@ -193,6 +246,38 @@ export default function LoginForm() {
         <button type="submit" disabled={submitting || code.length !== 6} className={buttonClass}>
           {submitting ? "Verifying…" : "Verify"}
         </button>
+        <button type="button" onClick={backToPassword} className="w-full text-sm text-ink-muted hover:text-ink">
+          Back
+        </button>
+      </form>
+    );
+  }
+
+  if (step.kind === "email") {
+    return (
+      <form onSubmit={handleEmailCode} className="space-y-5">
+        <p className="text-sm text-ink-muted">
+          We emailed a 6-digit sign-in code to <strong className="text-ink">{step.sentTo}</strong>. It expires in 10
+          minutes.
+        </p>
+        {codeInput}
+        {errorBlock}
+        <button type="submit" disabled={submitting || code.length !== 6} className={buttonClass}>
+          {submitting ? "Verifying…" : "Verify"}
+        </button>
+        <div className="flex flex-wrap justify-between gap-2 text-sm">
+          <button type="button" disabled={submitting} onClick={resendEmailCode} className="text-ink-muted hover:text-ink">
+            Send a new code
+          </button>
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={() => startEnrollment(step.user)}
+            className="text-ink-muted hover:text-ink"
+          >
+            Use an authenticator app instead
+          </button>
+        </div>
         <button type="button" onClick={backToPassword} className="w-full text-sm text-ink-muted hover:text-ink">
           Back
         </button>

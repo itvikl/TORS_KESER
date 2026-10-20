@@ -116,9 +116,10 @@ env:
     availability:
       - RUNTIME
 
-  # Admin two-factor enforcement (lib/auth/mfa.ts). Keep "false" until TOTP is
-  # enabled on the project (scripts/enable-admin-2fa.ts) and every admin has
-  # enrolled — flipping it earlier locks out anyone who hasn't.
+  # Admin two-factor enforcement (lib/auth/mfa.ts). When "true", admins without
+  # an authenticator app get a sign-in code by email — so keep "false" until
+  # EMAIL_FROM is on a domain verified in Resend (the onboarding@resend.dev
+  # test sender only reaches the Resend account owner, locking others out).
   - variable: ADMIN_REQUIRE_2FA
     value: "false"
     availability:

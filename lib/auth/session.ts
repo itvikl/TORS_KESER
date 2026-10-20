@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/constants";
+import { createEmailMfaToken, EMAIL_MFA_COOKIE_NAME } from "@/lib/auth/secondFactor";
 
 /**
  * Firebase session cookie management (PRD section 9: "middleware מאמת
@@ -26,7 +27,20 @@ export async function setSessionCookie(sessionCookie: string) {
   });
 }
 
+/** Proof that this sign-in passed an emailed code (see lib/auth/secondFactor.ts); lives as long as the session. */
+export async function setEmailMfaCookie(uid: string, authTime: number) {
+  const store = await cookies();
+  store.set(EMAIL_MFA_COOKIE_NAME, createEmailMfaToken(uid, authTime, SESSION_MAX_AGE_SECONDS), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+  });
+}
+
 export async function clearSessionCookie() {
   const store = await cookies();
   store.delete(SESSION_COOKIE_NAME);
+  store.delete(EMAIL_MFA_COOKIE_NAME);
 }

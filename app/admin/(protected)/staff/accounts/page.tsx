@@ -26,8 +26,8 @@ export default async function AdminAccountsPage() {
           Two-factor authentication is{" "}
           <strong className="text-ink">{required ? "required" : "optional"}</strong> for every account
           {required
-            ? " — anyone without it sets up an authenticator app on their next sign-in."
-            : " — accounts that set it up must enter a code at every sign-in."}
+            ? " — accounts with an authenticator app enter its code; everyone else gets a code by email at each sign-in."
+            : " — accounts that set up an authenticator app enter its code at every sign-in."}
         </p>
       </div>
 
@@ -53,7 +53,9 @@ export default async function AdminAccountsPage() {
                 <td className="px-4 py-3 text-ink-muted capitalize">{user.role}</td>
                 <td className="px-4 py-3">
                   {twoFactorUids.has(user.uid) ? (
-                    <span className="font-medium text-olive">On</span>
+                    <span className="font-medium text-olive">App</span>
+                  ) : required ? (
+                    <span className="font-medium text-olive">Email</span>
                   ) : (
                     <span className="text-ink-muted">Off</span>
                   )}

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
-import { passesAdmin2fa } from "@/lib/auth/mfa";
+import { EMAIL_MFA_COOKIE_NAME, passesAdmin2fa } from "@/lib/auth/secondFactor";
 import type { UserRole } from "@/lib/types";
 
 /**
@@ -21,14 +21,15 @@ export interface AdminSession {
 }
 
 export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
-  const cookieValue = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!cookieValue) return null;
 
   try {
     const decoded = await adminAuth().verifySessionCookie(cookieValue, true);
     const role = (decoded.role as UserRole | undefined) ?? "customer";
     if (!ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number])) return null;
-    if (!passesAdmin2fa(decoded)) return null;
+    if (!passesAdmin2fa(decoded, cookieStore.get(EMAIL_MFA_COOKIE_NAME)?.value)) return null;
     return { uid: decoded.uid, email: decoded.email ?? null, role };
   } catch {
     return null;
