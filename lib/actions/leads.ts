@@ -11,6 +11,7 @@ import {
   ManualLeadInputSchema,
 } from "@/lib/validation/lead";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
+import { sendLeadNotificationEmail } from "@/lib/email/send";
 import type { Lead } from "@/lib/types";
 
 export type LeadFormState =
@@ -41,7 +42,7 @@ export async function submitContactLead(
     return { ok: false, errors: zodErrors(parsed.error.issues) };
   }
 
-  await saveLead({ ...parsed.data, source: "contact" });
+  await sendLeadNotificationEmail(await saveLead({ ...parsed.data, source: "contact" }));
   return { ok: true };
 }
 
@@ -55,7 +56,7 @@ export async function submitCustomTourLead(
     return { ok: false, errors: zodErrors(parsed.error.issues) };
   }
 
-  await saveLead({ ...parsed.data, source: "custom" });
+  await sendLeadNotificationEmail(await saveLead({ ...parsed.data, source: "custom" }));
   return { ok: true };
 }
 

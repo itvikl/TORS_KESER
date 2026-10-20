@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { calculatePriceBreakdown } from "@/lib/pricing";
-import { sendBookingConfirmationEmail } from "@/lib/email/send";
+import { sendBookingConfirmationEmail, sendBookingNotificationEmail } from "@/lib/email/send";
 import { ManualBookingInputSchema, PublicBookingInputSchema } from "@/lib/validation/booking";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import { ONLINE_PAYMENTS_ENABLED } from "@/lib/onlinePayments";
@@ -185,7 +185,15 @@ async function createBookingCore(
     throw err;
   }
 
-  await sendBookingConfirmationEmail(booking);
+  // Staff entered manual bookings themselves, so only online bookings alert the team.
+  await Promise.all([
+    sendBookingConfirmationEmail(booking),
+    resolution.mode === "public" &&
+      sendBookingNotificationEmail(
+        booking,
+        data.travelers.map((t) => `${t.firstName} ${t.lastName}`.trim())
+      ),
+  ]);
 
   return { ok: true, bookingId: bookingRef.id, booking };
 }

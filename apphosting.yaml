@@ -97,6 +97,25 @@ env:
     availability:
       - RUNTIME
 
+  # Email (lib/email). Create once: npx firebase apphosting:secrets:set RESEND_API_KEY
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY
+    availability:
+      - RUNTIME
+
+  # Free-tier sender until a domain is verified in Resend — then only the
+  # Resend account owner can receive, so ADMIN_NOTIFY_EMAIL must be that address.
+  - variable: EMAIL_FROM
+    value: "Keshertours <onboarding@resend.dev>"
+    availability:
+      - RUNTIME
+
+  # New-booking / new-lead alerts, comma-separated.
+  - variable: ADMIN_NOTIFY_EMAIL
+    value: zsondhelm@gmail.com
+    availability:
+      - RUNTIME
+
   # Admin two-factor enforcement (lib/auth/mfa.ts). Keep "false" until TOTP is
   # enabled on the project (scripts/enable-admin-2fa.ts) and every admin has
   # enrolled — flipping it earlier locks out anyone who hasn't.
