@@ -5,6 +5,8 @@ import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions",
+  description: "Answers about Keshertours kosher tours — kashrut on the road, Shabbat, rooms, payments, cancellations and more.",
+  alternates: { canonical: "/faq" },
 };
 
 export default async function FaqPage() {

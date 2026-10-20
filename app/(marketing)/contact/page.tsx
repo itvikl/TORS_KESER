@@ -8,6 +8,8 @@ import { getSiteSettings } from "@/lib/data/admin/settings";
 
 export const metadata: Metadata = {
   title: "Contact Us",
+  description: "Questions about a kosher tour or a custom trip? Call, email, or send the Keshertours team a message.",
+  alternates: { canonical: "/contact" },
 };
 
 export default async function ContactPage() {

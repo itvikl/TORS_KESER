@@ -18,9 +18,20 @@ export async function generateMetadata({
   const post = await getBlogPostBySlug(slug);
   if (!post) return {};
 
+  const title = post.seoTitle ?? post.title;
+  const description = post.seoDescription ?? post.body.slice(0, 160);
   return {
-    title: post.seoTitle ?? post.title,
-    description: post.seoDescription ?? post.body.slice(0, 160),
+    title,
+    description,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: `/blog/${post.slug}`,
+      publishedTime: post.publishedAt,
+      images: post.heroImage ? [post.heroImage] : undefined,
+    },
   };
 }
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
@@ -22,6 +23,10 @@ import {
   HOME_CONTENT_CACHE_TAG,
   HOME_BLOG_CACHE_TAG,
 } from "@/lib/data/homeCacheTags";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const HERO_IMAGE =
   "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Fhome-hero-a18f8b00.jpg?alt=media&token=e03feebc-914d-423c-8b8b-bd7d3761658c";

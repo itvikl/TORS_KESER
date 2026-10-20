@@ -32,9 +32,15 @@ export async function generateMetadata({
   const tour = await getTourBySlug(slug);
   if (!tour) return {};
 
+  const title = tour.seoTitle ?? tour.title;
+  const description = tour.seoDescription ?? tour.summary;
+  // Canonical is the current slug, so a tour reached by an old slug
+  // (slugHistory) doesn't compete with itself in search.
   return {
-    title: tour.seoTitle ?? tour.title,
-    description: tour.seoDescription ?? tour.summary,
+    title,
+    description,
+    alternates: { canonical: `/tours/${tour.slug}` },
+    openGraph: { title, description, url: `/tours/${tour.slug}`, images: tour.heroImage ? [tour.heroImage] : undefined },
   };
 }
 

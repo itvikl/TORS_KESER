@@ -4,6 +4,8 @@ import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
+  description: "Booking, payment, and cancellation terms for Keshertours kosher tours.",
+  alternates: { canonical: "/legal/terms-conditions" },
 };
 
 export default async function TermsConditionsPage() {

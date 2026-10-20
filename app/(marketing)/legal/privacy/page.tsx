@@ -4,6 +4,8 @@ import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  description: "How Keshertours collects, uses, and protects your personal information.",
+  alternates: { canonical: "/legal/privacy" },
 };
 
 export default async function PrivacyPage() {

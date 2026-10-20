@@ -6,6 +6,7 @@ import { getSiteContent } from "@/lib/data/siteContent";
 export const metadata: Metadata = {
   title: "About Us",
   description: "The story, standards, and people behind Keshertours.",
+  alternates: { canonical: "/about" },
 };
 
 export default async function AboutPage() {

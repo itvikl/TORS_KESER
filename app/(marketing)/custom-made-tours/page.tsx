@@ -6,6 +6,7 @@ import { getSiteContent } from "@/lib/data/siteContent";
 export const metadata: Metadata = {
   title: "Custom Made Tours",
   description: "Private kosher tours for your family, friends, or community group.",
+  alternates: { canonical: "/custom-made-tours" },
 };
 
 export default async function CustomMadeToursPage() {

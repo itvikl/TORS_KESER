@@ -6,7 +6,7 @@ import { getBookingSummary } from "@/lib/data/bookings";
 import { formatUsd } from "@/lib/pricing";
 import { PhoneLink } from "@/components/marketing/SitePhone";
 
-export const metadata: Metadata = { title: "Payment received" };
+export const metadata: Metadata = { title: "Payment received", robots: { index: false, follow: false } };
 
 /**
  * Booking confirmation summary, keyed off a bookingId query param. The

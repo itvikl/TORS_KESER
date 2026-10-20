@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
 import ThemeToggle from "@/components/marketing/ThemeToggle";
+import MobileMenu from "@/components/marketing/MobileMenu";
 import { telHref } from "@/lib/sitePhone";
 
 const NAV_LINKS = [
@@ -35,7 +36,7 @@ export default function Header({ phone }: { phone: string }) {
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <ThemeToggle />
           <a
             href={telHref(phone)}
@@ -45,6 +46,7 @@ export default function Header({ phone }: { phone: string }) {
             <span className="hidden sm:inline">{phone}</span>
             <span className="sm:hidden">Call</span>
           </a>
+          <MobileMenu links={NAV_LINKS} />
         </div>
       </div>
     </header>

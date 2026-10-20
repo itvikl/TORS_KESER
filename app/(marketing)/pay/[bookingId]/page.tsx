@@ -7,7 +7,7 @@ import { formatUsd } from "@/lib/pricing";
 import type { Booking, Departure, Tour } from "@/lib/types";
 import { PhoneLink } from "@/components/marketing/SitePhone";
 
-export const metadata: Metadata = { title: "Complete your payment" };
+export const metadata: Metadata = { title: "Complete your payment", robots: { index: false, follow: false } };
 
 /**
  * Token-gated balance-payment page — not part of a customer account system

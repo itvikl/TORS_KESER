@@ -8,6 +8,7 @@ import { getTestimonialGroups } from "@/lib/data/reviews";
 export const metadata: Metadata = {
   title: "Testimonials",
   description: "What travelers say after touring with Keshertours.",
+  alternates: { canonical: "/testimonials" },
 };
 
 /**

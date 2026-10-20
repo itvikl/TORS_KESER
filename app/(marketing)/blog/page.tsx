@@ -6,6 +6,7 @@ import { getPublishedBlogPosts } from "@/lib/data/blog";
 export const metadata: Metadata = {
   title: "Blog",
   description: "Destination guides, kashrut logistics, and trip planning from the Keshertours team.",
+  alternates: { canonical: "/blog" },
 };
 
 export default async function BlogIndexPage() {

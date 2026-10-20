@@ -8,6 +8,8 @@ import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
   title: "Special Offers",
+  description: "Current deals and limited-time offers on Keshertours kosher tours.",
+  alternates: { canonical: "/special-offers" },
 };
 
 export default async function SpecialOffersPage() {

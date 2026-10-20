@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -9,12 +10,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Keshertours — Travel the World the Jewish Way",
     template: "%s | Keshertours",
   },
   description:
     "Kosher tours to destinations worldwide — escorted, fully kosher, and built for travelers who want to see the world without compromise.",
+  openGraph: {
+    type: "website",
+    siteName: "Keshertours",
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

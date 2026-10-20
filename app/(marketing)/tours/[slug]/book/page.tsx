@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const tour = await getTourBySlug(slug);
-  return { title: tour ? `Register — ${tour.title}` : "Register" };
+  return { title: tour ? `Register — ${tour.title}` : "Register", robots: { index: false, follow: false } };
 }
 
 export default async function BookTourPage({
