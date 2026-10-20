@@ -91,8 +91,14 @@ export default function FeaturedToursGrid() {
         </p>
       ) : (
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {visible.map(({ tour, nextDeparture, image }) => (
-            <TourCard key={tour.tourId} tour={tour} nextDeparture={nextDeparture} image={image} />
+          {visible.map(({ tour, nextDeparture, image, soldOut }) => (
+            <TourCard
+              key={tour.tourId}
+              tour={tour}
+              nextDeparture={nextDeparture}
+              image={image}
+              soldOut={soldOut}
+            />
           ))}
         </div>
       )}

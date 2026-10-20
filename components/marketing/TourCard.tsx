@@ -6,15 +6,22 @@ export default function TourCard({
   tour,
   nextDeparture,
   image,
+  soldOut = false,
 }: {
   tour: Tour;
   nextDeparture?: Departure;
   image: string;
+  /** Replaces the Special Offer badge — there's nothing left to offer. */
+  soldOut?: boolean;
 }) {
   return (
     // h-full on both wrappers so every card stretches to its grid row's height.
     <div className="relative h-full">
-      {tour.isSpecialOffer && (
+      {soldOut ? (
+        <div className="absolute -top-3 left-6 z-10 rounded-full border border-[var(--color-border-hairline)] bg-[var(--color-glacier-elevated)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-slate)] shadow-lg">
+          Sold Out
+        </div>
+      ) : tour.isSpecialOffer && (
         <div className="absolute -top-3 left-6 z-10 rounded-full bg-[var(--color-offer-gold)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[#0f1524] shadow-lg">
           Special Offer
         </div>

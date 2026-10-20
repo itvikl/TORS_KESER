@@ -12,7 +12,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Departure, Tour } from "@/lib/types";
 import type { CountryOption } from "@/lib/data/tours";
-import { isDeparturePlanned } from "@/lib/departureAvailability";
+import { hasBookableDeparture, isDeparturePlanned } from "@/lib/departureAvailability";
 import { smoothScrollTo } from "@/lib/smoothScroll";
 
 /** Id of the DestinationSearch root, so results and "Change Search" can scroll to each other. */
@@ -30,6 +30,8 @@ export type FilteredTourItem = {
   tour: Tour;
   nextDeparture?: Departure;
   image: string;
+  /** No upcoming date has a spot left to book. */
+  soldOut: boolean;
 };
 
 type TourFilterContextValue = {
@@ -166,13 +168,21 @@ export function TourFilterProvider({
         tour,
         nextDeparture: departures[0],
         image,
+        soldOut: !hasBookableDeparture(departures),
       }));
     }
 
     const matched: FilteredTourItem[] = [];
     for (const { tour, departures, image } of inCountry) {
       const departure = matchingDeparture(departures, selectedMonths);
-      if (departure) matched.push({ tour, nextDeparture: departure, image });
+      if (departure) {
+        matched.push({
+          tour,
+          nextDeparture: departure,
+          image,
+          soldOut: !hasBookableDeparture(departures),
+        });
+      }
     }
     return matched;
   }, [selectedCountries, selectedMonths, tours]);

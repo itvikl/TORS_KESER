@@ -3,7 +3,7 @@ import PageHeader from "@/components/marketing/PageHeader";
 import TourCard from "@/components/marketing/TourCard";
 import { getSpecialOffers } from "@/lib/data/offers";
 import { getDeparturesForTour, getSpecialOfferTours } from "@/lib/data/tours";
-import { isDeparturePlanned } from "@/lib/departureAvailability";
+import { hasBookableDeparture, isDeparturePlanned } from "@/lib/departureAvailability";
 import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
@@ -20,11 +20,15 @@ export default async function SpecialOffersPage() {
   // Same rule as the home page: a special offer with no upcoming date isn't listed.
   const tours = (
     await Promise.all(
-      specialOfferTours.map(async (tour) => ({
-        tour,
-        nextDeparture: (await getDeparturesForTour(tour.tourId)).find(isDeparturePlanned),
-        image: tour.heroImage || tour.gallery[0] || "",
-      }))
+      specialOfferTours.map(async (tour) => {
+        const departures = await getDeparturesForTour(tour.tourId);
+        return {
+          tour,
+          nextDeparture: departures.find(isDeparturePlanned),
+          image: tour.heroImage || tour.gallery[0] || "",
+          soldOut: !hasBookableDeparture(departures),
+        };
+      })
     )
   ).filter(({ nextDeparture }) => nextDeparture);
 
@@ -64,12 +68,13 @@ export default async function SpecialOffersPage() {
 
             {tours.length > 0 && (
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {tours.map(({ tour, nextDeparture, image }) => (
+                {tours.map(({ tour, nextDeparture, image, soldOut }) => (
                   <TourCard
                     key={tour.tourId}
                     tour={tour}
                     nextDeparture={nextDeparture}
                     image={image}
+                    soldOut={soldOut}
                   />
                 ))}
               </div>
