@@ -56,6 +56,14 @@ env:
       - BUILD
       - RUNTIME
 
+  # Old site's GA4 property. Only loads once NEXT_PUBLIC_SITE_URL is the real
+  # domain (app/(marketing)/layout.tsx), so pre-launch traffic isn't counted.
+  - variable: NEXT_PUBLIC_GA_MEASUREMENT_ID
+    value: G-1LP2HHK2XN
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: FIREBASE_ADMIN_PROJECT_ID
     value: kesertors
     availability:

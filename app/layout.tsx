@@ -23,6 +23,16 @@ export const metadata: Metadata = {
     locale: "en_US",
   },
   twitter: { card: "summary_large_image" },
+  // Search Console ownership, carried over from the old WordPress homepage —
+  // losing these at launch would unverify the existing properties.
+  verification: {
+    other: {
+      "google-site-verification": [
+        "TdFynJjeRCDciTnwEqD3BqcV90AxzX0WY062w7XMlkI",
+        "n-i_0Ps3Ho88FTKXVUln1KLIE3U0T_ymJVR51bUZTio",
+      ],
+    },
+  },
 };
 
 export default function RootLayout({
