@@ -1,6 +1,7 @@
 import "server-only";
 import type { Booking, Departure, Tour, Traveler } from "@/lib/types";
 import { adminDb } from "@/lib/firebase/admin";
+import { isInDateRange, parseDateRangeFilter, type DateRangeFilter } from "@/lib/dateRangeFilter";
 
 export interface PastDepartureRow {
   departure: Departure;
@@ -9,20 +10,8 @@ export interface PastDepartureRow {
 }
 
 /** Inclusive YYYY-MM-DD bounds on a departure's start date; either side may be omitted. */
-export interface HistoryDateFilter {
-  from?: string;
-  to?: string;
-}
-
-/** Accepts only well-formed YYYY-MM-DD strings (e.g. straight from searchParams). */
-export function parseHistoryDateFilter(params: {
-  from?: string | string[];
-  to?: string | string[];
-}): HistoryDateFilter {
-  const valid = (value?: string | string[]) =>
-    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
-  return { from: valid(params.from), to: valid(params.to) };
-}
+export type HistoryDateFilter = DateRangeFilter;
+export const parseHistoryDateFilter = parseDateRangeFilter;
 
 /** Same in-memory join pattern as lib/data/admin/bookings.ts — collections are small. */
 export async function getPastDeparturesAdmin(
@@ -41,9 +30,7 @@ export async function getPastDeparturesAdmin(
   const pastDepartures = departuresSnap.docs
     .map((doc) => doc.data() as Departure)
     .filter((departure) => new Date(departure.endDate).getTime() < now)
-    // startDate is an ISO string, so its first 10 chars compare lexically as a date.
-    .filter((departure) => !filter.from || departure.startDate.slice(0, 10) >= filter.from)
-    .filter((departure) => !filter.to || departure.startDate.slice(0, 10) <= filter.to);
+    .filter((departure) => isInDateRange(departure.startDate, filter));
 
   const rows: PastDepartureRow[] = pastDepartures.map((departure) => {
     const registrantCount = bookings

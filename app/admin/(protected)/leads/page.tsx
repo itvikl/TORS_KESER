@@ -6,11 +6,19 @@ import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
 import type { Lead } from "@/lib/types";
 import { IconLink } from "@/components/admin/IconAction";
 import { AdminIcon } from "@/components/admin/IconAction";
+import DateRangeFilterForm from "@/components/admin/DateRangeFilterForm";
+import { dateRangeQuery, isDateRangeActive, parseDateRangeFilter } from "@/lib/dateRangeFilter";
 
 export const metadata: Metadata = { title: "Leads" };
 
-export default async function AdminLeadsPage() {
-  const rows = await getAllLeadsAdmin(); // newest first
+export default async function AdminLeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string | string[]; to?: string | string[] }>;
+}) {
+  const filter = parseDateRangeFilter(await searchParams);
+  const rows = await getAllLeadsAdmin(filter); // newest first
+  const isFiltered = isDateRangeActive(filter);
 
   return (
     <div>
@@ -18,15 +26,15 @@ export default async function AdminLeadsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Leads</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            {rows.length} lead{rows.length === 1 ? "" : "s"} · newest first
+            {rows.length} lead{rows.length === 1 ? "" : "s"}
+            {isFiltered ? " received in the selected range" : ""} · newest first
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {rows.length > 0 && (
             // A file download (route handler), not a page — <Link> would try a client-side navigation.
-            // eslint-disable-next-line @next/next/no-html-link-for-pages
             <a
-              href="/admin/leads/export"
+              href={`/admin/leads/export${dateRangeQuery(filter)}`}
               className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm"
             >
               <AdminIcon name="download" className="h-4 w-4" />
@@ -42,9 +50,11 @@ export default async function AdminLeadsPage() {
         </div>
       </div>
 
+      <DateRangeFilterForm filter={filter} clearHref="/admin/leads" fromLabel="Received from" />
+
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed border-line bg-white p-10 text-center text-ink-muted">
-          No leads yet.
+          {isFiltered ? "No leads in this date range." : "No leads yet."}
         </p>
       ) : (
         <div className="overflow-hidden overflow-x-auto rounded-xl border border-line bg-white">
