@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isPassportScanPath } from "@/lib/passportScans";
 import {
   NAME_MAX_LENGTH,
   NAME_PATTERN,
@@ -33,7 +34,11 @@ export const TravelerInputSchema = z.object({
     .string()
     .regex(PASSPORT_PATTERN, { error: "Passport number can only contain letters and digits (up to 10)." })
     .optional(),
-  passportScanUrl: z.string().optional(),
+  // Only a path uploadPassportScan itself produces — never a client-chosen URL.
+  passportScanPath: z
+    .string()
+    .refine(isPassportScanPath, { error: "Invalid passport scan upload." })
+    .optional(),
   occupancy: z.enum(["double", "single", "triple", "child"]),
   roomWith: z.string().optional(),
   dietary: z.string().optional(),

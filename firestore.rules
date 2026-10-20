@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// The browser only uses Firebase Auth (lib/firebase/client.ts). Every
+// Firestore read/write goes through the Admin SDK on the server, which
+// bypasses these rules — so direct client access is denied outright. This
+// keeps bookings, travelers (passport numbers) and leads unreachable with the
+// public web API key.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

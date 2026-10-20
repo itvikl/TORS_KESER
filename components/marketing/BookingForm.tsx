@@ -18,7 +18,7 @@ interface TravelerDraft {
   lastName: string;
   dob: string;
   passport: string;
-  passportScanUrl: string;
+  passportScanPath: string;
   passportScanFileName: string;
   occupancy: Occupancy;
   roomWith: string;
@@ -30,7 +30,7 @@ const BLANK_TRAVELER: Omit<TravelerDraft, "occupancy"> = {
   lastName: "",
   dob: "",
   passport: "",
-  passportScanUrl: "",
+  passportScanPath: "",
   passportScanFileName: "",
   roomWith: "",
   dietary: "",
@@ -149,7 +149,7 @@ export default function BookingForm({
         lastName: t.lastName,
         dob: t.dob || undefined,
         passport: t.passport || undefined,
-        passportScanUrl: t.passportScanUrl || undefined,
+        passportScanPath: t.passportScanPath || undefined,
         occupancy: t.occupancy,
         roomWith: t.roomWith || undefined,
         dietary: t.dietary || undefined,
@@ -394,12 +394,12 @@ export default function BookingForm({
                     name={`traveler-${index}-dietary`}
                   />
                   <PassportUploadField
-                    value={traveler.passportScanUrl}
+                    value={traveler.passportScanPath}
                     fileName={traveler.passportScanFileName}
-                    onUploaded={(url, fileName) =>
-                      updateTraveler(index, { passportScanUrl: url, passportScanFileName: fileName })
+                    onUploaded={(path, fileName) =>
+                      updateTraveler(index, { passportScanPath: path, passportScanFileName: fileName })
                     }
-                    onRemove={() => updateTraveler(index, { passportScanUrl: "", passportScanFileName: "" })}
+                    onRemove={() => updateTraveler(index, { passportScanPath: "", passportScanFileName: "" })}
                   />
                 </div>
               </div>
@@ -858,7 +858,7 @@ function PassportUploadField({
 }: {
   value: string;
   fileName: string;
-  onUploaded: (url: string, fileName: string) => void;
+  onUploaded: (path: string, fileName: string) => void;
   onRemove: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -875,7 +875,7 @@ function PassportUploadField({
     formData.append("file", file);
     const result = await uploadPassportScan(formData);
     if (result.ok) {
-      onUploaded(result.url, file.name);
+      onUploaded(result.path, file.name);
     } else {
       setError(result.error);
     }
@@ -891,14 +891,10 @@ function PassportUploadField({
       </label>
       {value ? (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] px-3.5 py-2.5">
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="truncate text-sm font-medium text-[var(--color-ice)] hover:underline"
-          >
-            {fileName || "View uploaded file"}
-          </a>
+          {/* The upload is private (no public URL), so the customer sees a confirmation, not a link. */}
+          <span className="truncate text-sm font-medium text-[var(--color-ice)]">
+            ✓ {fileName || "Passport uploaded"}
+          </span>
           <button
             type="button"
             onClick={onRemove}

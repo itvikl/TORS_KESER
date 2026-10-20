@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { adminStorage } from "@/lib/firebase/admin";
 import { recordUploadedImage } from "@/lib/data/admin/mediaLibrary";
+import { PASSPORT_SCANS_PREFIX } from "@/lib/passportScans";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES: Record<string, string> = {
@@ -77,15 +78,37 @@ const PASSPORT_ALLOWED_TYPES: Record<string, string> = {
   "application/pdf": "pdf",
 };
 
+/** The browser-reported MIME type is client-controlled, so the file's own leading bytes must agree. */
+function hasMatchingSignature(buffer: Buffer, extension: string): boolean {
+  const ascii = (start: number, end: number) => buffer.subarray(start, end).toString("latin1");
+  switch (extension) {
+    case "jpg":
+      return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+    case "png":
+      return buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    case "webp":
+      return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
+    case "pdf":
+      return ascii(0, 5) === "%PDF-";
+    default:
+      return false;
+  }
+}
+
+export type UploadPassportResult = { ok: true; path: string } | { ok: false; error: string };
+
 /**
  * Uploads a traveler's passport scan/photo during the public booking flow —
  * unlike uploadImage, deliberately has no requireAdminSession() gate, since
- * it runs before a booking (and therefore any staff session) exists. Kept
- * as a separate action rather than reusing uploadImage so the two can
- * diverge on allowed types (PDF) and folder without touching the
- * admin-authenticated path.
+ * it runs before a booking (and therefore any staff session) exists.
+ *
+ * Passports are sensitive, so unlike uploadImage this writes NO download
+ * token: the object is unreadable except through the Admin SDK, and staff
+ * open it via the session-checked route in
+ * app/admin/(protected)/passport-scans/[file]/route.ts. The caller gets back
+ * only the Storage path, never a URL.
  */
-export async function uploadPassportScan(formData: FormData): Promise<UploadImageResult> {
+export async function uploadPassportScan(formData: FormData): Promise<UploadPassportResult> {
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return { ok: false, error: "No file provided." };
@@ -100,19 +123,15 @@ export async function uploadPassportScan(formData: FormData): Promise<UploadImag
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const path = `passport-scans/${randomUUID()}.${extension}`;
-  const downloadToken = randomUUID();
+  if (!hasMatchingSignature(buffer, extension)) {
+    return { ok: false, error: "That file doesn't look like a valid image or PDF." };
+  }
 
-  const bucket = adminStorage().bucket();
-  const blob = bucket.file(path);
-  await blob.save(buffer, {
-    contentType: file.type,
-    metadata: { metadata: { firebaseStorageDownloadTokens: downloadToken } },
-  });
+  const path = `${PASSPORT_SCANS_PREFIX}${randomUUID()}.${extension}`;
+  await adminStorage()
+    .bucket()
+    .file(path)
+    .save(buffer, { contentType: file.type, metadata: { cacheControl: "private, no-store" } });
 
-  const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
-    path
-  )}?alt=media&token=${downloadToken}`;
-
-  return { ok: true, url };
+  return { ok: true, path };
 }

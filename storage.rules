@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// All uploads go through server actions using the Admin SDK (lib/actions/uploads.ts),
+// which bypasses these rules — so direct client access is denied outright.
+// Public site images stay viewable through their download-token URLs (token
+// access isn't governed by these rules); passport scans carry no token, so
+// nothing but the Admin SDK can read them.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

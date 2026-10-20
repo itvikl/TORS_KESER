@@ -189,6 +189,9 @@ export interface Traveler {
   lastName: string;
   dob?: string;
   passport?: string;
+  /** Private Storage path (passport-scans/<uuid>.<ext>) — opened only via the admin passport-scans route. */
+  passportScanPath?: string;
+  /** Legacy: tokenized public download URL written before scans went private. Read-only now. */
   passportScanUrl?: string;
   occupancy: Occupancy;
   roomWith?: string;

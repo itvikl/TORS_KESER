@@ -8,6 +8,7 @@ import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 import { formatUsd } from "@/lib/pricing";
 import type { AdminBookingRow } from "@/lib/data/admin/bookings";
 import type { Booking, BookingStatus, RoomConfiguration, Traveler } from "@/lib/types";
+import { passportScanHref, passportScanPathOf } from "@/lib/passportScans";
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
   pending_payment: "bg-gold/15 text-terracotta-dark",
@@ -227,9 +228,9 @@ export default function BookingDetailModal({
                         {traveler.dietary && <TravelerField label="Dietary" value={traveler.dietary} />}
                       </div>
                     )}
-                    {traveler.passportScanUrl && (
+                    {passportScanPathOf(traveler) && (
                       <a
-                        href={traveler.passportScanUrl}
+                        href={passportScanHref(passportScanPathOf(traveler)!)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-navy hover:underline"
