@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -78,6 +79,21 @@ function matchingDeparture(
   });
 }
 
+/**
+ * Mirrors ?country=&month= into the provider's state (initial load, footer
+ * destination links, back/forward). Isolated in its own tiny Suspense
+ * boundary because useSearchParams opts its boundary out of static
+ * prerendering — kept here, it lets the rest of the homepage be prebuilt
+ * HTML instead of a per-request render (the cold-start cost on "/").
+ */
+function UrlFilterSync({ onChange }: { onChange: (countries: string[], months: string[]) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onChange(parseListParam(searchParams, "country"), parseListParam(searchParams, "month"));
+  }, [searchParams, onChange]);
+  return null;
+}
+
 export function TourFilterProvider({
   countries,
   tours,
@@ -93,14 +109,13 @@ export function TourFilterProvider({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [selectedCountries, setSelectedCountries] = useState(initialCountries);
   const [selectedMonths, setSelectedMonths] = useState(initialMonths);
 
-  useEffect(() => {
-    setSelectedCountries(parseListParam(searchParams, "country"));
-    setSelectedMonths(parseListParam(searchParams, "month"));
-  }, [searchParams]);
+  const syncFromUrl = useCallback((countries: string[], months: string[]) => {
+    setSelectedCountries(countries);
+    setSelectedMonths(months);
+  }, []);
 
   // Leave room for the sticky header (and a bit of breathing room) instead
   // of flushing the target flat to the very top of the viewport.
@@ -134,7 +149,8 @@ export function TourFilterProvider({
       setSelectedCountries(nextCountries);
       setSelectedMonths(nextMonths);
 
-      const params = new URLSearchParams(searchParams.toString());
+      // Only runs on user interaction, so reading the live URL is safe here.
+      const params = new URLSearchParams(window.location.search);
       params.delete("country");
       for (const country of nextCountries) {
         params.append("country", country);
@@ -151,7 +167,7 @@ export function TourFilterProvider({
         scrollToResults();
       }
     },
-    [pathname, router, searchParams, scrollToResults]
+    [pathname, router, scrollToResults]
   );
 
   const filteredTours = useMemo(() => {
@@ -212,6 +228,9 @@ export function TourFilterProvider({
 
   return (
     <TourFilterContext.Provider value={value}>
+      <Suspense fallback={null}>
+        <UrlFilterSync onChange={syncFromUrl} />
+      </Suspense>
       {children}
     </TourFilterContext.Provider>
   );

@@ -5,7 +5,10 @@ runConfig:
   cpu: 1
   memoryMiB: 1024
   concurrency: 80
-  minInstances: 0
+  # Keep one instance warm: at 0, the first visitor after an idle period
+  # waits several seconds for a container to boot. Billed while idle (low
+  # idle rate) — set back to 0 to trade that cost for cold starts.
+  minInstances: 1
   maxInstances: 10
 
 env:
