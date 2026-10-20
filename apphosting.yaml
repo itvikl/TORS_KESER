@@ -93,3 +93,11 @@ env:
     secret: STRIPE_WEBHOOK_SECRET
     availability:
       - RUNTIME
+
+  # Admin two-factor enforcement (lib/auth/mfa.ts). Keep "false" until TOTP is
+  # enabled on the project (scripts/enable-admin-2fa.ts) and every admin has
+  # enrolled — flipping it earlier locks out anyone who hasn't.
+  - variable: ADMIN_REQUIRE_2FA
+    value: "false"
+    availability:
+      - RUNTIME

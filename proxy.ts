@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
+import { passesAdmin2fa } from "@/lib/auth/mfa";
 
 /**
  * Gate for /admin/* (PRD section 9). This project targets Next.js 16,
@@ -28,7 +29,7 @@ export default async function proxy(request: NextRequest) {
 
   try {
     const decoded = await adminAuth().verifySessionCookie(sessionCookie);
-    if (!ADMIN_ROLES.includes(decoded.role)) {
+    if (!ADMIN_ROLES.includes(decoded.role) || !passesAdmin2fa(decoded)) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   } catch {

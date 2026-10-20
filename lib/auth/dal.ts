@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
+import { passesAdmin2fa } from "@/lib/auth/mfa";
 import type { UserRole } from "@/lib/types";
 
 /**
@@ -27,6 +28,7 @@ export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
     const decoded = await adminAuth().verifySessionCookie(cookieValue, true);
     const role = (decoded.role as UserRole | undefined) ?? "customer";
     if (!ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number])) return null;
+    if (!passesAdmin2fa(decoded)) return null;
     return { uid: decoded.uid, email: decoded.email ?? null, role };
   } catch {
     return null;

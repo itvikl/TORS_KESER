@@ -1,5 +1,5 @@
 import "server-only";
-import { adminDb } from "@/lib/firebase/admin";
+import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { ADMIN_ROLES } from "@/lib/auth/constants";
 import type { UserRole } from "@/lib/types";
 
@@ -7,6 +7,19 @@ export interface AdminUserRow {
   uid: string;
   email: string | null;
   role: UserRole;
+}
+
+/** uids (of those given) that have an authenticator app enrolled as a second factor. */
+export async function getTwoFactorUidsAdmin(uids: string[]): Promise<Set<string>> {
+  const enrolled = new Set<string>();
+  // getUsers() takes at most 100 identifiers per call.
+  for (let i = 0; i < uids.length; i += 100) {
+    const { users } = await adminAuth().getUsers(uids.slice(i, i + 100).map((uid) => ({ uid })));
+    for (const user of users) {
+      if (user.multiFactor?.enrolledFactors.length) enrolled.add(user.uid);
+    }
+  }
+  return enrolled;
 }
 
 /**

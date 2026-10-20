@@ -90,6 +90,29 @@ export async function addAdminAccount(input: unknown): Promise<AddAdminAccountRe
 }
 
 /**
+ * "Reset 2FA" on Admin accounts, for someone who lost their authenticator:
+ * removes their enrolled second factors and revokes their sessions, so they
+ * set up a new authenticator on their next sign-in. Admin-only, and not on
+ * your own account (another admin does it, so a stolen password alone can't
+ * strip 2FA).
+ */
+export async function resetAdminTwoFactor(uid: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminRole();
+  if (uid === session.uid) {
+    return { ok: false, error: "Ask another admin to reset your own 2FA." };
+  }
+
+  const users = await listAdminUsersAdmin();
+  if (!users.some((u) => u.uid === uid)) return { ok: false, error: "Account not found." };
+
+  await adminAuth().updateUser(uid, { multiFactor: { enrolledFactors: null } });
+  await adminAuth().revokeRefreshTokens(uid);
+
+  revalidatePath("/admin/staff/accounts");
+  return { ok: true };
+}
+
+/**
  * Deletes an admin/staff login entirely (Firebase Auth user + users/{uid}
  * mirror). Their session stops working on the next request — getAdminSession
  * verifies the cookie with revocation checks. Refuses to delete your own
