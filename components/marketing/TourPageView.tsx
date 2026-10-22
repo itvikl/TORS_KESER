@@ -182,7 +182,7 @@ export default function TourPageView({
                     </summary>
                     <div className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-surface-hover-a)] px-5 pb-6 pt-0 sm:px-6">
                       <div className="mt-5 space-y-3">
-                        <p className="leading-relaxed text-[var(--color-slate)]">
+                        <p className="whitespace-pre-line leading-relaxed text-[var(--color-slate)]">
                           {day.description}
                         </p>
                         {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (

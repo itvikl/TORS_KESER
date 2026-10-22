@@ -48,24 +48,30 @@ export const SITE_CONTENT_DEFAULTS = {
   } satisfies SiteContentHome,
 
   about: {
+    // Copy from the old keshertours.com/about/ page, split under headings.
     eyebrow: "About Keshertours",
-    title: "Travel the world without leaving anything behind",
-    lede: "Every Keshertours departure is planned so you never have to choose between seeing the world and keeping the standards you keep at home.",
+    title: "Travel the world the Jewish way",
+    lede: "If you are looking for a worry-free tour of exotic places, a rich and varied itinerary, and the pleasure of enjoying it with a compatible group, our Kesher Kosher Tours are for you.",
     sections: [
       {
-        sectionId: "approach",
-        heading: "Our Approach",
-        body: "Every tour is escorted by a Shomer Shabbat, English-speaking guide, and travels with a company mashgiach in addition to local rabbinic or Chabad supervision — kashrut isn't an afterthought bolted onto a standard itinerary, it's planned in from the first day.",
+        sectionId: "escort",
+        heading: "A tour escort with you all day",
+        body: "Imagine going to a foreign country with a tour escort to look after all of your needs, accompanying your group 24 hours a day. Our tour escorts are experienced and have wide knowledge of the country in which they guide. They are with you to solve problems, answer questions and give you any advice you may need during the course of the tour.",
       },
       {
-        sectionId: "history",
-        heading: "[Company history — years in business, licensing]",
-        body: "This section needs real content from the client: founding year, Seller of Travel registration numbers, and any industry affiliations — these are trust signals that matter most to this audience.",
+        sectionId: "kosher-days",
+        heading: "Kosher food waiting, every day planned",
+        body: "You get up in the morning and do not have to worry about where you can find kosher food, because it's waiting for you in the dining room. You don't have to plan your day, because local experts have not only selected the most interesting, colorful sites, but have also figured out the best order and the best routes, so you spend more time at the sites and less time on transportation. You get explanations of the context of what you are seeing: the history, the culture and the Jewish heritage of a country. You may enjoy folklore programs and meeting local people.\n\nAt the end of a full day of activities, you will enjoy a freshly prepared kosher dinner.",
       },
       {
-        sectionId: "leadership",
-        heading: "[Leadership — Shai Bar Ilan / guide bios]",
-        body: "Placeholder for a short bio and photo — testimonials reference trips personally led by Shai Bar Ilan, which is exactly the kind of detail that builds trust with a 50+ audience.",
+        sectionId: "group",
+        heading: "A group that becomes like family",
+        body: "On our tours you will share all of this with a group of friendly people who become like family, helping one another shop and bargain, photographing each other, and singing and joking together.",
+      },
+      {
+        sectionId: "experience",
+        heading: "Decades of experience",
+        body: "We at Kesher Tours have decades of experience, and travelers who have been traveling with us multiple times. We enjoy serving our travelers and providing unforgettable tours.",
       },
     ],
   } satisfies SiteContentAbout,
