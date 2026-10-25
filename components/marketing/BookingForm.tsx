@@ -921,7 +921,36 @@ function PassportUploadField({
         </label>
       )}
       {error && <p className="mt-1 text-xs font-medium text-[var(--color-danger-text)]">{error}</p>}
+      {/* Accurate as built: HTTPS upload, Firebase Storage encrypts at rest, private path with no download token (lib/passportScans.ts). */}
+      <p className="mt-2 flex items-start gap-2 text-xs leading-snug text-[var(--color-slate)]">
+        <ShieldLockIcon />
+        <span>
+          <span className="font-semibold text-[var(--color-success)]">Secure upload</span> — encrypted in
+          transit and at rest, stored privately with no public link. Only Keshertours staff can view it.
+        </span>
+      </p>
     </div>
+  );
+}
+
+function ShieldLockIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="mt-px shrink-0 text-[var(--color-success)]"
+      aria-hidden="true"
+    >
+      <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" />
+      <rect x="9" y="11" width="6" height="5" rx="1" />
+      <path d="M10.5 11V9.5a1.5 1.5 0 0 1 3 0V11" />
+    </svg>
   );
 }
 

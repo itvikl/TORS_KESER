@@ -134,7 +134,7 @@ export default async function HomePage() {
               {content.trustSignals.map((signal, index) => (
                 <li
                   key={index}
-                  className="glass-panel flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#e0e8f0]"
+                  className="glass-panel flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#e0e8f0] [html[data-theme=light]_&]:text-black"
                 >
                   <svg
                     width="16"

@@ -12,21 +12,17 @@ const SLIDE_INTERVAL_MS = 9000;
  * own content, with a dark gradient overlay to keep form text readable.
  */
 export default function BookingPageBackground({ images }: { images: string[] }) {
-  const safeImages = images.filter(Boolean);
+  // Deduped: a tour's hero image is often repeated in its gallery, and src doubles as the React key.
+  const safeImages = Array.from(new Set(images.filter(Boolean)));
   const [index, setIndex] = useState(0);
-  const [animate, setAnimate] = useState(false);
-
   useEffect(() => {
-    setAnimate(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
-
-  useEffect(() => {
-    if (!animate || safeImages.length <= 1) return;
+    if (safeImages.length <= 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % safeImages.length);
     }, SLIDE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [animate, safeImages.length]);
+  }, [safeImages.length]);
 
   if (safeImages.length === 0) return null;
 

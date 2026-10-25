@@ -27,7 +27,7 @@ export default function HomeHeroContent({
           startDelayMs={content.heroTitleLine1.replace(/\s/g, "").length * 22}
         />
       </h1>
-      <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-[#a0b4c4] sm:text-xl">
+      <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-[#a0b4c4] sm:text-xl [html[data-theme=light]_&]:text-white">
         {content.heroSubtitle}
       </p>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
