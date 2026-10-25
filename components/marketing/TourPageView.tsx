@@ -3,10 +3,11 @@ import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import TourSectionNav, { type TourSectionLink } from "@/components/marketing/TourSectionNav";
+import StickyBookingCard from "@/components/marketing/StickyBookingCard";
 import TestimonialCard from "@/components/marketing/TestimonialCard";
 import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
 import GuideAvatar from "@/components/marketing/GuideAvatar";
-import { formatUsd } from "@/lib/pricing";
+import { formatUsd, singleSupplementOf } from "@/lib/pricing";
 import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
 import { PhoneLink } from "@/components/marketing/SitePhone";
@@ -165,11 +166,12 @@ export default function TourPageView({
                     className="glass-panel group overflow-hidden rounded-xl"
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-[var(--color-surface-hover-a)] sm:p-6 [&::-webkit-details-marker]:hidden">
-                      <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+                      <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-6">
                         <span className="shrink-0 text-2xl font-bold text-[var(--color-ice)]/40">
                           {String(day.dayNumber).padStart(2, "0")}
                         </span>
-                        <span className="truncate text-lg font-bold text-[var(--color-mist)] sm:text-xl">
+                        {/* Long titles wrap to two lines instead of truncating on one */}
+                        <span className="line-clamp-2 min-w-0 text-lg font-bold leading-snug text-[var(--color-mist)] sm:text-xl">
                           {day.title}
                         </span>
                       </div>
@@ -337,8 +339,8 @@ export default function TourPageView({
 
         {/* Sticky booking — top offset clears the site header plus the section nav */}
         <aside id="dates" className="relative">
-          <div className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8 lg:flex lg:max-h-[calc(100vh-11rem)] lg:flex-col lg:p-6">
-            <div className="mb-6 lg:mb-4 lg:shrink-0">
+          <StickyBookingCard className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8 lg:p-5">
+            <div className="mb-6 lg:mb-3">
               <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[var(--color-slate)]">
                 Starting from
               </p>
@@ -351,25 +353,25 @@ export default function TourPageView({
               <p className="mt-1 text-xs text-[var(--color-slate)]">
                 Double occupancy · {formatUsd(tour.pricing.pricePerPersonSingle)} / person for a
                 private room
+                {singleSupplementOf(tour.pricing) > 0 && ` +${formatUsd(singleSupplementOf(tour.pricing))}`}
               </p>
             </div>
 
             {bookingHighlights.length > 0 && (
-              <div className="mb-6 space-y-4 border-y border-[var(--color-border-hairline-faint)] py-6 lg:mb-4 lg:shrink-0 lg:space-y-2 lg:py-4">
+              <div className="mb-6 space-y-4 border-y border-[var(--color-border-hairline-faint)] py-6 lg:mb-3 lg:space-y-1 lg:py-3">
                 {bookingHighlights.map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ice)]" aria-hidden="true" />
-                    <span className="font-medium text-[var(--color-mist)]">{item}</span>
+                    <span className="font-medium text-[var(--color-mist)] lg:text-sm">{item}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)] lg:shrink-0">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
               Departure Dates
             </h3>
-            {/* On desktop the dates scroll inside the card so the whole card (and its Book buttons) fits the viewport */}
-            <ul className="mb-6 space-y-2 lg:mb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
+            <ul className="mb-6 space-y-2 lg:mb-4">
               {upcoming.length === 0 && (
                 <li className="text-[15px] text-[var(--color-slate)]">
                   The next date for this tour will be published soon.
@@ -415,9 +417,9 @@ export default function TourPageView({
                 );
               })}
             </ul>
-            <PhoneLink className="flex items-center justify-center gap-2 lg:shrink-0 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
+            <PhoneLink className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
 
-            <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6 lg:mt-4 lg:shrink-0 lg:pt-4">
+            <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6 lg:mt-4 lg:pt-4">
               <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4 lg:p-3">
                 <span className="mt-0.5 text-[var(--color-ice)]" aria-hidden="true">
                   ✓
@@ -430,7 +432,7 @@ export default function TourPageView({
                 </p>
               </div>
             </div>
-          </div>
+          </StickyBookingCard>
         </aside>
       </section>
     </article>

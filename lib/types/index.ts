@@ -58,6 +58,8 @@ export interface TourPricing {
   pricePerPersonDouble: number;
   /** Flat per-person price for a private (single-occupancy) room — not an add-on over the double rate. */
   pricePerPersonSingle: number;
+  /** pricePerPersonSingle − pricePerPersonDouble, recomputed on every save (see singleSupplementOf). Display-only — totals use pricePerPersonSingle. */
+  singleSupplement?: number;
   pricePerPersonTriple?: number;
   childPrice?: number;
   depositAmountPerPerson: number;

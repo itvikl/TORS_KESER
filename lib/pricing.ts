@@ -43,6 +43,11 @@ export function calculatePriceBreakdown(
   };
 }
 
+/** How much more a private room costs per person than a shared double. */
+export function singleSupplementOf(pricing: TourPricing): number {
+  return Math.max(0, pricing.pricePerPersonSingle - pricing.pricePerPersonDouble);
+}
+
 export function formatUsd(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

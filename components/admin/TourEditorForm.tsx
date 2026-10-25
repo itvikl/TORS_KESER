@@ -18,6 +18,7 @@ import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
+import { formatUsd, singleSupplementOf } from "@/lib/pricing";
 
 const BLANK_TOUR: Tour = {
   tourId: "",
@@ -478,7 +479,10 @@ export default function TourEditorForm({
                   onChange={(e) => setPricing("pricePerPersonDouble", Number(e.target.value))}
                 />
               </Field>
-              <Field label="Price / person (single)" hint="the full price for a private room, not an add-on">
+              <Field
+                label="Price / person (single)"
+                hint={`the full price for a private room, not an add-on · supplement +${formatUsd(singleSupplementOf(draft.pricing))}`}
+              >
                 <input
                   type="number"
                   min={0}

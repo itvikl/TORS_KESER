@@ -59,6 +59,7 @@ export const TourInputSchema = z.object({
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),
+    singleSupplement: z.number().min(0).optional(),
     pricePerPersonTriple: z.number().min(0).optional(),
     childPrice: z.number().min(0).optional(),
     depositAmountPerPerson: z.number().min(0),

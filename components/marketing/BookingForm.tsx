@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 import { availableSeats, type Departure, type Occupancy, type RoomConfiguration, type Tour } from "@/lib/types";
-import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
+import { calculatePriceBreakdown, formatUsd, singleSupplementOf } from "@/lib/pricing";
 import { DEFAULT_ADMIN_FEE, DEFAULT_CANCELLATION_TIERS } from "@/lib/cancellationPolicy";
 import { createBooking } from "@/lib/actions/bookings";
 import { createDepositPaymentIntent } from "@/lib/actions/payments";
@@ -274,7 +274,11 @@ export default function BookingForm({
               />
               <NumberField
                 label="Single rooms"
-                hint="1 adult each"
+                hint={
+                  singleSupplementOf(tour.pricing) > 0
+                    ? `1 adult each · +${formatUsd(singleSupplementOf(tour.pricing))}`
+                    : "1 adult each"
+                }
                 value={room.singleRooms}
                 onChange={(v) => setRoom((r) => ({ ...r, singleRooms: v }))}
               />

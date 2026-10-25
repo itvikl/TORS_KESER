@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { TourInputSchema } from "@/lib/validation/tour";
+import { singleSupplementOf } from "@/lib/pricing";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import {
   archiveTourDoc,
@@ -37,6 +38,7 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
     return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   }
   const data = parsed.data;
+  data.pricing.singleSupplement = singleSupplementOf(data.pricing);
 
   if (await isSlugTaken(data.slug, tourId)) {
     return { ok: false, errors: { slug: ["This slug is already used by another tour."] } };
