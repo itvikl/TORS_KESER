@@ -137,7 +137,95 @@ export const SITE_CONTENT_DEFAULTS = {
 
   "legal-privacy": {
     title: "Privacy Policy",
-    body: "This page needs real content from the client: what personal and payment data is collected (registration forms, Stripe checkout), how it is stored (Firebase), and how travelers can request its deletion. Until this is published, staff should not rely on this page as a binding privacy policy.",
+    body: `KESHER TOURS, INC.
+WEBSITE PRIVACY POLICY
+Effective Date: October 29, 2026
+
+This Privacy Policy explains how Kesher Tours, Inc. ("Kesher," "we," "us," or "our") collects, uses, shares, and protects personal information when you visit https://keshertours.com (the "Website"), contact us, or register for a tour. It should be read together with our Website Terms of Use and Tour Booking Terms & Conditions (the "Terms").
+
+1. INFORMATION WE COLLECT
+
+When you register for a tour, we collect:
+- Booking contact details: name, email address, and phone number.
+- Details for each traveler: first and last name, date of birth, and passport number. You may also choose to upload a scan or photo of a passport; the upload is optional.
+- Rooming information: the room type and who a traveler wishes to share a room with.
+- Dietary requirements, and any health or mobility information you tell us about so that we can arrange suitable services.
+- Whether you prefer to complete payment online or by a call from our team.
+
+When you contact us through the Website (contact form, custom tour request, or tour inquiry), we collect the details you submit, such as your name, email address, phone number, country, message, destination of interest, and group size.
+
+Payment information. Card payments are entered into a secure payment form provided by Stripe, Inc. ("Stripe"). Your card number goes directly to Stripe and is not stored on our servers. We keep a record of each payment, including the amount, date, status, and a Stripe reference number.
+
+Information collected automatically. We use Google Analytics to understand how the Website is used. It may collect your IP address, device and browser type, approximate location, the pages you view, and how you arrived at the Website. Our hosting provider may also keep server logs that record technical details of each request for security and operation of the Website.
+
+2. HOW WE USE PERSONAL INFORMATION
+
+We use personal information to:
+- respond to your inquiries and requests;
+- process and administer reservations, including arranging flights, hotels, transportation, meals, guides, and other tour services;
+- accept payments and send receipts;
+- send booking confirmations, receipts, and other messages needed to administer your booking;
+- meet airline, border, visa, and security requirements, which may require passport information;
+- accommodate dietary, health, and mobility needs you have told us about;
+- keep the Website secure and prevent fraud and misuse;
+- understand how the Website is used and improve it; and
+- comply with legal obligations, resolve disputes, and enforce the Terms.
+
+We send marketing communications only as described in Section 26 of the Terms, on a separate and voluntary basis.
+
+3. SENSITIVE INFORMATION
+
+Some information you provide is sensitive, including passport details, dates of birth, dietary requirements (which may reflect religious practice), and health or mobility information. We ask only for what is reasonably needed to arrange your tour, limit access to staff who need it, use it only to provide your travel services, and share it only as described in Section 4.
+
+4. HOW WE SHARE PERSONAL INFORMATION
+
+We do not sell personal information. We share it only as follows:
+- Travel suppliers. To provide your tour we share information with airlines, hotels, cruise lines, ground operators, guides, and similar suppliers, such as traveler names, passport details, dates of birth, rooming, and dietary needs. Those suppliers handle information under their own policies and local law.
+- Service providers. We use companies that process information on our behalf, including Google (Firebase and Google Cloud services for our database, file storage, hosting, and staff sign-in), Stripe (payment processing), Resend (email delivery), and Google Analytics (website analytics). They may use the information only to provide their services to us.
+- Authorities and legal reasons. We may disclose information to government and border authorities when required for travel, and when required by law, legal process, or to protect the rights, safety, or property of travelers, Kesher, or others.
+- Business changes. If Kesher is involved in a merger, reorganization, or sale of its business, personal information may be transferred as part of that transaction.
+
+5. COOKIES AND ANALYTICS
+
+- Google Analytics uses cookies and similar technologies to measure Website use. You can opt out with Google's browser add-on at https://tools.google.com/dlpage/gaoptout or through your browser settings.
+- Your light or dark display preference is saved in your browser.
+- Customers do not need an account. Our staff use a sign-in cookie to access the administration area.
+
+We do not use the Website to serve third-party advertising.
+
+6. DATA SECURITY
+
+Information sent to the Website is encrypted in transit using HTTPS and is stored with Google Cloud and Firebase, which encrypt data at rest. Passport scans are stored privately with no public link and can be viewed only by authorized Kesher staff. We limit access to personal information to staff who need it. No method of transmission or storage is completely secure, so we cannot guarantee absolute security. If a security incident affects your information, we will notify you as required by law.
+
+7. HOW LONG WE KEEP INFORMATION
+
+We keep personal information for as long as needed to administer your inquiry or booking and to meet legal, tax, accounting, and dispute-resolution requirements. We delete passport scans when they are no longer needed to arrange your travel, unless the law requires us to keep them. When information is no longer needed, we delete or de-identify it.
+
+8. YOUR CHOICES AND RIGHTS
+
+You may contact us to ask what personal information we hold about you, to correct it, or to ask us to delete it. We may need to verify your identity first. We may keep information we are required or permitted by law to retain, such as payment and booking records, and deleting information needed for an upcoming tour may prevent us from providing that tour. You may withdraw consent to marketing at any time using the unsubscribe method provided.
+
+If you live in a state or country with a privacy law, such as California, you may have additional rights, including to know, access, correct, and delete your personal information and not to be treated unfairly for using those rights. You may use an authorized agent to make a request. Contact us to exercise any of these rights.
+
+Kesher is based in the United States. Your information is processed and stored in the United States and in other countries where our service providers operate.
+
+9. CHILDREN
+
+The Website is intended for adults and is not directed to children under 13. We do not knowingly collect information from children through the Website. A parent or guardian may give us information about children traveling with them so that we can arrange the booking.
+
+10. CHANGES TO THIS POLICY
+
+We may update this Privacy Policy by posting the updated version with a new effective date. Changes apply from the effective date, so please review this page from time to time.
+
+11. CONTACT
+
+Questions or requests concerning this Privacy Policy or your personal information may be directed to:
+
+Kesher Tours, Inc.
+209 East 56th Street, #4E
+New York, NY 10022
+Telephone: 1-212-481-3721 or 1-800-847-0700
+Website contact page: https://keshertours.com/contact/`,
   } satisfies SiteContentLegal,
 
   "legal-terms": {
