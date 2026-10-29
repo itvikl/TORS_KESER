@@ -111,10 +111,10 @@ env:
     availability:
       - RUNTIME
 
-  # Free-tier sender until a domain is verified in Resend — then only the
-  # Resend account owner can receive, so ADMIN_NOTIFY_EMAIL must be that address.
+  # keshertours.com is verified in Resend (DKIM + send. subdomain in Cloudflare),
+  # so this can reach any recipient.
   - variable: EMAIL_FROM
-    value: "Keshertours <onboarding@resend.dev>"
+    value: "Keshertours <bookings@keshertours.com>"
     availability:
       - RUNTIME
 
