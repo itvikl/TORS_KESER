@@ -11,7 +11,7 @@
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/ecuador-the-galapagos-islands",
-    "destination": "/",
+    "destination": "/tours/ecuador-the-galapagos-islands",
     "permanent": true
   },
   {
@@ -26,7 +26,7 @@
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/portugal",
-    "destination": "/tours/portugal",
+    "destination": "/",
     "permanent": true
   },
   {
@@ -905,13 +905,8 @@
     "permanent": true
   },
   {
-    "source": "/tours/ecuador-the-galapagos-islands",
-    "destination": "/",
-    "permanent": true
-  },
-  {
     "source": "/tours/ecuador-the-galapagos-islands-2",
-    "destination": "/",
+    "destination": "/tours/ecuador-the-galapagos-islands",
     "permanent": true
   },
   {
@@ -951,12 +946,7 @@
   },
   {
     "source": "/tours/india",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/india-2",
-    "destination": "/",
+    "destination": "/tours/india-2",
     "permanent": true
   },
   {
@@ -965,13 +955,18 @@
     "permanent": true
   },
   {
+    "source": "/tours/italy",
+    "destination": "/",
+    "permanent": true
+  },
+  {
     "source": "/tours/italy-2",
-    "destination": "/tours/italy",
+    "destination": "/",
     "permanent": true
   },
   {
     "source": "/tours/italy-2-2",
-    "destination": "/tours/italy",
+    "destination": "/",
     "permanent": true
   },
   {
@@ -1025,6 +1020,11 @@
     "permanent": true
   },
   {
+    "source": "/tours/portugal",
+    "destination": "/",
+    "permanent": true
+  },
+  {
     "source": "/tours/provence",
     "destination": "/",
     "permanent": true
@@ -1071,12 +1071,12 @@
   },
   {
     "source": "/tours/spain-portugal",
-    "destination": "/tours/portugal",
+    "destination": "/",
     "permanent": true
   },
   {
     "source": "/tours/tanzania",
-    "destination": "/tours/kosher-safari-tanzania",
+    "destination": "/",
     "permanent": true
   },
   {

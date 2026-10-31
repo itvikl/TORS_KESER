@@ -25,6 +25,10 @@ import {
 } from "@/lib/data/homeCacheTags";
 
 export const metadata: Metadata = {
+  // The old WordPress homepage ranked on "kosher tours" / "Jewish travel" in its
+  // title and carries ~19% of search clicks — keep those words in the title.
+  // `absolute` skips the "| Keshertours" template since the brand is already in it.
+  title: { absolute: "Kosher Tours & Jewish Travel Worldwide | Keshertours" },
   alternates: { canonical: "/" },
 };
 
