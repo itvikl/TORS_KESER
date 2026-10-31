@@ -4,11 +4,11 @@ import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailabi
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import TourSectionNav, { type TourSectionLink } from "@/components/marketing/TourSectionNav";
 import StickyBookingCard from "@/components/marketing/StickyBookingCard";
+import TourHeroGallery from "@/components/marketing/TourHeroGallery";
 import TestimonialCard from "@/components/marketing/TestimonialCard";
 import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
 import GuideAvatar from "@/components/marketing/GuideAvatar";
 import { formatUsd, singleSupplementOf } from "@/lib/pricing";
-import SafeImage from "@/components/ui/SafeImage";
 import TextReveal from "@/components/ui/TextReveal";
 import { PhoneLink } from "@/components/marketing/SitePhone";
 
@@ -507,94 +507,6 @@ function InfoCardPanel({ card }: { card: TourInfoCard }) {
         </ul>
       )}
     </div>
-  );
-}
-
-function TourHeroGallery({
-  images,
-  alt,
-  title,
-  badge,
-  countries,
-  durationDays,
-}: {
-  images: string[];
-  alt: string;
-  title: string;
-  badge: string;
-  countries: string[];
-  durationDays: number;
-}) {
-  const safe = images.length ? images : ["/placeholder.svg"];
-  const main = safe[0];
-  const side = [safe[1] ?? safe[0], safe[2] ?? safe[0], safe[3] ?? safe[0]];
-  const extraCount = Math.max(safe.length - 4, 0);
-
-  return (
-    <section className="relative flex w-full flex-col gap-2 p-2 md:h-[min(716px,80vh)] md:flex-row">
-      <div className="group relative h-[420px] overflow-hidden rounded-xl md:h-full md:w-2/3">
-        <SafeImage
-          src={main}
-          alt={alt}
-          sizes="(min-width: 768px) 66vw, 100vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e1a]/80 via-transparent to-transparent" />
-        <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-8">
-          <span className="mb-3 inline-block rounded-full border border-[#c8a0f0]/30 bg-[#c8a0f0]/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#c8a0f0]">
-            {badge}
-          </span>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-            {title}
-          </h1>
-          <p className="text-sm font-medium text-[#a0b4c4] sm:text-base">
-            {countries.join(" & ")}
-            <span className="mx-2 text-white/30" aria-hidden="true">
-              ·
-            </span>
-            {durationDays} days
-          </p>
-        </div>
-      </div>
-
-      <div className="hidden h-full w-1/3 flex-col gap-2 md:flex">
-        {side.map((src, i) => {
-          const isLast = i === side.length - 1;
-          return (
-            <div
-              key={`${src}-${i}`}
-              className="group relative h-1/3 overflow-hidden rounded-xl"
-            >
-              <SafeImage
-                src={src}
-                alt=""
-                sizes="33vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              {isLast && extraCount > 0 && (
-                <div className="absolute inset-0 flex cursor-default items-center justify-center bg-black/40 transition-all hover:bg-black/25">
-                  <span className="text-lg font-bold text-white">
-                    +{extraCount} Photos
-                  </span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Mobile secondary strip */}
-      <div className="flex gap-2 md:hidden">
-        {side.slice(0, 3).map((src, i) => (
-          <div
-            key={`m-${src}-${i}`}
-            className="relative h-24 flex-1 overflow-hidden rounded-lg"
-          >
-            <SafeImage src={src} alt="" sizes="33vw" className="object-cover" />
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
