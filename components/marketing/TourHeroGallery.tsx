@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import SafeImage from "@/components/ui/SafeImage";
+import { fillCopy } from "@/lib/siteCopy";
 
 const SIDE_TILES = 3;
 
@@ -11,14 +12,17 @@ export default function TourHeroGallery({
   title,
   badge,
   countries,
-  durationDays,
+  durationLabel,
+  morePhotosTemplate,
 }: {
   images: string[];
   alt: string;
   title: string;
   badge: string;
   countries: string[];
-  durationDays: number;
+  durationLabel: string;
+  /** Still a template: the count is only known here. */
+  morePhotosTemplate: string;
 }) {
   // Deduped: a tour's hero image is often repeated in its gallery.
   const safe = images.length ? Array.from(new Set(images)) : ["/placeholder.svg"];
@@ -59,7 +63,7 @@ export default function TourHeroGallery({
             <span className="mx-2 text-white/30" aria-hidden="true">
               ·
             </span>
-            {durationDays} days
+            {durationLabel}
           </p>
         </div>
       </div>
@@ -85,7 +89,7 @@ export default function TourHeroGallery({
                 {isLast && extraCount > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-all hover:bg-black/25">
                     <span className="text-lg font-bold text-white">
-                      +{extraCount} Photos
+                      {fillCopy(morePhotosTemplate, { count: extraCount })}
                     </span>
                   </div>
                 )}

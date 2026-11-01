@@ -7,7 +7,7 @@ import { TextField, SaveBar, PreviewFrame } from "@/components/admin/siteContent
 import type { SaveSiteContentResult } from "@/lib/actions/siteContent";
 import type { SiteContentSimplePage } from "@/lib/types";
 
-/** Shared by /admin/site-content/custom-tours, special-offers, and testimonials — each has only a PageHeader worth of editable copy. */
+/** Shared by /admin/site-content/custom-tours and special-offers — each has only a PageHeader worth of editable copy. */
 export default function SimplePageContentForm({
   initialContent,
   saveAction,

@@ -100,6 +100,8 @@ const getHomeData = unstable_cache(
 export default async function HomePage() {
   const { countries, content, toursWithDepartures, latestPosts } = await getHomeData();
 
+  const blogCopy = await getSiteContent("blog");
+
   return (
     <TourFilterProvider countries={countries} tours={toursWithDepartures}>
       <div className="overflow-x-hidden bg-[var(--color-glacier)] text-[var(--color-mist)] transition-colors">
@@ -200,7 +202,7 @@ export default async function HomePage() {
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {latestPosts.map((post) => (
-                  <BlogCard key={post.postId} post={post} />
+                  <BlogCard key={post.postId} post={post} readMoreLabel={blogCopy.readMore} />
                 ))}
               </div>
             </div>

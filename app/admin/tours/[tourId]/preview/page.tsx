@@ -4,6 +4,7 @@ import TourPageView from "@/components/marketing/TourPageView";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
 import { getDeparturesForTour, getGuidesForDepartures } from "@/lib/data/tours";
 import { requireAdminSession } from "@/lib/auth/dal";
+import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = { title: "Preview", robots: { index: false, follow: false } };
 
@@ -29,7 +30,7 @@ export default async function TourFullPreviewPage({
   if (!tour) notFound();
 
   const departures = await getDeparturesForTour(tourId);
-  const guides = await getGuidesForDepartures(departures);
+  const [guides, copy] = await Promise.all([getGuidesForDepartures(departures), getSiteContent("tour-page")]);
 
-  return <TourPageView tour={tour} departures={departures} guides={guides} previewMode />;
+  return <TourPageView tour={tour} departures={departures} guides={guides} previewMode copy={copy} />;
 }

@@ -10,6 +10,17 @@ import type {
   SiteContentSimplePage,
 } from "@/lib/types";
 
+import {
+  BLOG_COPY_DEFAULTS,
+  BOOKING_COPY_DEFAULTS,
+  TESTIMONIALS_COPY_DEFAULTS,
+  TOUR_PAGE_COPY_DEFAULTS,
+  type BlogCopy,
+  type BookingCopy,
+  type TestimonialsCopy,
+  type TourPageCopy,
+} from "@/lib/siteCopy";
+
 const COLLECTION = "siteContent";
 
 /**
@@ -88,11 +99,13 @@ export const SITE_CONTENT_DEFAULTS = {
     lede: "Seasonal deals and early-booking discounts, published straight from the admin panel — no developer required.",
   } satisfies SiteContentSimplePage,
 
-  testimonials: {
-    eyebrow: "From Our Travelers",
-    title: "Testimonials",
-    lede: "Real feedback from recent Keshertours departures.",
-  } satisfies SiteContentSimplePage,
+  testimonials: TESTIMONIALS_COPY_DEFAULTS,
+
+  "tour-page": TOUR_PAGE_COPY_DEFAULTS,
+
+  booking: BOOKING_COPY_DEFAULTS,
+
+  blog: BLOG_COPY_DEFAULTS,
 
   faq: {
     title: "Frequently Asked Questions",
@@ -515,7 +528,10 @@ export type SiteContentMap = {
   about: SiteContentAbout;
   "custom-tours": SiteContentSimplePage;
   "special-offers": SiteContentSimplePage;
-  testimonials: SiteContentSimplePage;
+  testimonials: TestimonialsCopy;
+  "tour-page": TourPageCopy;
+  booking: BookingCopy;
+  blog: BlogCopy;
   faq: SiteContentFaq;
   contact: SiteContentContact;
   "legal-privacy": SiteContentLegal;
