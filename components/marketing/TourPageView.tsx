@@ -11,6 +11,7 @@ import GuideAvatar from "@/components/marketing/GuideAvatar";
 import { formatUsd, singleSupplementOf } from "@/lib/pricing";
 import TextReveal from "@/components/ui/TextReveal";
 import { PhoneLink } from "@/components/marketing/SitePhone";
+import { TOUR_PAGE_COPY_DEFAULTS, fillCopy, type TourPageCopy } from "@/lib/siteCopy";
 
 /**
  * KashrutDetails.patYisrael/chalavYisrael are each a 3-way value
@@ -18,10 +19,10 @@ import { PhoneLink } from "@/components/marketing/SitePhone";
  * ? ... : "Guaranteed"` ternary silently renders `false` ("Not offered", a
  * real option in the admin editor) as "Guaranteed".
  */
-function kashrutStatusLabel(value: boolean | "not_guaranteed"): string {
-  if (value === true) return "Guaranteed";
-  if (value === "not_guaranteed") return "Not guaranteed at every destination";
-  return "Not offered";
+function kashrutStatusLabel(value: boolean | "not_guaranteed", copy: TourPageCopy): string {
+  if (value === true) return copy.kashrutGuaranteed;
+  if (value === "not_guaranteed") return copy.kashrutNotGuaranteed;
+  return copy.kashrutNotOffered;
 }
 
 /**
@@ -47,6 +48,7 @@ export default function TourPageView({
   testimonials = [],
   previewMode = false,
   lowSeatsThreshold = 5,
+  copy = TOUR_PAGE_COPY_DEFAULTS,
 }: {
   tour: Tour;
   departures: Departure[];
@@ -58,6 +60,8 @@ export default function TourPageView({
   previewMode?: boolean;
   /** At/below this remaining-seats count, the departure pill shows the exact number. Defaults to the site's pre-existing behavior for the preview contexts that don't fetch SiteSettings. */
   lowSeatsThreshold?: number;
+  /** Admin-editable wording (Site Content → Tour Page). */
+  copy?: TourPageCopy;
 }) {
   const upcoming = departures.filter(isDeparturePlanned);
   const guideById = new Map(guides.map((guide) => [guide.staffId, guide]));
@@ -73,30 +77,30 @@ export default function TourPageView({
     .filter(Boolean);
   const hasItinerary = tour.itineraryDays.length > 0;
   const shownTestimonials = testimonials.slice(0, 4);
-  const kashrutTitle = tour.kashrutDetails.title?.trim() || "Kashrut";
+  const kashrutTitle = tour.kashrutDetails.title?.trim() || copy.kashrutDefaultTitle;
   const kashrutExtraFields = visibleFields(tour.kashrutDetails.extraFields);
-  const infoCards = infoCardsOf(tour);
+  const infoCards = infoCardsOf(tour, copy);
   const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
   const documents = (tour.documents ?? []).filter((doc) => doc.url && doc.title.trim());
   const sections: TourSectionLink[] = [
-    { id: "overview", label: "Overview" },
-    ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
-    ...(upcomingGuides.length > 0 ? [{ id: "guides", label: "Your Guides" }] : []),
+    { id: "overview", label: copy.navOverview },
+    ...(hasItinerary ? [{ id: "itinerary", label: copy.navItinerary }] : []),
+    ...(upcomingGuides.length > 0 ? [{ id: "guides", label: copy.navGuides }] : []),
     { id: "kashrut", label: kashrutTitle },
     ...infoCards.map((card) => ({ id: infoCardAnchor(card), label: card.title })),
-    ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
-    ...(documents.length > 0 ? [{ id: "downloads", label: "Downloads" }] : []),
-    ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
-    { id: "cancellation", label: "Cancellation Policy" },
-    { id: "dates", label: "Dates & Booking", mobileOnly: true },
+    ...(hasInclusions ? [{ id: "included", label: copy.navIncluded }] : []),
+    ...(documents.length > 0 ? [{ id: "downloads", label: copy.navDownloads }] : []),
+    ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: copy.navTestimonials }] : []),
+    { id: "cancellation", label: copy.navCancellation },
+    { id: "dates", label: copy.navDates, mobileOnly: true },
   ];
   const bookHref = (departureId: string) =>
     tour.slug ? `/tours/${tour.slug}/book?departure=${encodeURIComponent(departureId)}` : "#";
   const nights = Math.max(tour.durationDays - 1, 0);
   const badge = tour.themeTags[0] ?? tour.travelStyle;
   const bookingHighlights = [
-    tour.flightsIncluded ? "Flights included" : null,
-    "Fully kosher program",
+    tour.flightsIncluded ? copy.flightsHighlight : null,
+    copy.kosherHighlight,
     tour.inclusions[0] ?? null,
   ].filter(Boolean) as string[];
 
@@ -114,7 +118,8 @@ export default function TourPageView({
         title={tour.title}
         badge={badge}
         countries={tour.countries}
-        durationDays={tour.durationDays}
+        durationLabel={fillCopy(copy.heroDays, { days: tour.durationDays })}
+        morePhotosTemplate={copy.heroMorePhotos}
         focus={tour.imageFocus}
       />
 
@@ -125,7 +130,7 @@ export default function TourPageView({
           {/* Overview */}
           <div id="overview" className="space-y-6">
             <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-              Overview
+              {copy.overviewHeading}
             </h2>
             <TextReveal
               text={tour.description || tour.summary}
@@ -135,21 +140,21 @@ export default function TourPageView({
             <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-3">
               <QuickFact
                 icon="schedule"
-                label="Duration"
-                value={`${tour.durationDays} Days / ${nights} Nights`}
+                label={copy.durationLabel}
+                value={fillCopy(copy.durationValue, { days: tour.durationDays, nights })}
               />
               <QuickFact
                 icon="groups"
-                label="Group Size"
+                label={copy.groupSizeLabel}
                 value={
                   tour.minGroupSize
-                    ? `From ${tour.minGroupSize} travelers`
-                    : "Small groups"
+                    ? fillCopy(copy.groupSizeValue, { count: tour.minGroupSize })
+                    : copy.groupSizeFallback
                 }
               />
               <QuickFact
                 icon="public"
-                label="Countries"
+                label={copy.countriesLabel}
                 value={tour.countries.join(", ")}
               />
             </div>
@@ -159,7 +164,7 @@ export default function TourPageView({
           {hasItinerary && (
             <div id="itinerary" className="space-y-6">
               <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-                Your Journey Day by Day
+                {copy.itineraryHeading}
               </h2>
               <div className="space-y-3">
                 {tour.itineraryDays.map((day, index) => (
@@ -193,10 +198,10 @@ export default function TourPageView({
                         {(day.attractions?.length || day.meals.length > 0 || day.accommodation) && (
                           <ul className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--color-ice)]/80">
                             {day.attractions && day.attractions.length > 0 && (
-                              <li>Attractions: {day.attractions.join(", ")}</li>
+                              <li>{copy.attractionsLabel} {day.attractions.join(", ")}</li>
                             )}
                             {day.meals.length > 0 && (
-                              <li>Meals: {day.meals.join(", ")}</li>
+                              <li>{copy.mealsLabel} {day.meals.join(", ")}</li>
                             )}
                             {day.accommodation && (
                               <li>{day.accommodation}</li>
@@ -215,13 +220,14 @@ export default function TourPageView({
           {upcomingGuides.length > 0 && (
             <div id="guides" className="space-y-6">
               <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-                Your Guides
+                {copy.guidesHeading}
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {upcomingGuides.map((guide) => (
                   <GuideCard
                     key={guide.staffId}
                     guide={guide}
+                    leadingLabel={copy.guideLeadingLabel}
                     ledDates={upcoming.filter((dep) => dep.guideId === guide.staffId)}
                   />
                 ))}
@@ -233,11 +239,11 @@ export default function TourPageView({
           <div id="kashrut" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
             <h2 className="text-xl font-bold text-[var(--color-mist)]">{kashrutTitle}</h2>
             <dl className="grid gap-4 sm:grid-cols-2">
-              <InfoFieldItem label="Supervision" value={tour.kashrutDetails.supervisionLevel} />
-              <InfoFieldItem label="Pat Yisrael" value={kashrutStatusLabel(tour.kashrutDetails.patYisrael)} />
+              <InfoFieldItem label={copy.supervisionLabel} value={tour.kashrutDetails.supervisionLevel} />
+              <InfoFieldItem label={copy.patYisraelLabel} value={kashrutStatusLabel(tour.kashrutDetails.patYisrael, copy)} />
               <InfoFieldItem
-                label="Chalav Yisrael"
-                value={kashrutStatusLabel(tour.kashrutDetails.chalavYisrael)}
+                label={copy.chalavYisraelLabel}
+                value={kashrutStatusLabel(tour.kashrutDetails.chalavYisrael, copy)}
               />
               {kashrutExtraFields.map((field) => (
                 <InfoFieldItem key={field.fieldId} label={field.label} value={field.value} />
@@ -263,7 +269,7 @@ export default function TourPageView({
                   <span className="text-[var(--color-ice)]" aria-hidden="true">
                     ✓
                   </span>
-                  What&apos;s Included
+                  {copy.includedHeading}
                 </h3>
                 <ul className="space-y-4">
                   {tour.inclusions.map((item) => (
@@ -282,7 +288,7 @@ export default function TourPageView({
               <div className="glass-panel rounded-2xl p-6 sm:p-8">
                 <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-[var(--color-mist)]/60">
                   <span aria-hidden="true">✕</span>
-                  Not Included
+                  {copy.notIncludedHeading}
                 </h3>
                 <ul className="space-y-4">
                   {tour.exclusions.map((item) => (
@@ -304,7 +310,7 @@ export default function TourPageView({
           {/* Downloads (PDFs uploaded in the admin tour editor) */}
           {documents.length > 0 && (
             <div id="downloads" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
-              <h2 className="text-xl font-bold text-[var(--color-mist)]">Downloads</h2>
+              <h2 className="text-xl font-bold text-[var(--color-mist)]">{copy.navDownloads}</h2>
               <ul className="space-y-3">
                 {documents.map((doc) => (
                   <li key={doc.documentId}>
@@ -338,13 +344,13 @@ export default function TourPageView({
             <div id="testimonials" className="space-y-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-                  What Travelers Say
+                  {copy.testimonialsHeading}
                 </h2>
                 <a
                   href="/testimonials"
                   className="text-sm font-semibold text-[var(--color-ice)] hover:underline"
                 >
-                  All testimonials &rarr;
+                  {copy.testimonialsLink} &rarr;
                 </a>
               </div>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -357,7 +363,7 @@ export default function TourPageView({
 
           {/* Cancellation policy */}
           <div id="cancellation" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-[var(--color-mist)]">Cancellation Policy</h2>
+            <h2 className="text-xl font-bold text-[var(--color-mist)]">{copy.cancellationHeading}</h2>
             <ul className="space-y-3">
               {cancellationTerms.map((term, index) => (
                 <li key={`${index}-${term}`} className="flex items-start gap-3">
@@ -377,18 +383,19 @@ export default function TourPageView({
           <StickyBookingCard className="glass-panel-elevated sticky top-40 rounded-2xl p-6 shadow-2xl sm:p-8 lg:p-5">
             <div className="mb-6 lg:mb-3">
               <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-                Starting from
+                {copy.priceLabel}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-[var(--color-mist)] lg:text-3xl">
                   {formatUsd(tour.pricing.pricePerPersonDouble)}
                 </span>
-                <span className="text-sm text-[var(--color-slate)]">/ per person</span>
+                <span className="text-sm text-[var(--color-slate)]">{copy.perPersonLabel}</span>
               </div>
               <p className="mt-1 text-xs text-[var(--color-slate)]">
-                Double occupancy · {formatUsd(tour.pricing.pricePerPersonSingle)} / person for a
-                private room
-                {singleSupplementOf(tour.pricing) > 0 && ` +${formatUsd(singleSupplementOf(tour.pricing))}`}
+                {fillCopy(copy.priceNote, { singlePrice: formatUsd(tour.pricing.pricePerPersonSingle) })}
+                {singleSupplementOf(tour.pricing) > 0 &&
+                  copy.priceSupplement &&
+                  ` ${fillCopy(copy.priceSupplement, { supplement: formatUsd(singleSupplementOf(tour.pricing)) })}`}
               </p>
             </div>
 
@@ -404,12 +411,12 @@ export default function TourPageView({
             )}
 
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)]">
-              Departure Dates
+              {copy.departuresHeading}
             </h3>
             <ul className="mb-6 space-y-2 lg:mb-4">
               {upcoming.length === 0 && (
                 <li className="text-[15px] text-[var(--color-slate)]">
-                  The next date for this tour will be published soon.
+                  {copy.noDatesMessage}
                 </li>
               )}
               {upcoming.map((dep) => {
@@ -431,13 +438,14 @@ export default function TourPageView({
                       {guide && (
                         <p className="flex min-w-0 items-center gap-2 text-xs text-[var(--color-slate)]">
                           <GuideAvatar guide={guide} className="h-7 w-7" sizes="28px" />
-                          <span className="truncate">Guide: {guide.name}</span>
+                          <span className="truncate">{copy.guideLabel} {guide.name}</span>
                         </p>
                       )}
                       <DepartureStatusPill
                         status={dep.status}
                         seats={seats}
                         lowSeatsThreshold={lowSeatsThreshold}
+                        copy={copy}
                       />
                     </div>
                     {isDepartureBookable(dep) && (
@@ -445,14 +453,14 @@ export default function TourPageView({
                         href={bookHref(dep.departureId)}
                         className="shrink-0 rounded-lg bg-[var(--color-success)] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_14px_rgba(16,185,129,0.2)] transition-all hover:bg-[var(--color-success-dark)] active:scale-[0.98]"
                       >
-                        Book
+                        {copy.bookButton}
                       </a>
                     )}
                   </li>
                 );
               })}
             </ul>
-            <PhoneLink className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix="Call " />
+            <PhoneLink className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-ice)]" prefix={`${copy.callPrefix} `} />
 
             <div className="mt-8 border-t border-[var(--color-border-hairline-faint)] pt-6 lg:mt-4 lg:pt-4">
               <div className="flex items-start gap-3 rounded-xl border border-[var(--color-ice)]/10 bg-[var(--color-ice)]/5 p-4 lg:p-3">
@@ -461,10 +469,11 @@ export default function TourPageView({
                 </span>
                 <p className="text-xs leading-tight text-[var(--color-slate)]">
                   {tour.pricing.depositAmountPerPerson > 0
-                    ? `Secure your spot with a $${tour.pricing.depositAmountPerPerson} deposit per person.`
-                    : "Reserve your spot with no deposit."}{" "}
-                  Balance due {tour.pricing.balanceDueDaysBeforeDeparture}{" "}
-                  days before departure.
+                    ? fillCopy(copy.depositNote, {
+                        deposit: formatUsd(tour.pricing.depositAmountPerPerson),
+                        days: tour.pricing.balanceDueDaysBeforeDeparture,
+                      })
+                    : fillCopy(copy.noDepositNote, { days: tour.pricing.balanceDueDaysBeforeDeparture })}
                 </p>
               </div>
             </div>
@@ -480,11 +489,11 @@ function visibleFields(fields: TourInfoField[] | undefined): TourInfoField[] {
 }
 
 /** Cards to render, including a tour's legacy importantToKnow list if it hasn't been re-saved since info cards existed. */
-function infoCardsOf(tour: Tour): TourInfoCard[] {
+function infoCardsOf(tour: Tour, copy: TourPageCopy): TourInfoCard[] {
   const legacy = (tour.importantToKnow ?? []).map((item) => item.trim()).filter(Boolean);
   const cards: TourInfoCard[] = [
     ...(legacy.length > 0
-      ? [{ cardId: "important-to-know", title: "Important to Know", fields: [], items: legacy }]
+      ? [{ cardId: "important-to-know", title: copy.importantToKnowHeading, fields: [], items: legacy }]
       : []),
     ...(tour.infoCards ?? []),
   ];
@@ -546,7 +555,7 @@ function InfoCardPanel({ card }: { card: TourInfoCard }) {
   );
 }
 
-function GuideCard({ guide, ledDates }: { guide: Staff; ledDates: Departure[] }) {
+function GuideCard({ guide, ledDates, leadingLabel }: { guide: Staff; ledDates: Departure[]; leadingLabel: string }) {
   return (
     <div className="glass-panel flex gap-4 rounded-2xl p-5 sm:p-6">
       <GuideAvatar guide={guide} className="h-20 w-20" sizes="80px" />
@@ -556,7 +565,7 @@ function GuideCard({ guide, ledDates }: { guide: Staff; ledDates: Departure[] })
           <p className="text-[15px] leading-relaxed text-[var(--color-slate)]">{guide.bio}</p>
         )}
         <p className="text-xs font-semibold text-[var(--color-ice)]/80">
-          Leading{" "}
+          {leadingLabel}{" "}
           {ledDates
             .map((dep) =>
               new Date(dep.startDate).toLocaleDateString("en-US", {

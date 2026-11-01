@@ -3,6 +3,7 @@
 import { useState } from "react";
 import SafeImage from "@/components/ui/SafeImage";
 import { focusPosition } from "@/lib/imageFocus";
+import { fillCopy } from "@/lib/siteCopy";
 import type { ImageFocus } from "@/lib/types";
 
 const SIDE_TILES = 3;
@@ -13,7 +14,8 @@ export default function TourHeroGallery({
   title,
   badge,
   countries,
-  durationDays,
+  durationLabel,
+  morePhotosTemplate,
   focus,
 }: {
   images: string[];
@@ -21,7 +23,9 @@ export default function TourHeroGallery({
   title: string;
   badge: string;
   countries: string[];
-  durationDays: number;
+  durationLabel: string;
+  /** Still a template: the count is only known here. */
+  morePhotosTemplate: string;
   /** The tour's per-photo crop focus (Tour.imageFocus). */
   focus?: ImageFocus[];
 }) {
@@ -66,7 +70,7 @@ export default function TourHeroGallery({
             <span className="mx-2 text-white/30" aria-hidden="true">
               ·
             </span>
-            {durationDays} days
+            {durationLabel}
           </p>
         </div>
       </div>
@@ -94,7 +98,7 @@ export default function TourHeroGallery({
                 {isLast && extraCount > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-all hover:bg-black/25">
                     <span className="text-lg font-bold text-white">
-                      +{extraCount} Photos
+                      {fillCopy(morePhotosTemplate, { count: extraCount })}
                     </span>
                   </div>
                 )}

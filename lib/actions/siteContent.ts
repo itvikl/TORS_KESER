@@ -11,8 +11,19 @@ import {
   SiteContentHomeInputSchema,
   SiteContentLegalInputSchema,
   SiteContentSimplePageInputSchema,
+  copyInputSchema,
 } from "@/lib/validation/siteContent";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
+import {
+  BLOG_COPY_SECTIONS,
+  BOOKING_COPY_SECTIONS,
+  TESTIMONIALS_COPY_SECTIONS,
+  TOUR_PAGE_COPY_SECTIONS,
+  type BlogCopy,
+  type BookingCopy,
+  type TestimonialsCopy,
+  type TourPageCopy,
+} from "@/lib/siteCopy";
 import type {
   SiteContentAbout,
   SiteContentContact,
@@ -65,10 +76,42 @@ export async function saveSpecialOffersContent(input: unknown): Promise<SaveSite
 
 export async function saveTestimonialsContent(input: unknown): Promise<SaveSiteContentResult> {
   await requireAdminSession();
-  const parsed = SiteContentSimplePageInputSchema.safeParse(input);
+  const parsed = copyInputSchema(TESTIMONIALS_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
-  await saveSiteContent("testimonials", parsed.data as SiteContentSimplePage);
+  await saveSiteContent("testimonials", parsed.data as TestimonialsCopy);
   revalidatePath("/testimonials");
+  return { ok: true };
+}
+
+export async function saveTourPageContent(input: unknown): Promise<SaveSiteContentResult> {
+  await requireAdminSession();
+  const parsed = copyInputSchema(TOUR_PAGE_COPY_SECTIONS).safeParse(input);
+  if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
+  await saveSiteContent("tour-page", parsed.data as TourPageCopy);
+  revalidatePath("/tours/[slug]", "page");
+  // The availability wording is also shown on the booking form's date step.
+  revalidatePath("/tours/[slug]/book", "page");
+  return { ok: true };
+}
+
+export async function saveBookingContent(input: unknown): Promise<SaveSiteContentResult> {
+  await requireAdminSession();
+  const parsed = copyInputSchema(BOOKING_COPY_SECTIONS).safeParse(input);
+  if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
+  await saveSiteContent("booking", parsed.data as BookingCopy);
+  revalidatePath("/tours/[slug]/book", "page");
+  revalidatePath("/tours/[slug]/book/success", "page");
+  return { ok: true };
+}
+
+export async function saveBlogContent(input: unknown): Promise<SaveSiteContentResult> {
+  await requireAdminSession();
+  const parsed = copyInputSchema(BLOG_COPY_SECTIONS).safeParse(input);
+  if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
+  await saveSiteContent("blog", parsed.data as BlogCopy);
+  revalidatePath("/");
+  revalidatePath("/blog");
+  revalidatePath("/blog/[slug]", "page");
   return { ok: true };
 }
 

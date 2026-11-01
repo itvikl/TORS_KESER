@@ -12,6 +12,7 @@ import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 import { ONLINE_PAYMENTS_ENABLED } from "@/lib/onlinePayments";
 import { PhoneLink } from "@/components/marketing/SitePhone";
 import DepartureStatusPill from "@/components/marketing/DepartureStatusPill";
+import { fillCopy, type BookingCopy, type DepartureStatusCopy } from "@/lib/siteCopy";
 
 interface TravelerDraft {
   firstName: string;
@@ -45,8 +46,6 @@ function buildOccupancySlots(room: RoomConfiguration, childCount: number): Occup
   return slots;
 }
 
-const STEP_LABELS = ["Dates", "Party size", "Travelers", "Contact", "Review"];
-
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SELECTED_OPTION =
@@ -59,6 +58,8 @@ export default function BookingForm({
   departures,
   lowSeatsThreshold,
   initialDepartureId,
+  copy,
+  statusCopy,
 }: {
   tour: Tour;
   departures: Departure[];
@@ -66,6 +67,9 @@ export default function BookingForm({
   initialDepartureId?: string;
   /** At/below this remaining-seats count, the exact number + a "last spots" badge are shown; above it, only a vague "plenty available" message. */
   lowSeatsThreshold: number;
+  /** Admin-editable wording (Site Content → Booking Form). */
+  copy: BookingCopy;
+  statusCopy: DepartureStatusCopy;
 }) {
   const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [step, setStep] = useState(1);
@@ -188,6 +192,7 @@ export default function BookingForm({
   if (confirmedId) {
     return (
       <Confirmation
+        copy={copy}
         contactPreference={contactPreference}
         paymentSetupFailed={!!paymentSetupError}
       />
@@ -197,10 +202,9 @@ export default function BookingForm({
   if (clientSecret && paymentBookingId) {
     return (
       <div className="glass-panel-elevated overflow-hidden rounded-3xl p-6 shadow-2xl sm:p-8">
-        <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">Complete your payment</h2>
+        <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">{copy.paymentHeading}</h2>
         <p className="mt-2 text-[15px] text-[var(--color-slate)]">
-          Your registration is saved. Complete your {formatUsd(paymentIntentAmount)} payment below
-          to confirm your spot.
+          {fillCopy(copy.paymentBody, { amount: formatUsd(paymentIntentAmount) })}
         </p>
         <div className="mt-6">
           <DepositPaymentForm
@@ -215,13 +219,13 @@ export default function BookingForm({
 
   return (
     <div className="glass-panel-elevated overflow-hidden rounded-3xl shadow-2xl">
-      <StepIndicator step={step} />
+      <StepIndicator step={step} copy={copy} />
 
       <div className="p-6 sm:p-8">
         {step === 1 && (
           <div className="space-y-5">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
-              Choose a departure
+              {copy.datesHeading}
             </h2>
             <div className="space-y-3">
               {departures.map((d) => (
@@ -246,73 +250,74 @@ export default function BookingForm({
                         year: "numeric",
                       })}
                     </span>
-                    <AssuranceBadge assurance={d.bookingAssurance ?? "conditional"} />
+                    <AssuranceBadge assurance={d.bookingAssurance ?? "conditional"} copy={copy} />
                   </span>
                   <DepartureStatusPill
                     status={d.status}
                     seats={availableSeats(d)}
                     lowSeatsThreshold={lowSeatsThreshold}
+                    copy={statusCopy}
                   />
                 </label>
               ))}
             </div>
-            <StepNav onNext={() => setStep(2)} nextDisabled={!departureId} />
+            <StepNav copy={copy} onNext={() => setStep(2)} nextDisabled={!departureId} />
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-5">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
-              Party size &amp; rooms
+              {copy.partyHeading}
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <NumberField
-                label="Double rooms"
-                hint="2 adults each"
+                label={copy.doubleRooms}
+                hint={copy.doubleHint}
                 value={room.doubleRooms}
                 onChange={(v) => setRoom((r) => ({ ...r, doubleRooms: v }))}
               />
               <NumberField
-                label="Single rooms"
+                label={copy.singleRooms}
                 hint={
                   singleSupplementOf(tour.pricing) > 0
-                    ? `1 adult each · +${formatUsd(singleSupplementOf(tour.pricing))}`
-                    : "1 adult each"
+                    ? fillCopy(copy.singleHintSupplement, { supplement: formatUsd(singleSupplementOf(tour.pricing)) })
+                    : copy.singleHint
                 }
                 value={room.singleRooms}
                 onChange={(v) => setRoom((r) => ({ ...r, singleRooms: v }))}
               />
               <NumberField
-                label="Triple rooms"
-                hint="3 adults each"
+                label={copy.tripleRooms}
+                hint={copy.tripleHint}
                 value={room.triples}
                 onChange={(v) => setRoom((r) => ({ ...r, triples: v }))}
               />
-              <NumberField label="Children" value={childCount} onChange={setChildCount} />
+              <NumberField label={copy.children} value={childCount} onChange={setChildCount} />
             </div>
 
             <div className="rounded-xl border border-[var(--color-border-ice-strong)] bg-[var(--color-ice)]/10 p-4 text-[15px]">
               <p className="font-semibold text-[var(--color-mist)]">
-                {totalTravelers} traveler{totalTravelers === 1 ? "" : "s"} · Estimated total{" "}
+                {totalTravelers} {totalTravelers === 1 ? copy.travelerSingular : copy.travelerPlural} · {copy.estimatedTotal}{" "}
                 <span className="text-[var(--color-ice)]">{formatUsd(priceBreakdown.grandTotal)}</span>
               </p>
               <p className="mt-1 text-[var(--color-slate)]">
                 {isGuaranteed
-                  ? "This departure is guaranteed to run — full payment is required to reserve your spot."
+                  ? copy.guaranteedPartyNote
                   : depositAmount === 0
-                    ? "No deposit is required to reserve your spot."
-                    : `Starting deposit: ${formatUsd(depositAmount)} — you'll choose how much to pay in the next step.`}
+                    ? copy.noDepositNote
+                    : fillCopy(copy.depositNote, { deposit: formatUsd(depositAmount) })}
               </p>
             </div>
 
             {totalTravelers > seatsLeft && (
               <p className="rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3 text-sm text-[var(--color-danger-text)]">
-                Only {seatsLeft} spot{seatsLeft === 1 ? "" : "s"} left on this date — reduce the
-                party size or choose another date.
+                {fillCopy(copy.seatsWarning, { seats: seatsLeft, spots: seatsLeft === 1 ? "spot" : "spots" })}
               </p>
             )}
 
             <StepNav
+              copy={copy}
               onBack={() => setStep(1)}
               onNext={goToTravelerStep}
               nextDisabled={totalTravelers === 0 || totalTravelers > seatsLeft}
@@ -323,7 +328,7 @@ export default function BookingForm({
         {step === 3 && (
           <div className="space-y-5">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
-              Traveler details
+              {copy.travelersHeading}
             </h2>
             {travelers.map((traveler, index) => (
               <div
@@ -331,11 +336,11 @@ export default function BookingForm({
                 className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 sm:p-5"
               >
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-ice)]">
-                  Traveler {index + 1} · {traveler.occupancy}
+                  {fillCopy(copy.travelerCard, { number: index + 1 })} · {traveler.occupancy}
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <TextField
-                    label="First name"
+                    label={copy.firstName}
                     value={traveler.firstName}
                     onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })}
                     onBlur={() => touch(`traveler-${index}-firstName`)}
@@ -349,7 +354,7 @@ export default function BookingForm({
                     required
                   />
                   <TextField
-                    label="Last name"
+                    label={copy.lastName}
                     value={traveler.lastName}
                     onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })}
                     onBlur={() => touch(`traveler-${index}-lastName`)}
@@ -363,7 +368,7 @@ export default function BookingForm({
                     required
                   />
                   <TextField
-                    label="Date of birth"
+                    label={copy.dateOfBirth}
                     type="date"
                     max={todayIso}
                     value={traveler.dob}
@@ -378,7 +383,7 @@ export default function BookingForm({
                     autoComplete={`section-traveler-${index} bday`}
                   />
                   <TextField
-                    label="Passport number"
+                    label={copy.passportNumber}
                     value={traveler.passport}
                     onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })}
                     maxLength={PASSPORT_MAX_LENGTH}
@@ -387,19 +392,20 @@ export default function BookingForm({
                   />
                   {(traveler.occupancy === "double" || traveler.occupancy === "triple") && (
                     <TextField
-                      label="Rooming with"
+                      label={copy.roomingWith}
                       value={traveler.roomWith}
                       onChange={(v) => updateTraveler(index, { roomWith: sanitizeName(v) })}
                       name={`traveler-${index}-roomWith`}
                     />
                   )}
                   <TextField
-                    label="Dietary needs"
+                    label={copy.dietaryNeeds}
                     value={traveler.dietary}
                     onChange={(v) => updateTraveler(index, { dietary: v })}
                     name={`traveler-${index}-dietary`}
                   />
                   <PassportUploadField
+                    copy={copy}
                     value={traveler.passportScanPath}
                     fileName={traveler.passportScanFileName}
                     onUploaded={(path, fileName) =>
@@ -411,6 +417,7 @@ export default function BookingForm({
               </div>
             ))}
             <StepNav
+              copy={copy}
               onBack={() => setStep(2)}
               onNext={() => setStep(4)}
               nextDisabled={!travelersValid}
@@ -421,10 +428,10 @@ export default function BookingForm({
         {step === 4 && (
           <div className="space-y-5">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
-              Contact information
+              {copy.contactHeading}
             </h2>
             <TextField
-              label="Your name"
+              label={copy.contactName}
               value={contactName}
               onChange={(v) => setContactName(sanitizeName(v))}
               maxLength={NAME_MAX_LENGTH}
@@ -435,7 +442,7 @@ export default function BookingForm({
               required
             />
             <TextField
-              label="Email"
+              label={copy.contactEmail}
               type="email"
               value={contactEmail}
               onChange={setContactEmail}
@@ -450,7 +457,7 @@ export default function BookingForm({
               required
             />
             <TextField
-              label="Phone"
+              label={copy.contactPhone}
               type="tel"
               value={contactPhone}
               onChange={(v) => setContactPhone(sanitizePhone(v))}
@@ -460,6 +467,7 @@ export default function BookingForm({
               autoComplete="tel"
             />
             <StepNav
+              copy={copy}
               onBack={() => setStep(3)}
               onNext={() => setStep(5)}
               nextDisabled={!contactName.trim() || !EMAIL_PATTERN.test(contactEmail.trim())}
@@ -470,40 +478,41 @@ export default function BookingForm({
         {step === 5 && departure && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-mist)]">
-              Review &amp; submit
+              {copy.reviewHeading}
             </h2>
 
             <dl className="grid gap-3 rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-surface)] p-5 text-[15px]">
               <Row
-                label="Departure"
+                label={copy.reviewDeparture}
                 value={new Date(departure.startDate).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
                 })}
               />
-              <Row label="Travelers" value={String(totalTravelers)} />
-              <Row label="Estimated total" value={formatUsd(priceBreakdown.grandTotal)} accent />
+              <Row label={copy.reviewTravelers} value={String(totalTravelers)} />
+              <Row label={copy.estimatedTotal} value={formatUsd(priceBreakdown.grandTotal)} accent />
               <Row
-                label="Balance due"
-                value={`${formatUsd(priceBreakdown.grandTotal - paymentAmount)} — ${tour.pricing.balanceDueDaysBeforeDeparture} days before departure`}
+                label={copy.reviewBalance}
+                value={fillCopy(copy.reviewBalanceValue, {
+                  amount: formatUsd(priceBreakdown.grandTotal - paymentAmount),
+                  days: tour.pricing.balanceDueDaysBeforeDeparture,
+                })}
               />
             </dl>
 
             {isGuaranteed && (
               <div className="flex items-center gap-2 rounded-xl border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 px-4 py-3 text-sm font-medium text-[var(--color-success)]">
                 <span aria-hidden="true">✓</span>
-                This departure is guaranteed to run — full payment of{" "}
-                {formatUsd(priceBreakdown.grandTotal)} is required to reserve your spot.
+                {fillCopy(copy.guaranteedReviewNote, { total: formatUsd(priceBreakdown.grandTotal) })}
               </div>
             )}
 
             {!ONLINE_PAYMENTS_ENABLED && (
               <div className="rounded-xl border border-[var(--color-ice)] bg-[var(--color-ice)]/10 p-4 text-[15px]">
-                <p className="font-semibold text-[var(--color-mist)]">No payment is taken online</p>
+                <p className="font-semibold text-[var(--color-mist)]">{copy.offlineTitle}</p>
                 <p className="mt-1 text-[var(--color-slate)]">
-                  Book now and a representative will call you within one business day to confirm
-                  the details and arrange payment.
+                  {copy.offlineBody}
                 </p>
               </div>
             )}
@@ -511,7 +520,7 @@ export default function BookingForm({
             {ONLINE_PAYMENTS_ENABLED && (
             <fieldset className="space-y-3">
               <legend className="mb-1 text-sm font-semibold text-[var(--color-mist)]">
-                How would you like to complete payment?
+                {copy.paymentChoiceHeading}
               </legend>
               <label
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-[15px] transition-all ${
@@ -526,10 +535,10 @@ export default function BookingForm({
                 />
                 <span>
                   <span className="block font-semibold text-[var(--color-mist)]">
-                    A representative will call me
+                    {copy.callbackTitle}
                   </span>
                   <span className="text-[var(--color-slate)]">
-                    We&apos;ll reach out within one business day to arrange payment.
+                    {copy.callbackBody}
                   </span>
                 </span>
               </label>
@@ -546,10 +555,10 @@ export default function BookingForm({
                 />
                 <span>
                   <span className="block font-semibold text-[var(--color-mist)]">
-                    I&apos;d like to pay online
+                    {copy.payOnlineTitle}
                   </span>
                   <span className="text-[var(--color-slate)]">
-                    Pay securely by card right after you submit.
+                    {copy.payOnlineBody}
                   </span>
                 </span>
               </label>
@@ -560,7 +569,7 @@ export default function BookingForm({
               <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4">
                 <div className="flex items-baseline justify-between">
                   <label htmlFor="paymentAmount" className="text-sm font-semibold text-[var(--color-mist)]">
-                    How much would you like to pay now?
+                    {copy.paymentAmountLabel}
                   </label>
                   <span className="text-lg font-bold text-[var(--color-ice)]">{formatUsd(paymentAmount)}</span>
                 </div>
@@ -575,8 +584,8 @@ export default function BookingForm({
                   className="mt-3 w-full accent-[var(--color-ice)]"
                 />
                 <div className="mt-1 flex justify-between text-xs text-[var(--color-slate)]">
-                  <span>{depositAmount === 0 ? "No deposit" : `Deposit ${formatUsd(depositAmount)}`}</span>
-                  <span>Full price {formatUsd(priceBreakdown.grandTotal)}</span>
+                  <span>{depositAmount === 0 ? copy.noDepositLabel : `${copy.paymentMinLabel} ${formatUsd(depositAmount)}`}</span>
+                  <span>{copy.paymentMaxLabel} {formatUsd(priceBreakdown.grandTotal)}</span>
                 </div>
                 {errors.paymentAmount && (
                   <p className="mt-2 text-xs text-[var(--color-danger-text)]">{errors.paymentAmount[0]}</p>
@@ -585,15 +594,14 @@ export default function BookingForm({
             )}
 
             <div className="rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 text-sm text-[var(--color-slate)]">
-              <p className="mb-2 font-semibold text-[var(--color-mist)]">Cancellation policy</p>
+              <p className="mb-2 font-semibold text-[var(--color-mist)]">{copy.cancellationHeading}</p>
               <ul className="space-y-1">
                 {DEFAULT_CANCELLATION_TIERS.map((tier) => (
                   <li key={tier.minWorkingDaysBefore}>
-                    {tier.minWorkingDaysBefore}+ working days before departure: {tier.chargePercent}
-                    % charge
+                    {fillCopy(copy.cancellationTier, { days: tier.minWorkingDaysBefore, percent: tier.chargePercent })}
                   </li>
                 ))}
-                <li>Plus a ${DEFAULT_ADMIN_FEE} admin fee.</li>
+                <li>{fillCopy(copy.cancellationFee, { fee: formatUsd(DEFAULT_ADMIN_FEE) })}</li>
               </ul>
             </div>
 
@@ -614,7 +622,7 @@ export default function BookingForm({
                 onClick={() => setStep(4)}
                 className="text-sm font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-ice)]"
               >
-                ← Back
+                ← {copy.backButton}
               </button>
               <button
                 type="button"
@@ -623,10 +631,10 @@ export default function BookingForm({
                 className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-60 sm:w-auto"
               >
                 {submitting
-                  ? "Submitting…"
+                  ? copy.submitting
                   : ONLINE_PAYMENTS_ENABLED
-                    ? "Submit Registration"
-                    : "Book — We'll Call You"}
+                    ? copy.submitOnline
+                    : copy.submitOffline}
               </button>
             </div>
           </div>
@@ -637,17 +645,19 @@ export default function BookingForm({
 }
 
 function Confirmation({
+  copy,
   contactPreference,
   paymentSetupFailed = false,
 }: {
+  copy: BookingCopy;
   contactPreference: "callback" | "pay_online";
   paymentSetupFailed?: boolean;
 }) {
   const message = paymentSetupFailed
-    ? "Thank you! We couldn't start online payment just now, but your registration is saved — a member of our team will follow up shortly to collect payment."
+    ? copy.confirmationPaymentFailed
     : contactPreference === "callback"
-      ? "Thank you! A member of our team will call you within one business day to confirm details and arrange payment."
-      : "Thank you! Your payment has been received and your spot is confirmed.";
+      ? copy.confirmationCallback
+      : copy.confirmationPaid;
 
   return (
     <div className="glass-panel-elevated rounded-3xl p-8 text-center shadow-2xl sm:p-10">
@@ -655,26 +665,27 @@ function Confirmation({
         ✓
       </div>
       <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-[var(--color-ice)]">
-        Registration received
+        {copy.confirmationEyebrow}
       </p>
       <h2 className="mt-2 font-display text-2xl font-bold text-[var(--color-mist)] sm:text-3xl">
-        We look forward to welcoming you
+        {copy.confirmationHeading}
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[var(--color-slate)]">{message}</p>
-      <PhoneLink className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110" prefix="Questions? Call " />
+      <PhoneLink className="mt-8 inline-block text-sm font-bold text-[var(--color-ice)] transition hover:brightness-110" prefix={`${copy.questionsPrefix} `} />
     </div>
   );
 }
 
-function StepIndicator({ step }: { step: number }) {
+function StepIndicator({ step, copy }: { step: number; copy: BookingCopy }) {
+  const labels = [copy.stepDates, copy.stepParty, copy.stepTravelers, copy.stepContact, copy.stepReview];
   return (
     <ol className="grid grid-cols-5 gap-1 border-b border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)]/80 px-4 py-4 text-center text-xs sm:gap-0 sm:px-6">
-      {STEP_LABELS.map((label, index) => {
+      {labels.map((label, index) => {
         const active = index + 1 <= step;
         const current = index + 1 === step;
         return (
           <li
-            key={label}
+            key={index}
             className={`flex items-center justify-center gap-2 ${
               active ? "font-bold text-[var(--color-ice)]" : "text-[var(--color-slate)]/50"
             }`}
@@ -699,10 +710,12 @@ function StepIndicator({ step }: { step: number }) {
 }
 
 function StepNav({
+  copy,
   onBack,
   onNext,
   nextDisabled,
 }: {
+  copy: BookingCopy;
   onBack?: () => void;
   onNext: () => void;
   nextDisabled?: boolean;
@@ -715,7 +728,7 @@ function StepNav({
           onClick={onBack}
           className="text-sm font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-ice)]"
         >
-          ← Back
+          ← {copy.backButton}
         </button>
       ) : (
         <span />
@@ -726,7 +739,7 @@ function StepNav({
         onClick={onNext}
         className="w-full rounded-full bg-[var(--color-ice)] px-8 py-3.5 text-sm font-bold text-[var(--color-ice-ink)] shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-40 sm:w-auto"
       >
-        Continue
+        {copy.continueButton}
       </button>
     </div>
   );
@@ -857,11 +870,13 @@ function TextField({
 }
 
 function PassportUploadField({
+  copy,
   value,
   fileName,
   onUploaded,
   onRemove,
 }: {
+  copy: BookingCopy;
   value: string;
   fileName: string;
   onUploaded: (path: string, fileName: string) => void;
@@ -892,26 +907,26 @@ function PassportUploadField({
   return (
     <div className="sm:col-span-2">
       <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
-        Passport scan{" "}
-        <span className="font-normal normal-case tracking-normal opacity-70">(optional)</span>
+        {copy.passportScan}{" "}
+        <span className="font-normal normal-case tracking-normal opacity-70">{copy.passportScanOptional}</span>
       </label>
       {value ? (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] px-3.5 py-2.5">
           {/* The upload is private (no public URL), so the customer sees a confirmation, not a link. */}
           <span className="truncate text-sm font-medium text-[var(--color-ice)]">
-            ✓ {fileName || "Passport uploaded"}
+            ✓ {fileName || copy.passportUploaded}
           </span>
           <button
             type="button"
             onClick={onRemove}
             className="shrink-0 text-xs font-semibold text-[var(--color-slate)] transition hover:text-[var(--color-danger-text)]"
           >
-            Remove
+            {copy.removeButton}
           </button>
         </div>
       ) : (
         <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--color-border-ice-strong)] bg-[var(--color-field-bg)] px-3.5 py-3 text-sm font-medium text-[var(--color-slate)] transition-colors hover:border-[var(--color-ice)] hover:text-[var(--color-mist)] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
-          {uploading ? "Uploading…" : "Upload photo or PDF"}
+          {uploading ? copy.uploadingLabel : copy.uploadButton}
           <input
             ref={inputRef}
             type="file"
@@ -923,12 +938,12 @@ function PassportUploadField({
         </label>
       )}
       {error && <p className="mt-1 text-xs font-medium text-[var(--color-danger-text)]">{error}</p>}
-      {/* Accurate as built: HTTPS upload, Firebase Storage encrypts at rest, private path with no download token (lib/passportScans.ts). */}
+      {/* The default wording is accurate as built: HTTPS upload, Firebase Storage encrypts at rest, private path with no download token (lib/passportScans.ts). */}
       <p className="mt-2 flex items-start gap-2 text-xs leading-snug text-[var(--color-slate)]">
         <ShieldLockIcon />
         <span>
-          <span className="font-semibold text-[var(--color-success)]">Secure upload</span> — encrypted in
-          transit and at rest, stored privately with no public link. Only Keshertours staff can view it.
+          <span className="font-semibold text-[var(--color-success)]">{copy.secureUploadTitle}</span>{" "}
+          {copy.secureUploadBody}
         </span>
       </p>
     </div>
@@ -958,17 +973,17 @@ function ShieldLockIcon() {
 
 /** Exact number + "last spots" only at/below threshold — otherwise a vague, non-numeric message. */
 /** Per-departure trust badge, shown inline in the date list — each departure carries its own assurance. */
-function AssuranceBadge({ assurance }: { assurance: "conditional" | "guaranteed" }) {
+function AssuranceBadge({ assurance, copy }: { assurance: "conditional" | "guaranteed"; copy: BookingCopy }) {
   if (assurance === "guaranteed") {
     return (
       <span className="ml-7 inline-flex w-fit items-center gap-1 rounded-full bg-[var(--color-success)]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-success)]">
-        <span aria-hidden="true">✓</span> Guaranteed to run
+        <span aria-hidden="true">✓</span> {copy.assuranceGuaranteed}
       </span>
     );
   }
   return (
     <span className="ml-7 inline-flex w-fit items-center rounded-full bg-[var(--color-surface-hover-b)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-slate)]">
-      Subject to registration
+      {copy.assuranceConditional}
     </span>
   );
 }

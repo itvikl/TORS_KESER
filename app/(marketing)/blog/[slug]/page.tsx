@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SafeImage from "@/components/ui/SafeImage";
 import { getBlogPostBySlug, getPublishedBlogPosts } from "@/lib/data/blog";
+import { getSiteContent } from "@/lib/data/siteContent";
 
 export async function generateStaticParams() {
   const posts = await getPublishedBlogPosts();
@@ -48,6 +49,7 @@ export default async function BlogPostPage({
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
   if (!post) notFound();
+  const copy = await getSiteContent("blog");
 
   return (
     <div>
@@ -57,7 +59,7 @@ export default async function BlogPostPage({
             href="/blog"
             className="text-sm font-semibold text-[var(--color-ice)] transition-colors hover:brightness-110"
           >
-            ← All posts
+            ← {copy.backLink}
           </Link>
           {post.publishedAt && (
             <p className="mt-5 text-sm font-semibold uppercase tracking-[0.3em] text-[var(--color-slate)]">

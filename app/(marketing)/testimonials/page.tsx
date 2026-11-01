@@ -5,11 +5,14 @@ import TestimonialCard from "@/components/marketing/TestimonialCard";
 import { getSiteContent } from "@/lib/data/siteContent";
 import { getTestimonialGroups } from "@/lib/data/reviews";
 
-export const metadata: Metadata = {
-  title: "Testimonials",
-  description: "What travelers say after touring with Keshertours.",
-  alternates: { canonical: "/testimonials" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getSiteContent("testimonials");
+  return {
+    title: "Testimonials",
+    description: content.metaDescription,
+    alternates: { canonical: "/testimonials" },
+  };
+}
 
 /**
  * Grouped by destination like the old site's testimonial hub, but on one
@@ -24,11 +27,11 @@ export default async function TestimonialsPage() {
 
   return (
     <div>
-      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} image={content.heroImage} />
+      <PageHeader eyebrow={content.eyebrow || undefined} title={content.title} lede={content.lede || undefined} image={content.heroImage} />
       {groups.length === 0 ? (
         <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:px-8">
           <p className="text-lg leading-8 text-[var(--color-slate)]">
-            No approved reviews yet — approve one from /admin/reviews to have it appear here.
+            {content.emptyMessage}
           </p>
         </div>
       ) : (
@@ -56,7 +59,7 @@ export default async function TestimonialsPage() {
                         {group.name}
                       </span>
                       <span className="mt-0.5 block text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-                        {group.reviews.length} letter{group.reviews.length === 1 ? "" : "s"}
+                        {group.reviews.length} {group.reviews.length === 1 ? content.letterSingular : content.letterPlural}
                       </span>
                     </span>
                   </a>

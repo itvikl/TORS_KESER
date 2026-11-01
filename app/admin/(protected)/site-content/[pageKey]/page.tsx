@@ -10,12 +10,23 @@ import FaqContentForm from "@/components/admin/siteContent/FaqContentForm";
 import ContactContentForm from "@/components/admin/siteContent/ContactContentForm";
 import SimplePageContentForm from "@/components/admin/siteContent/SimplePageContentForm";
 import LegalContentForm from "@/components/admin/siteContent/LegalContentForm";
+import CopyContentForm from "@/components/admin/siteContent/CopyContentForm";
+import { getAllTours } from "@/lib/data/tours";
+import {
+  BLOG_COPY_SECTIONS,
+  BOOKING_COPY_SECTIONS,
+  TESTIMONIALS_COPY_SECTIONS,
+  TOUR_PAGE_COPY_SECTIONS,
+} from "@/lib/siteCopy";
 import {
   saveCustomToursContent,
   saveSpecialOffersContent,
   saveTestimonialsContent,
   saveLegalPrivacyContent,
   saveLegalTermsContent,
+  saveTourPageContent,
+  saveBookingContent,
+  saveBlogContent,
 } from "@/lib/actions/siteContent";
 
 const PAGE_KEYS: SiteContentPageKey[] = [
@@ -28,6 +39,9 @@ const PAGE_KEYS: SiteContentPageKey[] = [
   "contact",
   "legal-privacy",
   "legal-terms",
+  "tour-page",
+  "booking",
+  "blog",
 ];
 
 const PAGE_LABELS: Record<SiteContentPageKey, string> = {
@@ -40,6 +54,9 @@ const PAGE_LABELS: Record<SiteContentPageKey, string> = {
   contact: "Contact",
   "legal-privacy": "Privacy Policy",
   "legal-terms": "Terms & Conditions",
+  "tour-page": "Tour Page",
+  booking: "Booking Form",
+  blog: "Blog",
 };
 
 function isSiteContentPageKey(value: string): value is SiteContentPageKey {
@@ -97,7 +114,14 @@ async function EditorForm({ pageKey }: { pageKey: SiteContentPageKey }) {
     }
     case "testimonials": {
       const content = await getSiteContent("testimonials");
-      return <SimplePageContentForm initialContent={content} saveAction={saveTestimonialsContent} />;
+      return (
+        <CopyContentForm
+          sections={TESTIMONIALS_COPY_SECTIONS}
+          initialContent={content}
+          saveAction={saveTestimonialsContent}
+          liveLinks={[{ label: "Open the live page", href: "/testimonials" }]}
+        />
+      );
     }
     case "faq": {
       const content = await getSiteContent("faq");
@@ -116,6 +140,39 @@ async function EditorForm({ pageKey }: { pageKey: SiteContentPageKey }) {
     case "legal-privacy": {
       const content = await getSiteContent("legal-privacy");
       return <LegalContentForm initialContent={content} saveAction={saveLegalPrivacyContent} />;
+    }
+    case "tour-page": {
+      const [content, tours] = await Promise.all([getSiteContent("tour-page"), getAllTours()]);
+      return (
+        <CopyContentForm
+          sections={TOUR_PAGE_COPY_SECTIONS}
+          initialContent={content}
+          saveAction={saveTourPageContent}
+          liveLinks={tours.slice(0, 1).map((tour) => ({ label: `See it on ${tour.title}`, href: `/tours/${tour.slug}` }))}
+        />
+      );
+    }
+    case "booking": {
+      const [content, tours] = await Promise.all([getSiteContent("booking"), getAllTours()]);
+      return (
+        <CopyContentForm
+          sections={BOOKING_COPY_SECTIONS}
+          initialContent={content}
+          saveAction={saveBookingContent}
+          liveLinks={tours.slice(0, 1).map((tour) => ({ label: `See it on ${tour.title}`, href: `/tours/${tour.slug}/book` }))}
+        />
+      );
+    }
+    case "blog": {
+      const content = await getSiteContent("blog");
+      return (
+        <CopyContentForm
+          sections={BLOG_COPY_SECTIONS}
+          initialContent={content}
+          saveAction={saveBlogContent}
+          liveLinks={[{ label: "Open the live page", href: "/blog" }]}
+        />
+      );
     }
     case "legal-terms": {
       const content = await getSiteContent("legal-terms");

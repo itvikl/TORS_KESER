@@ -10,6 +10,7 @@ import {
 } from "@/lib/data/tours";
 import { getSiteSettings } from "@/lib/data/admin/settings";
 import { getApprovedReviewsForTour } from "@/lib/data/reviews";
+import { getSiteContent } from "@/lib/data/siteContent";
 
 // Tour pages are prerendered (generateStaticParams below), and without this
 // they would stay frozen at build time forever — s-maxage=31536000. Photos
@@ -60,10 +61,11 @@ export default async function TourDetailPage({
   // redirect can only stream out as a meta refresh, never an HTTP status.
   if (tour.status === "archived") redirect(await getArchivedTourRedirectPath(tour));
 
-  const [departures, settings, testimonials] = await Promise.all([
+  const [departures, settings, testimonials, copy] = await Promise.all([
     getDeparturesForTour(tour.tourId),
     getSiteSettings(),
     getApprovedReviewsForTour(tour),
+    getSiteContent("tour-page"),
   ]);
   const guides = await getGuidesForDepartures(departures);
 
@@ -74,6 +76,7 @@ export default async function TourDetailPage({
       guides={guides}
       testimonials={testimonials}
       lowSeatsThreshold={settings.lowSeatsThreshold}
+      copy={copy}
     />
   );
 }

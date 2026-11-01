@@ -345,7 +345,10 @@ export type SiteContentPageKey =
   | "faq"
   | "contact"
   | "legal-privacy"
-  | "legal-terms";
+  | "legal-terms"
+  | "tour-page"
+  | "booking"
+  | "blog";
 
 export interface SiteContentTrustSignal {
   title: string;

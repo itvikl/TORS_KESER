@@ -1,4 +1,5 @@
 import type { Departure } from "@/lib/types";
+import { TOUR_PAGE_COPY_DEFAULTS, fillCopy, type DepartureStatusCopy } from "@/lib/siteCopy";
 
 /**
  * A departure's availability label — shared by the tour page's dates list and
@@ -9,35 +10,37 @@ export default function DepartureStatusPill({
   status,
   seats,
   lowSeatsThreshold,
+  copy = TOUR_PAGE_COPY_DEFAULTS,
 }: {
   status: Departure["status"];
   seats: number;
   lowSeatsThreshold: number;
+  copy?: DepartureStatusCopy;
 }) {
   if (status === "soldout" || seats <= 0) {
     return (
       <span className="rounded-full bg-[var(--color-surface-hover-b)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-slate)]">
-        Sold Out
+        {copy.statusSoldOut}
       </span>
     );
   }
   if (status === "cancelled") {
     return (
       <span className="rounded-full bg-[var(--color-danger)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-danger)]">
-        Cancelled
+        {copy.statusCancelled}
       </span>
     );
   }
   if (seats <= lowSeatsThreshold) {
     return (
       <span className="rounded-full bg-[var(--color-lilac)]/20 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-lilac)]">
-        Only {seats} spots left
+        {fillCopy(copy.statusLowSeats, { seats })}
       </span>
     );
   }
   return (
     <span className="rounded-full bg-[var(--color-ice)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-ice)]">
-      Available
+      {copy.statusAvailable}
     </span>
   );
 }
