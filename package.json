@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "launch:check": "node scripts/launch/check-launch.mjs",
     "seed": "tsx scripts/seed-firestore.ts",
     "backfill-sort-order": "tsx scripts/backfill-sort-order.ts",
     "backfill-tour-countries": "tsx scripts/backfill-tour-countries.ts",

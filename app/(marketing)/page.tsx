@@ -19,6 +19,8 @@ import { getLatestBlogPosts } from "@/lib/data/blog";
 import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { DEFAULT_HOME_HERO_IMAGE } from "@/lib/homeHero";
 import { bySortOrder } from "@/lib/tourSort";
+import JsonLd from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 import {
   HOME_TOURS_CACHE_TAG,
   HOME_CONTENT_CACHE_TAG,
@@ -103,6 +105,20 @@ export default async function HomePage() {
   return (
     <TourFilterProvider countries={countries} tours={toursWithDepartures}>
       <div className="overflow-x-hidden bg-[var(--color-glacier)] text-[var(--color-mist)] transition-colors">
+        <JsonLd
+          data={[
+            {
+              "@context": "https://schema.org",
+              "@type": "TravelAgency",
+              name: "Keshertours",
+              url: SITE_URL,
+              logo: `${SITE_URL}/kesher-logo2.png`,
+              description:
+                "Escorted, fully kosher group tours to destinations worldwide, built for travelers who want to see the world without compromise.",
+            },
+            { "@context": "https://schema.org", "@type": "WebSite", name: "Keshertours", url: SITE_URL },
+          ]}
+        />
         <section className="relative isolate overflow-hidden">
           <div className="absolute inset-0">
             {/* The LCP element — next/image serves it resized and as AVIF/WebP

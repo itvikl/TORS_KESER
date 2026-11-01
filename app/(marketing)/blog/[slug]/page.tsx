@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import SafeImage from "@/components/ui/SafeImage";
 import { getBlogPostBySlug, getPublishedBlogPosts } from "@/lib/data/blog";
 import { getSiteContent } from "@/lib/data/siteContent";
+import { withoutBrandSuffix } from "@/lib/seoTitle";
 
 export async function generateStaticParams() {
   const posts = await getPublishedBlogPosts();
@@ -19,7 +20,7 @@ export async function generateMetadata({
   const post = await getBlogPostBySlug(slug);
   if (!post) return {};
 
-  const title = post.seoTitle ?? post.title;
+  const title = withoutBrandSuffix(post.seoTitle ?? post.title);
   const description = post.seoDescription ?? post.body.slice(0, 160);
   return {
     title,

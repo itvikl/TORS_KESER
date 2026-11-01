@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
+import JsonLd from "@/components/seo/JsonLd";
 import {
   getAllTours,
   getArchivedTourRedirectPath,
@@ -11,6 +12,8 @@ import {
 import { getSiteSettings } from "@/lib/data/admin/settings";
 import { getApprovedReviewsForTour } from "@/lib/data/reviews";
 import { getSiteContent } from "@/lib/data/siteContent";
+import { withoutBrandSuffix } from "@/lib/seoTitle";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Tour pages are prerendered (generateStaticParams below), and without this
 // they would stay frozen at build time forever — s-maxage=31536000. Photos
@@ -34,7 +37,7 @@ export async function generateMetadata({
   const tour = await getTourBySlug(slug);
   if (!tour) return {};
 
-  const title = tour.seoTitle ?? tour.title;
+  const title = withoutBrandSuffix(tour.seoTitle ?? tour.title);
   const description = tour.seoDescription ?? tour.summary;
   // Canonical is the current slug, so a tour reached by an old slug
   // (slugHistory) doesn't compete with itself in search.
@@ -69,14 +72,39 @@ export default async function TourDetailPage({
   ]);
   const guides = await getGuidesForDepartures(departures);
 
+  const url = `${SITE_URL}/tours/${tour.slug}`;
   return (
-    <TourPageView
-      tour={tour}
-      departures={departures}
-      guides={guides}
-      testimonials={testimonials}
-      lowSeatsThreshold={settings.lowSeatsThreshold}
-      copy={copy}
-    />
+    <>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "TouristTrip",
+            name: tour.title,
+            description: tour.summary,
+            url,
+            image: tour.heroImage || undefined,
+            touristType: "Kosher-observant travelers",
+            provider: { "@type": "TravelAgency", name: "Keshertours", url: SITE_URL },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+              { "@type": "ListItem", position: 2, name: tour.title, item: url },
+            ],
+          },
+        ]}
+      />
+      <TourPageView
+        tour={tour}
+        departures={departures}
+        guides={guides}
+        testimonials={testimonials}
+        lowSeatsThreshold={settings.lowSeatsThreshold}
+        copy={copy}
+      />
+    </>
   );
 }
