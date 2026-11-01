@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { uploadImage } from "@/lib/actions/uploads";
+import { BACKGROUND_MAX_EDGE, shrinkImage } from "@/lib/client/shrinkImage";
 import MediaLibraryPicker from "@/components/admin/MediaLibraryPicker";
 import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 
@@ -27,15 +28,23 @@ export default function ImageUploadButton({
 
     setUploading(true);
     const urls: string[] = [];
+    let bytesSaved = 0;
 
-    for (const file of files) {
+    for (const original of files) {
+      // Big originals are resized first: they'd be served to visitors at full size, and past 10MB they can't upload at all.
+      // The "site" folder holds full-width backgrounds (home hero, page headers), which need more pixels than a tour photo.
+      const file = await shrinkImage(original, folder === "site" ? BACKGROUND_MAX_EDGE : undefined);
+      bytesSaved += original.size - file.size;
       const formData = new FormData();
       formData.append("file", file);
-      const result = await uploadImage(formData, folder).catch(() => ({ ok: false as const, error: "Upload failed." }));
+      const result = await uploadImage(formData, folder).catch(() => ({
+        ok: false as const,
+        error: "The upload didn't go through — check your connection and try again.",
+      }));
       if (result.ok) {
         urls.push(result.url);
       } else {
-        toast.error({ title: `Couldn't upload ${file.name}`, description: result.error });
+        toast.error({ title: `Couldn't upload ${original.name}`, description: result.error });
       }
     }
 
@@ -43,7 +52,10 @@ export default function ImageUploadButton({
       onUploaded(urls);
       toast.success({
         title: urls.length === 1 ? "Image uploaded" : `${urls.length} images uploaded`,
-        description: "Remember to save to keep this change.",
+        description:
+          bytesSaved > 200 * 1024
+            ? `Resized for the web (${(bytesSaved / (1024 * 1024)).toFixed(1)} MB smaller). Remember to save to keep this change.`
+            : "Remember to save to keep this change.",
       });
     }
     setUploading(false);
