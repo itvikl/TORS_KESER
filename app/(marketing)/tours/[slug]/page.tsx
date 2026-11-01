@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
 import {
   getAllTours,
+  getArchivedTourRedirectPath,
   getDeparturesForTour,
   getGuidesForDepartures,
   getTourBySlug,
@@ -52,6 +53,12 @@ export default async function TourDetailPage({
   const { slug } = await params;
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
+
+  // Archived tours are redirected with a real 307 by proxy.ts before this
+  // page renders. This is only the fallback for a request that skipped it
+  // (e.g. a copy cached while the tour was still published) — from here the
+  // redirect can only stream out as a meta refresh, never an HTTP status.
+  if (tour.status === "archived") redirect(await getArchivedTourRedirectPath(tour));
 
   const [departures, settings, testimonials] = await Promise.all([
     getDeparturesForTour(tour.tourId),

@@ -3,6 +3,39 @@ import type { NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
 import { EMAIL_MFA_COOKIE_NAME, passesAdmin2fa } from "@/lib/auth/secondFactor";
+import { getArchivedTourRedirectPath, getTourBySlug } from "@/lib/data/tours";
+
+/**
+ * Archived tours (no upcoming dates) keep their old URL alive by redirecting
+ * to the closest live tour. Decided here, per request, from the tour's current
+ * status — archived tours come back when new dates are added, so this can't
+ * be a static map in next.config (that is how a stale rule once sent the live
+ * Galápagos and India tours to the home page).
+ *
+ * It has to happen in proxy rather than in the page: the marketing pages sit
+ * under a loading.tsx, so a redirect() inside the page streams out as a
+ * 200 + meta-refresh instead of a real HTTP redirect. Temporary (307) on
+ * purpose, so browsers don't cache it and keep redirecting after the tour is
+ * published again.
+ */
+async function redirectArchivedTour(request: NextRequest) {
+  try {
+    const slug = decodeURIComponent(request.nextUrl.pathname.slice("/tours/".length));
+    const tour = await getTourBySlug(slug);
+    // No such tour (or an unpublished draft): answer with a real 404. The page's
+    // own notFound() streams out under loading.tsx as 200 — a soft 404 for Google.
+    // Rewriting to a path no route matches renders the site's 404 page, status 404,
+    // while the address bar keeps the visitor's URL.
+    if (!tour) return NextResponse.rewrite(new URL("/__tour-not-found", request.url));
+    if (tour.status === "archived") {
+      return NextResponse.redirect(new URL(await getArchivedTourRedirectPath(tour), request.url));
+    }
+  } catch (err) {
+    // A failed lookup must never take a tour page down — let it render.
+    console.error("Archived-tour redirect lookup failed:", err);
+  }
+  return NextResponse.next();
+}
 
 /**
  * Gate for /admin/* (PRD section 9). This project targets Next.js 16,
@@ -18,6 +51,10 @@ import { EMAIL_MFA_COOKIE_NAME, passesAdmin2fa } from "@/lib/auth/secondFactor";
  * check (see the Next.js auth guide's warning against relying on proxy alone).
  */
 export default async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/tours/")) {
+    return redirectArchivedTour(request);
+  }
+
   if (request.nextUrl.pathname === "/admin/login") {
     return NextResponse.next();
   }
@@ -40,5 +77,6 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // "/tours/:slug" is one segment only — the /book pages are not redirected.
+  matcher: ["/admin/:path*", "/tours/:slug"],
 };

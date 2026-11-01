@@ -67,6 +67,8 @@ export async function archiveTour(tourId: string): Promise<void> {
   await requireAdminSession();
   await archiveTourDoc(tourId);
   revalidatePath("/admin/tours");
+  // The public page now redirects (archived) instead of rendering — drop its cached copy.
+  revalidatePath("/tours/[slug]", "page");
   updateTag(HOME_TOURS_CACHE_TAG);
 }
 
@@ -75,6 +77,9 @@ export async function setTourStatus(tourId: string, status: TourStatus): Promise
   await setTourStatusDoc(tourId, status);
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${tourId}`);
+  // Publishing/archiving flips the public page between rendering and
+  // redirecting — drop the cached copy so the change shows immediately.
+  revalidatePath("/tours/[slug]", "page");
   updateTag(HOME_TOURS_CACHE_TAG);
 }
 

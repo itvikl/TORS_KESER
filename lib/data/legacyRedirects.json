@@ -21,27 +21,27 @@
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/peru",
-    "destination": "/",
+    "destination": "/tours/peru",
     "permanent": true
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/portugal",
-    "destination": "/",
+    "destination": "/tours/portugal",
     "permanent": true
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/united-arab-emirates",
-    "destination": "/",
+    "destination": "/tours/united-arab-emirates",
     "permanent": true
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/vienna-budapest-prague",
-    "destination": "/",
+    "destination": "/tours/vienna-budapest-prague",
     "permanent": true
   },
   {
     "source": "/%D7%98%D7%99%D7%95%D7%9C%D7%99%D7%9D/vienna-budapest-prague-2",
-    "destination": "/",
+    "destination": "/tours/vienna-budapest-prague-2",
     "permanent": true
   },
   {
@@ -851,271 +851,6 @@
   },
   {
     "source": "/tours-types/yeshiva-break-tours-and-vacations",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/all-around-japan",
-    "destination": "/tours/japan",
-    "permanent": true
-  },
-  {
-    "source": "/tours/australia-tasmania-new-zealand",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/baltic-sea-cruise",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/baltic-tour",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/canada",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/canadian-rockies-alaska",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/canary-islands-madeira",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/china",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/china-uzbekistan",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/cruise-the-british-isles",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/ecuador-the-galapagos-islands-2",
-    "destination": "/tours/ecuador-the-galapagos-islands",
-    "permanent": true
-  },
-  {
-    "source": "/tours/egypt",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/egypt-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/family-fantasy-in-central-europe",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/far-east-cruise",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/far-east-cruise-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/greece-tour",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/guatemala",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/india",
-    "destination": "/tours/india-2",
-    "permanent": true
-  },
-  {
-    "source": "/tours/ireland-scotland",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/italy",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/italy-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/italy-2-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/japan-cruise",
-    "destination": "/tours/japan",
-    "permanent": true
-  },
-  {
-    "source": "/tours/lithuania-latvia-study-tour",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/mediterranean-sea-cruise",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/new-zealand",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/new-zealand-and-australia",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/norwegian-fjords-cruise",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/passover-in-china",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/peru",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/poland",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/poland-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/portugal",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/provence",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/russia",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/russian-lapland",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/scotland-whisky-tour",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/slovenia-croatia",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/south-africa",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/south-america-cruise",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/south-pacific",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/spain",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/spain-portugal",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/tanzania",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/thailand",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/tour-to-iceland",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/united-arab-emirates",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/united-arab-emirates-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/vienna-budapest-prague",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/vienna-budapest-prague-2",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/west-usa",
-    "destination": "/",
-    "permanent": true
-  },
-  {
-    "source": "/tours/western-united-states",
     "destination": "/",
     "permanent": true
   },

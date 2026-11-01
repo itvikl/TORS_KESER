@@ -3,6 +3,7 @@ import type { Departure, Staff, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { adminDb } from "@/lib/firebase/admin";
+import { bySortOrder } from "@/lib/tourSort";
 
 /**
  * Firestore-backed data layer for tours/departures. Reads go through the
@@ -41,6 +42,22 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
   if (!doc) return null;
   const tour = doc.data() as Tour;
   return tour.status === "draft" ? null : tour;
+}
+
+/**
+ * Where an archived tour's old URL should send visitors: the first published
+ * tour that shares one of its countries, else the home page (which lists
+ * every current tour). Decided per request, from current data — archived
+ * tours come back when new dates are added, so this can't be a static map.
+ */
+export async function getArchivedTourRedirectPath(tour: Tour): Promise<string> {
+  const countries = tour.countries ?? [];
+  if (countries.length > 0) {
+    const published = (await getAllTours()).sort(bySortOrder);
+    const match = published.find((t) => (t.countries ?? []).some((c) => countries.includes(c)));
+    if (match) return `/tours/${match.slug}`;
+  }
+  return "/";
 }
 
 export async function getDeparturesForTour(tourId: string): Promise<Departure[]> {

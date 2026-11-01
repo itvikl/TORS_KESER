@@ -115,15 +115,11 @@ async function main() {
 
   const toursSnap = await db.collection("tours").get();
   const tours = toursSnap.docs.map((d) => d.data() as Tour);
-  const published = tours.filter((t) => t.status === "published");
-  const publishedSlugs = new Set(published.map((t) => t.slug));
-  const publishedCountryToSlug = new Map<string, string>();
-  for (const t of published) {
-    for (const c of t.countries ?? []) {
-      if (!publishedCountryToSlug.has(c)) publishedCountryToSlug.set(c, t.slug);
-    }
-  }
-  const archivedBySlug = new Map(tours.filter((t) => t.status === "archived").map((t) => [t.slug, t]));
+  // Every tour that exists in the database, whatever its status. A tour's
+  // status changes over time (archived tours come back when new dates are
+  // added), so this snapshot must never decide where its URL goes — the tour
+  // page (app/(marketing)/tours/[slug]/page.tsx) decides at request time.
+  const tourSlugs = new Set(tours.map((t) => t.slug));
 
   const blogSnap = await db.collection("blogPosts").get();
   const blogSlugs = new Set(blogSnap.docs.map((d) => (d.data() as BlogPost).slug));
@@ -186,18 +182,17 @@ async function main() {
       add(path, EXPLICIT_ALIASES[path], "known old-URL alias");
       continue;
     }
-    // Old site's Hebrew-mirror /טיולים/<slug>/ tour pages — same targeting as
-    // the English /tours/<slug>/ rule below, just a different URL prefix.
+    // Old site's Hebrew-mirror /טיולים/<slug>/ tour pages. A tour that exists
+    // always goes to its English page, which then serves it or redirects it
+    // based on its current status (see the /tours/<slug> rule below).
     const hebrewTourMatch = path.match(/^\/טיולים\/([^/]+)\/?$/);
     if (hebrewTourMatch) {
       const slug = hebrewTourMatch[1];
-      if (publishedSlugs.has(slug)) {
-        add(path, `/tours/${slug}`, "Hebrew-mirror tour page -> live English tour page");
-      } else {
-        const archived = archivedBySlug.get(slug);
-        const matchSlug = archived && (archived.countries ?? []).map((c) => publishedCountryToSlug.get(c)).find(Boolean);
-        add(path, matchSlug ? `/tours/${matchSlug}` : "/", "Hebrew-mirror tour page");
-      }
+      add(
+        path,
+        tourSlugs.has(slug) ? `/tours/${slug}` : "/",
+        tourSlugs.has(slug) ? "Hebrew-mirror tour page -> English tour page" : "Hebrew-mirror tour page, no such tour -> home"
+      );
       continue;
     }
 
@@ -228,18 +223,13 @@ async function main() {
       continue;
     }
 
-    // 4. Individual tour pages
+    // 4. Individual tour pages. Tours that exist get NO rule here: published
+    // ones serve themselves and archived ones are redirected (temporarily) by
+    // the tour page at request time, so a tour coming back can't be shadowed
+    // by a stale permanent redirect baked in here.
     const tourMatch = path.match(/^\/tours\/([^/]+)\/?$/);
     if (tourMatch) {
-      const slug = tourMatch[1];
-      if (publishedSlugs.has(slug)) continue; // resolves natively, no redirect needed
-      const archived = archivedBySlug.get(slug);
-      if (archived) {
-        const matchSlug = (archived.countries ?? []).map((c) => publishedCountryToSlug.get(c)).find(Boolean);
-        add(path, matchSlug ? `/tours/${matchSlug}` : "/", matchSlug ? `archived tour -> live ${matchSlug} (same country)` : "archived tour, no live country match -> home");
-      } else {
-        add(path, "/", "unmatched tour slug -> home");
-      }
+      if (!tourSlugs.has(tourMatch[1])) add(path, "/", "unmatched tour slug -> home");
       continue;
     }
 
