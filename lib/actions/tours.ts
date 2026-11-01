@@ -16,7 +16,8 @@ import {
   setTourStatusDoc,
   updateTourDoc,
 } from "@/lib/data/admin/tours";
-import type { TourStatus } from "@/lib/types";
+import { isReadyToPublish } from "@/lib/validation/tourChecklist";
+import type { Tour, TourStatus } from "@/lib/types";
 import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
 
 export type SaveTourResult =
@@ -39,6 +40,13 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
   }
   const data = parsed.data;
   data.pricing.singleSupplement = singleSupplementOf(data.pricing);
+
+  // Defense in depth behind the editor's own gate: a live tour must always
+  // satisfy the publish checklist (a published tour with no deposit, say,
+  // could take bookings it can't charge for).
+  if (data.status === "published" && !isReadyToPublish(data as unknown as Tour)) {
+    return { ok: false, errors: { status: ["A published tour must have everything on the publish checklist."] } };
+  }
 
   if (await isSlugTaken(data.slug, tourId)) {
     return { ok: false, errors: { slug: ["This slug is already used by another tour."] } };

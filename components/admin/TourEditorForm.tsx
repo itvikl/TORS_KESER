@@ -17,7 +17,7 @@ import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChec
 import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
-import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import { useConfirm, useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import RequiredMark from "@/components/admin/RequiredMark";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
@@ -157,6 +157,7 @@ export default function TourEditorForm({
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const toast = useToast();
+  const confirm = useConfirm();
   const { isDirty, markSaved } = useDirtyDraft(draft);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -166,6 +167,9 @@ export default function TourEditorForm({
   const checklist = useMemo(() => getPublishChecklist(cleaned), [cleaned]);
   const readyToPublish = useMemo(() => isReadyToPublish(cleaned), [cleaned]);
   const missing = useMemo(() => checklist.filter((item) => !item.ok), [checklist]);
+  const isPublished = draft.status === "published";
+  const isArchived = draft.status === "archived";
+  const blockedWhat = isPublished ? "save changes" : "publish";
   // Set when someone clicks Publish while it is blocked: from then on every
   // missing field says so, instead of the button silently doing nothing.
   const [showMissing, setShowMissing] = useState(false);
@@ -175,13 +179,27 @@ export default function TourEditorForm({
     return { required: true, fieldKey: key, flagged: showMissing && missing.some((item) => item.key === key) };
   }
 
-  function handlePublishClick() {
+  // Publishing — or saving changes to a tour that is already live — needs the
+  // checklist, so a live tour can never be left incomplete (e.g. no deposit).
+  function handleGuardedSave(status?: TourStatus) {
     if (readyToPublish) {
-      handleSave("published");
+      handleSave(status);
       return;
     }
     setShowMissing(true);
     document.getElementById(`field-${missing[0].key}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  // Taking a live tour offline is its own deliberate action, never a side
+  // effect of saving.
+  async function handleUnpublish() {
+    const ok = await confirm({
+      title: "Unpublish this tour?",
+      description: "It will disappear from the site, and its page will show “not found” until you publish it again.",
+      confirmLabel: "Unpublish",
+      tone: "danger",
+    });
+    if (ok) handleSave("draft");
   }
 
   function postPreview() {
@@ -285,6 +303,7 @@ export default function TourEditorForm({
   }
 
   async function handleSave(status?: TourStatus) {
+    const wasPublished = draft.status === "published";
     setSaving(true);
     setErrors({});
 
@@ -317,6 +336,8 @@ export default function TourEditorForm({
     toast.success(
       status === "published"
         ? { title: "Tour published", description: `"${payload.title}" is now live on the site.` }
+        : status === "draft" && wasPublished
+          ? { title: "Tour unpublished", description: `"${payload.title}" is no longer on the site.` }
         : mode === "create"
           ? { title: "Tour created", description: "Saved as a draft — you can keep editing." }
           : { title: "Changes saved", description: `"${payload.title}" was saved successfully.` }
@@ -744,32 +765,45 @@ export default function TourEditorForm({
           </div>
           <div className="flex flex-col items-end gap-1.5">
             <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => handleSave("draft")}
-                className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
-              >
-                Save draft
-              </button>
+              {/* Left button depends on the tour's state: a live tour is never un-published by a save. */}
+              {isPublished ? (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={handleUnpublish}
+                  className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
+                >
+                  Unpublish
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => (isArchived ? handleSave() : handleSave("draft"))}
+                  className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
+                >
+                  {isArchived ? "Save changes" : "Save draft"}
+                </button>
+              )}
               {/* aria-disabled rather than disabled: a blocked click scrolls to the first missing field instead of doing nothing. */}
               <button
                 type="button"
                 disabled={saving}
                 aria-disabled={!readyToPublish}
                 aria-describedby={!readyToPublish ? "publish-blocked-reason" : undefined}
-                title={!readyToPublish ? `Can't publish yet — missing: ${missing.map((m) => m.label).join(", ")}` : undefined}
-                onClick={handlePublishClick}
+                title={!readyToPublish ? `Can't ${blockedWhat} yet — missing: ${missing.map((m) => m.label).join(", ")}` : undefined}
+                onClick={() => handleGuardedSave(isPublished ? undefined : "published")}
                 className={`rounded-lg bg-olive px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-40 ${
                   readyToPublish ? "hover:opacity-90" : "cursor-not-allowed opacity-40"
                 }`}
               >
-                {saving ? "Saving…" : "Publish"}
+                {saving ? "Saving…" : isPublished ? "Save changes" : "Publish"}
               </button>
             </div>
             {!readyToPublish && (
               <p id="publish-blocked-reason" className="max-w-md text-right text-xs font-medium text-terracotta-dark">
-                Can&apos;t publish yet — missing: {missing.map((m) => m.label).join(", ")}.
+                Can&apos;t {blockedWhat} yet — missing: {missing.map((m) => m.label).join(", ")}.
+                {isPublished && " A live tour must stay complete; fill these in, or unpublish it to save as a draft."}
               </p>
             )}
           </div>
