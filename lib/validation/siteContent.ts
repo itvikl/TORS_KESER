@@ -27,6 +27,7 @@ const SiteContentSectionInputSchema = z.object({
 });
 
 export const SiteContentAboutInputSchema = z.object({
+  heroImage: z.string().optional(),
   eyebrow: z.string().min(1, { error: "Required." }),
   title: z.string().min(1, { error: "Required." }),
   lede: z.string().min(1, { error: "Required." }),
@@ -34,6 +35,7 @@ export const SiteContentAboutInputSchema = z.object({
 });
 
 export const SiteContentSimplePageInputSchema = z.object({
+  heroImage: z.string().optional(),
   eyebrow: z.string().optional(),
   title: z.string().min(1, { error: "Required." }),
   lede: z.string().optional(),
@@ -46,17 +48,20 @@ const SiteContentFaqItemInputSchema = z.object({
 });
 
 export const SiteContentFaqInputSchema = z.object({
+  heroImage: z.string().optional(),
   title: z.string().min(1, { error: "Required." }),
   lede: z.string().optional(),
   items: z.array(SiteContentFaqItemInputSchema).min(1, { error: "Add at least one question." }),
 });
 
 export const SiteContentContactInputSchema = z.object({
+  heroImage: z.string().optional(),
   title: z.string().min(1, { error: "Required." }),
   lede: z.string().min(1, { error: "Required." }),
 });
 
 export const SiteContentLegalInputSchema = z.object({
+  heroImage: z.string().optional(),
   title: z.string().min(1, { error: "Required." }),
   body: z.string().min(1, { error: "Required." }),
 });

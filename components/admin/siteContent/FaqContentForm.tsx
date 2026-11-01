@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import PageHeader from "@/components/marketing/PageHeader";
 import FaqList from "@/components/marketing/FaqList";
-import { TextField, TextAreaField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
+import { TextField, TextAreaField, SaveBar, PreviewFrame, HeroImageField } from "@/components/admin/siteContent/SiteContentFields";
 import { saveFaqContent } from "@/lib/actions/siteContent";
 import type { SiteContentFaq, SiteContentFaqItem } from "@/lib/types";
 
@@ -57,6 +57,7 @@ export default function FaqContentForm({ initialContent }: { initialContent: Sit
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
+        <HeroImageField value={draft.heroImage} onChange={(url) => setDraft((d) => ({ ...d, heroImage: url }))} />
         <TextField
           label="Title" required
           value={draft.title}
@@ -115,7 +116,7 @@ export default function FaqContentForm({ initialContent }: { initialContent: Sit
 
       <PreviewFrame>
         <div className="-m-6">
-          <PageHeader title={draft.title} lede={draft.lede || undefined} />
+          <PageHeader title={draft.title} lede={draft.lede || undefined} image={draft.heroImage} />
         </div>
         <div className="px-6 py-8">
           <FaqList items={draft.items} />

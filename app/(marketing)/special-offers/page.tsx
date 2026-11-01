@@ -38,7 +38,7 @@ export default async function SpecialOffersPage() {
 
   return (
     <div>
-      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
+      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} image={content.heroImage} />
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         {isEmpty ? (
           <div className="glass-panel rounded-2xl border-dashed p-10 text-center">

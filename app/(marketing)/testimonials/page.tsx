@@ -24,7 +24,7 @@ export default async function TestimonialsPage() {
 
   return (
     <div>
-      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
+      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} image={content.heroImage} />
       {groups.length === 0 ? (
         <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:px-8">
           <p className="text-lg leading-8 text-[var(--color-slate)]">

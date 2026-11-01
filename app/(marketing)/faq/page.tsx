@@ -14,7 +14,7 @@ export default async function FaqPage() {
 
   return (
     <div>
-      <PageHeader title={content.title} lede={content.lede} />
+      <PageHeader title={content.title} lede={content.lede} image={content.heroImage} />
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <FaqList items={content.items} />
       </div>

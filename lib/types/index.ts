@@ -366,6 +366,8 @@ export interface SiteContentSection {
 }
 
 export interface SiteContentAbout {
+  /** Optional banner photo behind the page title (Admin → Site content). */
+  heroImage?: string;
   eyebrow: string;
   title: string;
   lede: string;
@@ -374,6 +376,8 @@ export interface SiteContentAbout {
 
 /** Shared shape for pages whose only editable copy is the top PageHeader. */
 export interface SiteContentSimplePage {
+  /** Optional banner photo behind the page title (Admin → Site content). */
+  heroImage?: string;
   eyebrow?: string;
   title: string;
   lede?: string;
@@ -386,6 +390,8 @@ export interface SiteContentFaqItem {
 }
 
 export interface SiteContentFaq {
+  /** Optional banner photo behind the page title (Admin → Site content). */
+  heroImage?: string;
   title: string;
   lede?: string;
   items: SiteContentFaqItem[];
@@ -393,11 +399,15 @@ export interface SiteContentFaq {
 
 /** Contact page's own copy only — the phone numbers it displays come from SiteSettings, not duplicated here. */
 export interface SiteContentContact {
+  /** Optional banner photo behind the page title (Admin → Site content). */
+  heroImage?: string;
   title: string;
   lede: string;
 }
 
 export interface SiteContentLegal {
+  /** Optional banner photo behind the page title (Admin → Site content). */
+  heroImage?: string;
   title: string;
   body: string;
 }

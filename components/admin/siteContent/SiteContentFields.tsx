@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import RequiredMark from "@/components/admin/RequiredMark";
+import ImageUploadButton from "@/components/admin/ImageUploadButton";
 
 export function TextField({
   label,
@@ -62,6 +63,74 @@ export function TextAreaField({
         rows={rows}
         className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
       />
+      {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}
+    </div>
+  );
+}
+
+/**
+ * Banner photo picker shared by every page editor (Home included): upload or
+ * pick from the library, see it, and clear it. On Home the photo is required
+ * and can be reset to the original; on the other pages it is optional — no
+ * photo means the plain banner.
+ */
+export function HeroImageField({
+  value,
+  onChange,
+  error,
+  required = false,
+  defaultImage,
+}: {
+  value?: string;
+  onChange: (url: string | undefined) => void;
+  error?: string[];
+  required?: boolean;
+  /** An image the editor can reset to (Home's original photo). */
+  defaultImage?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-ink">
+        Background image
+        {required ? <RequiredMark /> : <span className="ms-1 text-xs font-normal text-ink-muted">(optional)</span>}
+      </label>
+      <p className="mt-0.5 text-xs text-ink-muted">
+        A wide landscape photo, at least 1920px across.{" "}
+        {required
+          ? "The title sits over the middle of it, so avoid busy detail there."
+          : "The page title is shown over it, darkened for readability. Leave it empty for the plain banner."}
+      </p>
+      <div className="mt-2 flex flex-wrap items-start gap-3">
+        {value && (
+          // eslint-disable-next-line @next/next/no-img-element -- admin preview thumbnail, not public-facing content
+          <img src={value} alt="Current background" className="h-24 w-40 rounded-lg object-cover" />
+        )}
+        <div className="space-y-2">
+          <ImageUploadButton
+            label={value ? "Replace image" : "Upload image"}
+            folder="site"
+            onUploaded={([url]) => url && onChange(url)}
+          />
+          {!required && value && (
+            <button
+              type="button"
+              onClick={() => onChange(undefined)}
+              className="block text-xs font-semibold text-ink-muted underline hover:text-ink"
+            >
+              Remove image
+            </button>
+          )}
+          {defaultImage && value !== defaultImage && (
+            <button
+              type="button"
+              onClick={() => onChange(defaultImage)}
+              className="block text-xs font-semibold text-ink-muted underline hover:text-ink"
+            >
+              Use the original image
+            </button>
+          )}
+        </div>
+      </div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import PageHeader from "@/components/marketing/PageHeader";
-import { TextField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
+import { TextField, SaveBar, PreviewFrame, HeroImageField } from "@/components/admin/siteContent/SiteContentFields";
 import type { SaveSiteContentResult } from "@/lib/actions/siteContent";
 import type { SiteContentSimplePage } from "@/lib/types";
 
@@ -45,6 +45,7 @@ export default function SimplePageContentForm({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
+        <HeroImageField value={draft.heroImage} onChange={(url) => setDraft((d) => ({ ...d, heroImage: url }))} />
         <TextField
           label="Eyebrow (small text above the title)"
           value={draft.eyebrow ?? ""}
@@ -68,7 +69,7 @@ export default function SimplePageContentForm({
 
       <PreviewFrame>
         <div className="-m-6">
-          <PageHeader eyebrow={draft.eyebrow || undefined} title={draft.title} lede={draft.lede || undefined} />
+          <PageHeader eyebrow={draft.eyebrow || undefined} title={draft.title} lede={draft.lede || undefined} image={draft.heroImage} />
         </div>
       </PreviewFrame>
     </div>

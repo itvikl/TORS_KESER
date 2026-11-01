@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import PageHeader from "@/components/marketing/PageHeader";
-import { TextField, TextAreaField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
+import { TextField, TextAreaField, SaveBar, PreviewFrame, HeroImageField } from "@/components/admin/siteContent/SiteContentFields";
 import type { SaveSiteContentResult } from "@/lib/actions/siteContent";
 import type { SiteContentLegal } from "@/lib/types";
 
@@ -45,6 +45,7 @@ export default function LegalContentForm({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
+        <HeroImageField value={draft.heroImage} onChange={(url) => setDraft((d) => ({ ...d, heroImage: url }))} />
         <TextField required
           label="Title"
           value={draft.title}
@@ -63,7 +64,7 @@ export default function LegalContentForm({
 
       <PreviewFrame>
         <div className="-m-6">
-          <PageHeader eyebrow="Legal" title={draft.title} />
+          <PageHeader eyebrow="Legal" title={draft.title} image={draft.heroImage} />
         </div>
         <div className="px-6 py-8">
           <section className="glass-panel rounded-2xl p-6 sm:p-8">

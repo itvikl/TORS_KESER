@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import PageHeader from "@/components/marketing/PageHeader";
 import AboutSections from "@/components/marketing/AboutSections";
-import { TextField, TextAreaField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
+import { TextField, TextAreaField, SaveBar, PreviewFrame, HeroImageField } from "@/components/admin/siteContent/SiteContentFields";
 import { saveAboutContent } from "@/lib/actions/siteContent";
 import type { SiteContentAbout, SiteContentSection } from "@/lib/types";
 
@@ -57,6 +57,7 @@ export default function AboutContentForm({ initialContent }: { initialContent: S
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
+        <HeroImageField value={draft.heroImage} onChange={(url) => setDraft((d) => ({ ...d, heroImage: url }))} />
         <TextField required
           label="Eyebrow"
           value={draft.eyebrow}
@@ -121,7 +122,7 @@ export default function AboutContentForm({ initialContent }: { initialContent: S
 
       <PreviewFrame>
         <div className="-m-6">
-          <PageHeader eyebrow={draft.eyebrow} title={draft.title} lede={draft.lede} />
+          <PageHeader eyebrow={draft.eyebrow} title={draft.title} lede={draft.lede} image={draft.heroImage} />
         </div>
         <div className="px-6 py-8">
           <AboutSections sections={draft.sections} />

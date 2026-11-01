@@ -14,7 +14,7 @@ export default async function AboutPage() {
 
   return (
     <div>
-      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
+      <PageHeader eyebrow={content.eyebrow} title={content.title} lede={content.lede} image={content.heroImage} />
 
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
         <AboutSections sections={content.sections} />

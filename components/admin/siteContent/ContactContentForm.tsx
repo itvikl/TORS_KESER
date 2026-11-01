@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import Link from "next/link";
 import PageHeader from "@/components/marketing/PageHeader";
-import { TextField, SaveBar, PreviewFrame } from "@/components/admin/siteContent/SiteContentFields";
+import { TextField, SaveBar, PreviewFrame, HeroImageField } from "@/components/admin/siteContent/SiteContentFields";
 import { saveContactContent } from "@/lib/actions/siteContent";
 import type { SiteContentContact } from "@/lib/types";
 
@@ -47,6 +47,7 @@ export default function ContactContentForm({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
+        <HeroImageField value={draft.heroImage} onChange={(url) => setDraft((d) => ({ ...d, heroImage: url }))} />
         <TextField required
           label="Title"
           value={draft.title}
@@ -73,7 +74,7 @@ export default function ContactContentForm({
 
       <PreviewFrame>
         <div className="-m-6">
-          <PageHeader title={draft.title} lede={draft.lede} />
+          <PageHeader title={draft.title} lede={draft.lede} image={draft.heroImage} />
         </div>
         <div className="px-6 py-8">
           <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl p-8 text-center">

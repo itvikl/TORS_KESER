@@ -17,7 +17,7 @@ export default async function ContactPage() {
 
   return (
     <div>
-      <PageHeader title={content.title} lede={content.lede} />
+      <PageHeader title={content.title} lede={content.lede} image={content.heroImage} />
       <div className="mx-auto grid max-w-3xl gap-8 px-4 py-16 sm:px-6 lg:px-8">
         <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl p-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-ice)]">
