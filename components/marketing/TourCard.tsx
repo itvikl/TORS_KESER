@@ -7,12 +7,15 @@ export default function TourCard({
   nextDeparture,
   image,
   soldOut = false,
+  eager = false,
 }: {
   tour: Tour;
   nextDeparture?: Departure;
   image: string;
   /** Replaces the Special Offer badge — there's nothing left to offer. */
   soldOut?: boolean;
+  /** Load the photo right away instead of when it scrolls near — for the first row of cards. */
+  eager?: boolean;
 }) {
   return (
     // h-full on both wrappers so every card stretches to its grid row's height.
@@ -35,6 +38,7 @@ export default function TourCard({
             src={image}
             alt={tour.title}
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+            loading={eager ? "eager" : "lazy"}
             className="object-cover transition duration-700 group-hover:scale-110"
           />
           <div className="absolute left-4 top-4 rounded-full border border-[var(--color-border-ice)] bg-[var(--color-surface)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-mist)] backdrop-blur-lg">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preconnect } from "react-dom";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -40,6 +41,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Every tour photo comes from Firebase Storage: open that connection while the HTML is still arriving, so the first photo does not wait for a fresh handshake.
+  preconnect("https://firebasestorage.googleapis.com");
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col bg-[var(--color-glacier)] font-body text-[var(--color-mist)]">

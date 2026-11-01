@@ -14,11 +14,17 @@ export default function SafeImage({
   alt,
   className,
   sizes = "100vw",
+  priority,
+  loading,
 }: {
   src: string;
   alt: string;
   className?: string;
   sizes?: string;
+  /** The page's main picture: fetched immediately at high priority (and preloaded), not lazily. */
+  priority?: boolean;
+  /** "eager" for pictures in or near the first screen; the default (lazy) waits until they scroll close. */
+  loading?: "eager" | "lazy";
 }) {
   // Tracks *which* src failed, not just "failed" — in the admin live preview
   // the same instance gets a new src when a photo is picked, and a boolean
@@ -33,6 +39,8 @@ export default function SafeImage({
       alt={alt}
       fill
       sizes={sizes}
+      priority={priority}
+      loading={priority ? undefined : loading}
       className={className}
       onError={() => setFailedSrc(src)}
     />
