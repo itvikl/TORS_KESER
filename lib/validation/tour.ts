@@ -27,6 +27,13 @@ export const TourInfoCardSchema = z.object({
   items: z.array(z.string()),
 });
 
+export const TourDocumentSchema = z.object({
+  documentId: z.string().min(1),
+  title: z.string().trim().min(1, { error: "Give each PDF a title." }).max(120),
+  url: z.url({ error: "Invalid file link." }),
+  fileName: z.string().max(200),
+});
+
 /**
  * Mirrors lib/types.ts Tour, minus tourId/slugHistory (both are assigned by
  * the data layer, not editable in the form — see lib/data/admin/tours.ts).
@@ -56,6 +63,7 @@ export const TourInputSchema = z.object({
   exclusions: z.array(z.string()),
   importantToKnow: z.array(z.string()).optional(),
   infoCards: z.array(TourInfoCardSchema).optional(),
+  documents: z.array(TourDocumentSchema).optional(),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),

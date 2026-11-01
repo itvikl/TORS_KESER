@@ -8,6 +8,7 @@ import type {
   ItineraryDay,
   Staff,
   Tour,
+  TourDocument,
   TourInfoCard,
   TourInfoField,
   TourStatus,
@@ -17,6 +18,7 @@ import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChec
 import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
+import PdfUploadButton from "@/components/admin/PdfUploadButton";
 import { useConfirm, useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import RequiredMark from "@/components/admin/RequiredMark";
@@ -112,6 +114,7 @@ function cleanTour(tour: Tour): Tour {
       notes: card.notes?.trim() || undefined,
       items: clean(card.items),
     })),
+    documents: (tour.documents ?? []).map((doc) => ({ ...doc, title: doc.title.trim() })),
     itineraryDays: tour.itineraryDays.map((day, index) => ({
       ...day,
       dayNumber: index + 1,
@@ -300,6 +303,41 @@ export default function TourEditorForm({
 
   function removeInfoCard(cardId: string) {
     setInfoCards(infoCards.filter((c) => c.cardId !== cardId));
+  }
+
+  const documents = draft.documents ?? [];
+
+  function setDocuments(next: TourDocument[]) {
+    set("documents", next);
+  }
+
+  function addDocuments(files: { url: string; fileName: string }[]) {
+    setDocuments([
+      ...documents,
+      ...files.map((file) => ({
+        documentId: crypto.randomUUID(),
+        // "Costa-Rica-8-days-ECSR.pdf" -> "Costa Rica 8 days ECSR": a readable title to start from, editable below.
+        title: file.fileName.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim(),
+        url: file.url,
+        fileName: file.fileName,
+      })),
+    ]);
+  }
+
+  function updateDocumentTitle(documentId: string, title: string) {
+    setDocuments(documents.map((d) => (d.documentId === documentId ? { ...d, title } : d)));
+  }
+
+  function moveDocument(index: number, delta: -1 | 1) {
+    const target = index + delta;
+    if (target < 0 || target >= documents.length) return;
+    const next = [...documents];
+    [next[index], next[target]] = [next[target], next[index]];
+    setDocuments(next);
+  }
+
+  function removeDocument(documentId: string) {
+    setDocuments(documents.filter((d) => d.documentId !== documentId));
   }
 
   async function handleSave(status?: TourStatus) {
@@ -531,6 +569,72 @@ export default function TourEditorForm({
                 </div>
               )}
             </div>
+          </Section>
+
+          <Section title="Downloads (PDF)">
+            <p className="text-xs text-ink-muted">
+              Itineraries or brochures visitors can download from the tour page. PDF only, up to 9MB each.
+            </p>
+            {documents.length > 0 && (
+              <ul className="space-y-3">
+                {documents.map((doc, index) => (
+                  <li key={doc.documentId} className="rounded-lg border border-line p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <input
+                          className={inputClass}
+                          value={doc.title}
+                          placeholder="Title shown to visitors"
+                          aria-label={`Title for ${doc.fileName}`}
+                          onChange={(e) => updateDocumentTitle(doc.documentId, e.target.value)}
+                        />
+                        {errors[`documents.${index}.title`]?.map((message) => (
+                          <p key={message} className="mt-1 text-xs font-medium text-terracotta-dark">
+                            {message}
+                          </p>
+                        ))}
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 block truncate text-xs text-ink-muted underline hover:text-ink"
+                        >
+                          {doc.fileName}
+                        </a>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => moveDocument(index, -1)}
+                          aria-label="Move up"
+                          className="rounded px-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-30 disabled:hover:text-ink-muted"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === documents.length - 1}
+                          onClick={() => moveDocument(index, 1)}
+                          aria-label="Move down"
+                          className="rounded px-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-30 disabled:hover:text-ink-muted"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeDocument(doc.documentId)}
+                          className="ms-1 rounded px-1.5 text-xs font-semibold text-terracotta-dark hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <PdfUploadButton label={documents.length > 0 ? "Upload another PDF" : "Upload PDF"} onUploaded={addDocuments} />
           </Section>
 
           <Section title="Pricing & policy">

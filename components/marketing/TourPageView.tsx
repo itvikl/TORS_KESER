@@ -77,6 +77,7 @@ export default function TourPageView({
   const kashrutExtraFields = visibleFields(tour.kashrutDetails.extraFields);
   const infoCards = infoCardsOf(tour);
   const hasInclusions = tour.inclusions.length > 0 || tour.exclusions.length > 0;
+  const documents = (tour.documents ?? []).filter((doc) => doc.url && doc.title.trim());
   const sections: TourSectionLink[] = [
     { id: "overview", label: "Overview" },
     ...(hasItinerary ? [{ id: "itinerary", label: "Itinerary" }] : []),
@@ -84,6 +85,7 @@ export default function TourPageView({
     { id: "kashrut", label: kashrutTitle },
     ...infoCards.map((card) => ({ id: infoCardAnchor(card), label: card.title })),
     ...(hasInclusions ? [{ id: "included", label: "What's Included" }] : []),
+    ...(documents.length > 0 ? [{ id: "downloads", label: "Downloads" }] : []),
     ...(shownTestimonials.length > 0 ? [{ id: "testimonials", label: "Testimonials" }] : []),
     { id: "cancellation", label: "Cancellation Policy" },
     { id: "dates", label: "Dates & Booking", mobileOnly: true },
@@ -295,6 +297,38 @@ export default function TourPageView({
                   ))}
                 </ul>
               </div>
+            </div>
+          )}
+
+          {/* Downloads (PDFs uploaded in the admin tour editor) */}
+          {documents.length > 0 && (
+            <div id="downloads" className="glass-panel space-y-4 rounded-2xl p-6 sm:p-8">
+              <h2 className="text-xl font-bold text-[var(--color-mist)]">Downloads</h2>
+              <ul className="space-y-3">
+                {documents.map((doc) => (
+                  <li key={doc.documentId}>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-4 rounded-xl border border-[var(--color-border-ice)] bg-[var(--color-field-bg)] p-4 transition-colors hover:border-[var(--color-ice)]"
+                    >
+                      <span
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[var(--color-ice)]/15 text-xs font-bold tracking-wide text-[var(--color-ice)]"
+                        aria-hidden="true"
+                      >
+                        PDF
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-[var(--color-mist)]">
+                        {doc.title}
+                      </span>
+                      <span className="shrink-0 text-sm font-bold text-[var(--color-ice)] transition-all group-hover:translate-y-0.5">
+                        Download <span aria-hidden="true">↓</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

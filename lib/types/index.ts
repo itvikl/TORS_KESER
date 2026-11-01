@@ -54,6 +54,17 @@ export interface TourInfoCard {
   items: string[];
 }
 
+/** A PDF visitors can download from the tour page (itinerary, brochure…), uploaded in the admin tour editor. */
+export interface TourDocument {
+  documentId: string;
+  /** Shown to visitors. */
+  title: string;
+  /** Public download URL in Firebase Storage. */
+  url: string;
+  /** Original file name, shown to staff. */
+  fileName: string;
+}
+
 export interface TourPricing {
   pricePerPersonDouble: number;
   /** Flat per-person price for a private (single-occupancy) room — not an add-on over the double rate. */
@@ -99,6 +110,8 @@ export interface Tour {
   importantToKnow?: string[];
   /** Extra cards after Kashrut (Important to Know, visas, packing…), in display order. */
   infoCards?: TourInfoCard[];
+  /** PDFs offered for download on the tour page, in display order. */
+  documents?: TourDocument[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];

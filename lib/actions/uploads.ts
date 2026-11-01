@@ -135,3 +135,59 @@ export async function uploadPassportScan(formData: FormData): Promise<UploadPass
 
   return { ok: true, path };
 }
+
+// Stays under the 10MB Server Action body limit set in next.config.ts.
+const TOUR_PDF_MAX_BYTES = 9 * 1024 * 1024;
+
+export type UploadTourPdfResult =
+  | { ok: true; url: string; fileName: string }
+  | { ok: false; error: string };
+
+/**
+ * Uploads a PDF a tour offers for download (itinerary, brochure…). Admin-only.
+ * Unlike passport scans these are meant to be public, so it uses a download
+ * token exactly like uploadImage — and, like uploadImage, is called from the
+ * admin editor with a FormData containing one "file" entry. The file's own
+ * leading bytes must say "PDF": the browser-reported type is client-controlled.
+ */
+export async function uploadTourPdf(formData: FormData): Promise<UploadTourPdfResult> {
+  await requireAdminSession();
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { ok: false, error: "No file provided." };
+  }
+  if (file.type !== "application/pdf") {
+    return { ok: false, error: "Only PDF files are allowed." };
+  }
+  if (file.size > TOUR_PDF_MAX_BYTES) {
+    return { ok: false, error: "PDF is too large (max 9MB)." };
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!hasMatchingSignature(buffer, "pdf")) {
+    return { ok: false, error: "That file doesn't look like a valid PDF." };
+  }
+
+  const fileName = file.name.trim().slice(0, 120) || "document.pdf";
+  // Header values must be plain ASCII without quotes; the stored fileName keeps the original.
+  const downloadName = fileName.replace(/[^A-Za-z0-9._ -]/g, "_");
+
+  const path = `tour-pdfs/${randomUUID()}.pdf`;
+  const downloadToken = randomUUID();
+  const bucket = adminStorage().bucket();
+  await bucket.file(path).save(buffer, {
+    contentType: "application/pdf",
+    metadata: {
+      // inline: opens in the browser's PDF viewer (best on phones); saving keeps the real file name.
+      contentDisposition: `inline; filename="${downloadName}"`,
+      metadata: { firebaseStorageDownloadTokens: downloadToken },
+    },
+  });
+
+  const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
+    path
+  )}?alt=media&token=${downloadToken}`;
+
+  return { ok: true, url, fileName };
+}
