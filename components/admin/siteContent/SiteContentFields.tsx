@@ -1,5 +1,7 @@
 "use client";
 
+import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
+
 export function TextField({
   label,
   value,
@@ -54,11 +56,11 @@ export function TextAreaField({
 
 export function SaveBar({
   saving,
-  saved,
+  dirty,
   onSave,
 }: {
   saving: boolean;
-  saved: boolean;
+  dirty: boolean;
   onSave: () => void;
 }) {
   return (
@@ -71,7 +73,7 @@ export function SaveBar({
       >
         {saving ? "Saving…" : "Save"}
       </button>
-      {saved && <span className="text-sm font-medium text-olive">Saved.</span>}
+      {dirty && <UnsavedIndicator />}
     </div>
   );
 }

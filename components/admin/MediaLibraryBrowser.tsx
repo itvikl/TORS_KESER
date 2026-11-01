@@ -12,6 +12,7 @@ import {
   setImagesCategory,
 } from "@/lib/actions/mediaLibrary";
 import { uploadImage } from "@/lib/actions/uploads";
+import { useConfirm, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import type {
   MediaCategory,
   MediaCategoryList,
@@ -50,7 +51,7 @@ export default function MediaLibraryBrowser({
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const toast = useToast();
 
   // Images of the open scope, loaded page by page.
   const [items, setItems] = useState<MediaLibraryItem[]>([]);
@@ -164,7 +165,6 @@ export default function MediaLibraryBrowser({
     // Picking keeps its selection across folders; managing acts per folder.
     if (mode === "manage") setSelected([]);
     setQuery("");
-    setMessage(null);
   }
 
   function toggle(url: string) {
@@ -175,17 +175,19 @@ export default function MediaLibraryBrowser({
     setSelected((prev) => (prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]));
   }
 
+  /** Runs a library action; a returned string is shown as an error toast. */
   async function run(task: () => Promise<string | null | void>) {
     setBusy(true);
-    setMessage(null);
     try {
-      const result = await task();
-      if (result) setMessage(result);
+      const error = await task();
+      if (error) toast.error(error);
     } catch {
-      setMessage("Something went wrong — try again.");
+      toast.error({ title: "Something went wrong", description: "Please try again." });
     }
     setBusy(false);
   }
+
+  const plural = (n: number) => `${n} image${n === 1 ? "" : "s"}`;
 
   const showFolders = scope === null;
   const canAssignHere = Boolean(current);
@@ -232,6 +234,10 @@ export default function MediaLibraryBrowser({
               run(async () => {
                 if (current) await setImagesCategory(urls, current.id, true);
                 await reload();
+                toast.success({
+                  title: "Upload complete",
+                  description: current ? `${plural(urls.length)} added to ${current.name}.` : `${plural(urls.length)} uploaded.`,
+                });
                 if (mode === "pick") {
                   if (!multiple) onPick?.(urls.slice(0, 1));
                   else setSelected((prev) => [...prev, ...urls]);
@@ -249,6 +255,7 @@ export default function MediaLibraryBrowser({
                 const result = await renameMediaCategory(current.id, name);
                 if (!result.ok) return result.error;
                 await reload();
+                toast.success(`Category renamed to "${name}"`);
               })
             }
             onDelete={() =>
@@ -256,6 +263,7 @@ export default function MediaLibraryBrowser({
                 await deleteMediaCategory(current.id);
                 openCategory(null);
                 await reload();
+                toast.success({ title: "Category deleted", description: `"${current.name}" was removed. Its images stay in the library.` });
               })
             }
           />
@@ -263,7 +271,6 @@ export default function MediaLibraryBrowser({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-5">
-        {message && <p className="mb-3 text-sm font-medium text-terracotta-dark">{message}</p>}
         {loadError && <p className="text-sm font-medium text-terracotta-dark">{loadError}</p>}
         {!loadError && categoryList === null && (
           <p className="text-sm text-ink-muted">Loading images…</p>
@@ -280,6 +287,7 @@ export default function MediaLibraryBrowser({
                 const result = await createMediaCategory(name);
                 if (!result.ok) return result.error;
                 await reload();
+                toast.success(`Category "${name}" created`);
               })
             }
             disabled={busy}
@@ -333,7 +341,7 @@ export default function MediaLibraryBrowser({
                     run(async () => {
                       await setImagesCategory(selected, id, true);
                       await reload();
-                      return `Added to ${categoryById.get(id)?.name ?? "category"}.`;
+                      toast.success(`${plural(selected.length)} added to ${categoryById.get(id)?.name ?? "category"}`);
                     })
                   }
                 />
@@ -347,10 +355,15 @@ export default function MediaLibraryBrowser({
                         const stillAuto = selected.filter((url) =>
                           items.find((i) => i.url === url)?.autoCategoryIds.includes(current.id)
                         ).length;
+                        const removed = selected.length - stillAuto;
                         setSelected([]);
                         await reload();
+                        if (removed > 0) toast.success(`${plural(removed)} removed from ${current.name}`);
                         if (stillAuto > 0) {
-                          return `${stillAuto} image(s) stay here automatically because a ${current.name} tour uses them.`;
+                          toast.info({
+                            title: `${plural(stillAuto)} kept in ${current.name}`,
+                            description: `They stay here automatically because a ${current.name} tour uses them.`,
+                          });
                         }
                       })
                     }
@@ -367,9 +380,13 @@ export default function MediaLibraryBrowser({
                       const result = await deleteUnusedImages(selected);
                       setSelected([]);
                       await reload();
-                      return result.inUse > 0
-                        ? `Deleted ${result.deleted}. ${result.inUse} image(s) are used on the site and were kept — remove them from their page first.`
-                        : `Deleted ${result.deleted} image(s).`;
+                      if (result.deleted > 0) toast.success(`${plural(result.deleted)} deleted`);
+                      if (result.inUse > 0) {
+                        toast.warning({
+                          title: `${plural(result.inUse)} kept`,
+                          description: "They're used on the site — remove them from their page first.",
+                        });
+                      }
                     })
                   }
                 />
@@ -575,37 +592,23 @@ function DeleteImagesButton({
   disabled: boolean;
   onDelete: () => void;
 }) {
-  const [confirming, setConfirming] = useState(false);
+  const confirm = useConfirm();
 
-  if (confirming) {
-    return (
-      <span className="inline-flex items-center gap-2 text-sm">
-        <span className="text-ink-muted">
-          Delete {count} image{count === 1 ? "" : "s"} for good? Images used on the site are kept.
-        </span>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => {
-            setConfirming(false);
-            onDelete();
-          }}
-          className="font-semibold text-terracotta-dark hover:underline disabled:opacity-60"
-        >
-          Delete
-        </button>
-        <button type="button" onClick={() => setConfirming(false)} className="text-ink-muted hover:underline">
-          Cancel
-        </button>
-      </span>
-    );
+  async function handleClick() {
+    const ok = await confirm({
+      title: `Delete ${count} image${count === 1 ? "" : "s"} for good?`,
+      description: "Images used on the site are kept.",
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (ok) onDelete();
   }
 
   return (
     <button
       type="button"
       disabled={disabled}
-      onClick={() => setConfirming(true)}
+      onClick={handleClick}
       className="rounded-lg border border-line px-3.5 py-2 text-sm font-semibold text-terracotta-dark transition-colors hover:bg-sand-warm disabled:opacity-60"
     >
       Delete images
@@ -665,28 +668,16 @@ function CategoryActions({
   onRename: (name: string) => void;
   onDelete: () => void;
 }) {
-  const [confirming, setConfirming] = useState(false);
+  const confirm = useConfirm();
 
-  if (confirming) {
-    return (
-      <span className="inline-flex items-center gap-2 text-sm">
-        <span className="text-ink-muted">
-          Delete &ldquo;{category.name}&rdquo;? Its images stay in the library (uncategorized if this
-          was their only category).
-        </span>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onDelete}
-          className="font-semibold text-terracotta-dark hover:underline disabled:opacity-60"
-        >
-          Delete
-        </button>
-        <button type="button" onClick={() => setConfirming(false)} className="text-ink-muted hover:underline">
-          Cancel
-        </button>
-      </span>
-    );
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Delete “${category.name}”?`,
+      description: "Its images stay in the library (uncategorized if this was their only category).",
+      confirmLabel: "Delete category",
+      tone: "danger",
+    });
+    if (ok) onDelete();
   }
 
   return (
@@ -705,7 +696,7 @@ function CategoryActions({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setConfirming(true)}
+        onClick={handleDelete}
         className="font-medium text-ink-muted hover:text-terracotta-dark"
       >
         Delete
@@ -725,20 +716,19 @@ function UploadIntoCategory({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     setUploading(true);
-    setError(null);
     const urls: string[] = [];
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
-      const result = await uploadImage(formData, "library");
+      const result = await uploadImage(formData, "library").catch(() => ({ ok: false as const, error: "Upload failed." }));
       if (result.ok) urls.push(result.url);
-      else setError(result.error);
+      else toast.error({ title: `Couldn't upload ${file.name}`, description: result.error });
     }
     setUploading(false);
     if (inputRef.current) inputRef.current.value = "";
@@ -759,7 +749,6 @@ function UploadIntoCategory({
           className="hidden"
         />
       </label>
-      {error && <span className="mt-1 text-xs font-medium text-terracotta-dark">{error}</span>}
     </span>
   );
 }

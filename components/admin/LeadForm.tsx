@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { useFormDirty, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { createLeadManually, updateLead, type LeadFormState } from "@/lib/actions/leads";
 import type { Lead, Tour } from "@/lib/types";
 
@@ -13,9 +14,33 @@ export default function LeadForm({ tours, lead }: { tours: Tour[]; lead?: Lead }
     initialState
   );
   const errors = state.ok ? {} : state.errors;
+  const navigate = useGuardedNavigate();
+  const toast = useToast();
+  const { markSaved, formProps } = useFormDirty();
+
+  // React to each completed submission (the initial state is skipped).
+  const lastState = useRef(state);
+  useEffect(() => {
+    if (state === lastState.current) return;
+    lastState.current = state;
+    if (state.ok) {
+      markSaved();
+      toast.success(
+        lead
+          ? { title: "Lead updated", description: "Your changes were saved." }
+          : { title: "Lead added", description: "The new lead was saved to the list." }
+      );
+      void navigate("/admin/leads", { skipConfirm: true });
+    } else {
+      toast.error({
+        title: "Lead not saved",
+        description: state.errors.form?.[0] ?? "Please fix the highlighted fields and try again.",
+      });
+    }
+  }, [state, lead, markSaved, toast, navigate]);
 
   return (
-    <form action={formAction} className="grid max-w-2xl gap-5 rounded-xl border border-line bg-white p-6">
+    <form action={formAction} {...formProps} className="grid max-w-2xl gap-5 rounded-xl border border-line bg-white p-6">
       {errors.form && (
         <p className="rounded-lg bg-terracotta-dark/10 px-3 py-2 text-sm text-terracotta-dark">
           {errors.form[0]}

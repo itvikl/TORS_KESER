@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { saveStaffMember } from "@/lib/actions/staff";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { Staff } from "@/lib/types";
@@ -21,6 +22,9 @@ export default function StaffMemberForm({
   const [draft, setDraft] = useState<Staff>(initialStaff ?? BLANK);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const navigate = useGuardedNavigate();
+  useDirtyDraft(draft);
 
   function set<K extends keyof Staff>(key: K, value: Staff[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -30,14 +34,23 @@ export default function StaffMemberForm({
     setSaving(true);
     setErrors({});
 
-    const result = await saveStaffMember(draft, staffId);
+    let result;
+    try {
+      result = await saveStaffMember(draft, staffId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Team member not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
 
-    router.push("/admin/staff/team");
+    toast.success(mode === "create" ? { title: "Team member added", description: `${draft.name} was added to the team.` } : "Team member updated");
+    await navigate("/admin/staff/team", { skipConfirm: true });
     if (mode === "create") router.refresh();
   }
 

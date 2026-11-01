@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { uploadImage } from "@/lib/actions/uploads";
 import MediaLibraryPicker from "@/components/admin/MediaLibraryPicker";
+import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 
 export default function ImageUploadButton({
   label,
@@ -17,7 +18,7 @@ export default function ImageUploadButton({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [libraryOpen, setLibraryOpen] = useState(false);
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -25,21 +26,26 @@ export default function ImageUploadButton({
     if (files.length === 0) return;
 
     setUploading(true);
-    setError(null);
     const urls: string[] = [];
 
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
-      const result = await uploadImage(formData, folder);
+      const result = await uploadImage(formData, folder).catch(() => ({ ok: false as const, error: "Upload failed." }));
       if (result.ok) {
         urls.push(result.url);
       } else {
-        setError(result.error);
+        toast.error({ title: `Couldn't upload ${file.name}`, description: result.error });
       }
     }
 
-    if (urls.length > 0) onUploaded(urls);
+    if (urls.length > 0) {
+      onUploaded(urls);
+      toast.success({
+        title: urls.length === 1 ? "Image uploaded" : `${urls.length} images uploaded`,
+        description: "Remember to save to keep this change.",
+      });
+    }
     setUploading(false);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -74,9 +80,6 @@ export default function ImageUploadButton({
           onSelect={onUploaded}
           onClose={() => setLibraryOpen(false)}
         />
-      )}
-      {error && (
-        <p className="mt-1 text-xs font-medium text-terracotta-dark">{error}</p>
       )}
     </div>
   );

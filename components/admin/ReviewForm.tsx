@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { saveReview } from "@/lib/actions/reviews";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { Review, Tour } from "@/lib/types";
@@ -35,6 +36,9 @@ export default function ReviewForm({
   );
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const navigate = useGuardedNavigate();
+  useDirtyDraft(draft);
 
   function set<K extends keyof Review>(key: K, value: Review[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -44,14 +48,23 @@ export default function ReviewForm({
     setSaving(true);
     setErrors({});
 
-    const result = await saveReview(draft, reviewId);
+    let result;
+    try {
+      result = await saveReview(draft, reviewId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Review not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
 
-    router.push("/admin/reviews");
+    toast.success(reviewId ? "Review updated" : { title: "Review added", description: "The new review was saved." });
+    await navigate("/admin/reviews", { skipConfirm: true });
     router.refresh();
   }
 

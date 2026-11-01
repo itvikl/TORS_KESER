@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setTestimonialDestinationImage } from "@/lib/actions/reviews";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 
 /**
  * Photo per destination card on /testimonials. Destinations come from the
@@ -17,10 +18,20 @@ export default function TestimonialDestinationsPanel({
 }) {
   const router = useRouter();
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
+  const toast = useToast();
 
   async function save(name: string, slug: string, image?: string) {
     setSavingSlug(slug);
-    await setTestimonialDestinationImage(name, image);
+    try {
+      await setTestimonialDestinationImage(name, image);
+      toast.success(
+        image
+          ? { title: "Photo updated", description: `New photo set for ${name}.` }
+          : { title: "Photo reset", description: `${name} uses the default photo again.` }
+      );
+    } catch {
+      toast.error({ title: "Couldn't save photo", description: "Something went wrong — please try again." });
+    }
     setSavingSlug(null);
     router.refresh();
   }

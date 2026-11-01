@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { sanitizeName, sanitizePassport, sanitizePhone, PASSPORT_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_MAX_LENGTH } from "@/lib/validation/fields";
-import { useRouter } from "next/navigation";
+import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import {
   availableSeats,
   type BookingStatus,
@@ -50,7 +50,6 @@ export default function BookingManualForm({
   tours: Tour[];
   departures: Departure[];
 }) {
-  const router = useRouter();
   const [tourId, setTourId] = useState(tours[0]?.tourId ?? "");
   const tourDepartures = useMemo(
     () => departures.filter((d) => d.tourId === tourId && d.status === "open"),
@@ -72,6 +71,9 @@ export default function BookingManualForm({
   const [status, setStatus] = useState<BookingStatus>("partial_paid");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
+  const toast = useToast();
+  const navigate = useGuardedNavigate();
+  useDirtyDraft({ tourId, departureId, room, childCount, travelers, contactName, contactEmail, contactPhone, contactPreference, status });
 
   const tour = tours.find((t) => t.tourId === tourId);
   const totalTravelers = room.doubleRooms * 2 + room.singleRooms + room.triples * 3 + childCount;
@@ -113,33 +115,42 @@ export default function BookingManualForm({
     setSaving(true);
     setErrors({});
 
-    const result = await createManualBooking({
-      departureId,
-      roomConfiguration: room,
-      childCount,
-      travelers: travelers.map((t) => ({
-        firstName: t.firstName,
-        lastName: t.lastName,
-        dob: t.dob || undefined,
-        passport: t.passport || undefined,
-        occupancy: t.occupancy,
-        roomWith: t.roomWith || undefined,
-        dietary: t.dietary || undefined,
-      })),
-      contactName,
-      contactEmail,
-      contactPhone: contactPhone || undefined,
-      contactPreference,
-      status,
-    });
+    let result;
+    try {
+      result = await createManualBooking({
+        departureId,
+        roomConfiguration: room,
+        childCount,
+        travelers: travelers.map((t) => ({
+          firstName: t.firstName,
+          lastName: t.lastName,
+          dob: t.dob || undefined,
+          passport: t.passport || undefined,
+          occupancy: t.occupancy,
+          roomWith: t.roomWith || undefined,
+          dietary: t.dietary || undefined,
+        })),
+        contactName,
+        contactEmail,
+        contactPhone: contactPhone || undefined,
+        contactPreference,
+        status,
+      });
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Booking not created", description: "Something went wrong on the server — please try again." });
+      return;
+    }
 
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Booking not created", description: "Please fix the issues listed below and try again." });
       return;
     }
 
-    router.push("/admin/bookings");
+    toast.success({ title: "Booking created", description: `Booking for ${contactName} was added successfully.` });
+    await navigate("/admin/bookings", { skipConfirm: true });
   }
 
   const errorList = Object.values(errors).flat().filter((m): m is string => Boolean(m));

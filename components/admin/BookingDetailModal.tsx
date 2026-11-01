@@ -6,6 +6,7 @@ import { getBookingTravelers } from "@/lib/actions/bookings";
 import { createAdminPaymentIntent } from "@/lib/actions/payments";
 import DepositPaymentForm from "@/components/marketing/DepositPaymentForm";
 import { formatUsd } from "@/lib/pricing";
+import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import type { AdminBookingRow } from "@/lib/data/admin/bookings";
 import type { Booking, BookingStatus, RoomConfiguration, Traveler } from "@/lib/types";
 import { passportScanHref, passportScanPathOf } from "@/lib/passportScans";
@@ -258,6 +259,7 @@ function AdminChargeCard({ booking }: { booking: Booking }) {
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [done, setDone] = useState(false);
+  const toast = useToast();
 
   async function start() {
     setStarting(true);
@@ -265,10 +267,17 @@ function AdminChargeCard({ booking }: { booking: Booking }) {
     const result = await createAdminPaymentIntent(booking.bookingId, Number(amountInput));
     setStarting(false);
     if (result.ok) setSession({ clientSecret: result.clientSecret, amount: result.amount });
-    else setError(result.error);
+    else {
+      setError(result.error);
+      toast.error({ title: "Couldn't start the charge", description: result.error });
+    }
   }
 
   function handleSuccess() {
+    toast.success({
+      title: "Payment submitted",
+      description: `${formatUsd(session?.amount ?? 0)} charged to ${booking.contactName}'s card. The booking will update in a moment.`,
+    });
     setDone(true);
     setSession(null);
     // The webhook records the payment asynchronously — give it a moment, then refresh the figures.

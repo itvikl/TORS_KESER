@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { addAdminAccount } from "@/lib/actions/adminUsers";
 import type { UserRole } from "@/lib/types";
 
@@ -15,26 +16,40 @@ export default function AdminUserRoleForm() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Extract<UserRole, "staff" | "admin">>("staff");
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
-  const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setErrors({});
-    setMessage(null);
 
-    const result = await addAdminAccount({ email, password, role });
+    let result;
+    try {
+      result = await addAdminAccount({ email, password, role });
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
     setSaving(false);
     if (!result.ok) {
       setErrors(result.errors);
+      toast.error({
+        title: "Account not saved",
+        description: result.errors.email?.[0] ?? result.errors.password?.[0] ?? "Please check the details and try again.",
+      });
       return;
     }
 
-    setMessage(
+    toast.success(
       result.created
-        ? `Account created for ${email}. Share the password with them — they sign in at /admin/login.`
-        : `${email} already had a login — their access is now set to ${role}.`
+        ? {
+            title: "Account created",
+            description: `Account created for ${email}. Share the password with them — they sign in at /admin/login.`,
+            duration: 8000,
+          }
+        : { title: "Access updated", description: `${email} already had a login — their access is now set to ${role}.` }
     );
     setEmail("");
     setPassword("");
@@ -101,7 +116,6 @@ export default function AdminUserRoleForm() {
           {saving ? "Saving…" : "Add account"}
         </button>
       </div>
-      {message && <p className="mt-3 text-sm font-medium text-olive">{message}</p>}
     </form>
   );
 }

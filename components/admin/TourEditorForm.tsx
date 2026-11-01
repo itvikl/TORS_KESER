@@ -17,6 +17,8 @@ import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChec
 import { saveTour } from "@/lib/actions/tours";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
+import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import { formatUsd, singleSupplementOf } from "@/lib/pricing";
 
@@ -153,6 +155,8 @@ export default function TourEditorForm({
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
+  const toast = useToast();
+  const { isDirty, markSaved } = useDirtyDraft(draft);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameReady = useRef(false);
@@ -266,18 +270,38 @@ export default function TourEditorForm({
     setErrors({});
 
     const payload: Tour = status ? { ...cleaned, status } : cleaned;
-    const result = await saveTour(payload, savedTourId);
+    let result;
+    try {
+      result = await saveTour(payload, savedTourId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
 
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      const count = Object.values(result.errors).filter(Boolean).length;
+      toast.error({
+        title: "Tour not saved",
+        description: `${count} field${count === 1 ? " needs" : "s need"} attention — check the highlighted fields.`,
+      });
       return;
     }
 
     if (status) set("status", status);
+    markSaved(status ? { ...draft, status } : draft);
     setSavedTourId(result.tourId);
     setSavedAt(new Date());
     setSaving(false);
+    toast.success(
+      status === "published"
+        ? { title: "Tour published", description: `"${payload.title}" is now live on the site.` }
+        : mode === "create"
+          ? { title: "Tour created", description: "Saved as a draft — you can keep editing." }
+          : { title: "Changes saved", description: `"${payload.title}" was saved successfully.` }
+    );
 
     if (mode === "create") {
       router.replace(`/admin/tours/${result.tourId}`);
@@ -696,6 +720,7 @@ export default function TourEditorForm({
                 Saved {savedAt.toLocaleTimeString("en-US")}
               </span>
             )}
+            {isDirty && <span className="ms-2"><UnsavedIndicator /></span>}
           </div>
           <div className="flex gap-2">
             <button

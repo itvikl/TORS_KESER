@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cancelDeparture } from "@/lib/actions/departures";
 import { IconButton } from "@/components/admin/IconAction";
+import { useConfirm, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 
 export default function CancelDepartureButton({
   departureId,
@@ -15,38 +16,31 @@ export default function CancelDepartureButton({
   label: string;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
-  const [confirming, setConfirming] = useState(false);
 
-  if (confirming) {
-    return (
-      <span className="inline-flex items-center gap-2 text-sm">
-        <span className="text-ink-muted">Cancel &ldquo;{label}&rdquo;?</span>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() =>
-            startTransition(async () => {
-              await cancelDeparture(departureId, tourId);
-              router.refresh();
-            })
-          }
-          className="font-semibold text-terracotta-dark hover:underline disabled:opacity-60"
-        >
-          {pending ? "Cancelling…" : "Confirm"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setConfirming(false)}
-          className="text-ink-muted hover:underline"
-        >
-          Cancel
-        </button>
-      </span>
-    );
+  async function handleClick() {
+    const ok = await confirm({
+      title: `Cancel “${label}”?`,
+      description: "This departure date will be marked as cancelled and closed for new bookings.",
+      confirmLabel: "Cancel date",
+      cancelLabel: "Keep date",
+      tone: "danger",
+    });
+    if (!ok) return;
+    startTransition(async () => {
+      try {
+        await cancelDeparture(departureId, tourId);
+        toast.success({ title: "Date cancelled", description: `“${label}” is now cancelled.` });
+        router.refresh();
+      } catch {
+        toast.error({ title: "Couldn't cancel date", description: "Something went wrong — please try again." });
+      }
+    });
   }
 
   return (
-    <IconButton icon="ban" label="Cancel this date" tone="danger" onClick={() => setConfirming(true)} />
+    <IconButton icon="ban" label="Cancel this date" tone="danger" disabled={pending} onClick={handleClick} />
   );
 }

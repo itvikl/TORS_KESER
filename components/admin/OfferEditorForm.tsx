@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveOffer } from "@/lib/actions/offers";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { SpecialOffer, Tour } from "@/lib/types";
@@ -32,6 +34,8 @@ export default function OfferEditorForm({
   const [savedOfferId, setSavedOfferId] = useState(offerId);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const { isDirty, markSaved } = useDirtyDraft(draft);
 
   function set<K extends keyof SpecialOffer>(key: K, value: SpecialOffer[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -42,11 +46,19 @@ export default function OfferEditorForm({
     setErrors({});
 
     const payload = { ...draft, status };
-    const result = await saveOffer(payload, savedOfferId);
+    let result;
+    try {
+      result = await saveOffer(payload, savedOfferId);
+    } catch {
+      setSaving(false);
+      toast.error({ title: "Save failed", description: "Something went wrong on the server — please try again." });
+      return;
+    }
 
     if (!result.ok) {
       setErrors(result.errors);
       setSaving(false);
+      toast.error({ title: "Offer not saved", description: "Please fix the highlighted fields and try again." });
       return;
     }
 
@@ -55,7 +67,13 @@ export default function OfferEditorForm({
     }
     setSavedOfferId(result.offerId);
     setDraft((prev) => ({ ...prev, status }));
+    markSaved(payload);
     setSaving(false);
+    toast.success(
+      status === "published"
+        ? { title: "Offer published", description: "Your changes are now live on the site." }
+        : { title: "Draft saved", description: "The offer was saved as a draft." }
+    );
   }
 
   return (
@@ -134,6 +152,7 @@ export default function OfferEditorForm({
         >
           Publish
         </button>
+        {isDirty && <span className="self-center"><UnsavedIndicator /></span>}
       </div>
     </div>
   );
