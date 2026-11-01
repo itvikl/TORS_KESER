@@ -24,7 +24,6 @@ export function getPublishChecklist(tour: Tour): ChecklistItem[] {
       label: "Price per person (double)",
       ok: tour.pricing.pricePerPersonDouble > 0,
     },
-    { key: "depositAmount", label: "Deposit amount", ok: tour.pricing.depositAmountPerPerson > 0 },
     {
       key: "supervisionLevel",
       label: "Kashrut supervision level",

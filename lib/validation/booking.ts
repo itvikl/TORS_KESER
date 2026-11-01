@@ -79,7 +79,8 @@ export type BookingInput = z.infer<typeof BookingInputSchema>;
  * pricing, which isn't available until the server action loads it).
  */
 export const PublicBookingInputSchema = BookingInputSchema.extend({
-  paymentAmount: z.number().positive({ error: "Choose a payment amount." }),
+  // 0 is valid: a tour with no deposit can be reserved without paying anything now.
+  paymentAmount: z.number().min(0, { error: "Choose a payment amount." }),
 });
 export type PublicBookingInput = z.infer<typeof PublicBookingInputSchema>;
 

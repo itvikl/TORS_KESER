@@ -25,15 +25,17 @@ export function bookingConfirmationEmail(data: BookingConfirmationData): EmailCo
   const dates = formatDateRange(data.startDate, data.endDate);
   const travelerLabel = `${data.travelerCount} traveler${data.travelerCount === 1 ? "" : "s"}`;
 
-  const nextStep =
-    data.contactPreference === "pay_online"
+  const noDeposit = data.depositAmount <= 0;
+  const nextStep = noDeposit
+    ? "No deposit is needed to hold your spot. Our team will be in touch shortly to confirm your booking and arrange payment."
+    : data.contactPreference === "pay_online"
       ? `Complete your deposit of ${formatUsd(data.depositAmount)} online to secure your spot.`
       : `Our team will call you shortly to collect your deposit of ${formatUsd(data.depositAmount)} and confirm your spot.`;
 
   const rows =
     summaryRow("Booking reference", data.bookingId) +
     summaryRow("Trip total", formatUsd(data.grandTotal)) +
-    summaryRow("Deposit due", formatUsd(data.depositAmount)) +
+    summaryRow("Deposit due", noDeposit ? "None" : formatUsd(data.depositAmount)) +
     summaryRow("Balance due", formatUsd(data.balanceAmount));
 
   const html = wrapEmail(
@@ -54,7 +56,7 @@ We've received your registration for ${data.tourTitle} (${dates}). This confirms
 
 Booking reference: ${data.bookingId}
 Trip total: ${formatUsd(data.grandTotal)}
-Deposit due: ${formatUsd(data.depositAmount)}
+Deposit due: ${noDeposit ? "None" : formatUsd(data.depositAmount)}
 Balance due: ${formatUsd(data.balanceAmount)}
 
 ${nextStep}`;

@@ -425,8 +425,9 @@ export default function TourPageView({
                   ✓
                 </span>
                 <p className="text-xs leading-tight text-[var(--color-slate)]">
-                  Secure your spot with a $
-                  {tour.pricing.depositAmountPerPerson} deposit per person.
+                  {tour.pricing.depositAmountPerPerson > 0
+                    ? `Secure your spot with a $${tour.pricing.depositAmountPerPerson} deposit per person.`
+                    : "Reserve your spot with no deposit."}{" "}
                   Balance due {tour.pricing.balanceDueDaysBeforeDeparture}{" "}
                   days before departure.
                 </p>

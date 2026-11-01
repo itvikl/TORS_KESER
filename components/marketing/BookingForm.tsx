@@ -299,7 +299,9 @@ export default function BookingForm({
               <p className="mt-1 text-[var(--color-slate)]">
                 {isGuaranteed
                   ? "This departure is guaranteed to run — full payment is required to reserve your spot."
-                  : `Starting deposit: ${formatUsd(depositAmount)} — you'll choose how much to pay in the next step.`}
+                  : depositAmount === 0
+                    ? "No deposit is required to reserve your spot."
+                    : `Starting deposit: ${formatUsd(depositAmount)} — you'll choose how much to pay in the next step.`}
               </p>
             </div>
 
@@ -573,7 +575,7 @@ export default function BookingForm({
                   className="mt-3 w-full accent-[var(--color-ice)]"
                 />
                 <div className="mt-1 flex justify-between text-xs text-[var(--color-slate)]">
-                  <span>Deposit {formatUsd(depositAmount)}</span>
+                  <span>{depositAmount === 0 ? "No deposit" : `Deposit ${formatUsd(depositAmount)}`}</span>
                   <span>Full price {formatUsd(priceBreakdown.grandTotal)}</span>
                 </div>
                 {errors.paymentAmount && (

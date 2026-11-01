@@ -26,6 +26,11 @@ async function createPaymentIntentForAmount(
   if (!process.env.STRIPE_SECRET_KEY) {
     return { ok: false, error: "Online payment isn't configured yet." };
   }
+  // A tour with no deposit can be reserved for $0 — there is nothing to charge,
+  // and Stripe rejects amounts under 50 cents.
+  if (amount <= 0) {
+    return { ok: false, error: "There's no payment due for this booking." };
+  }
 
   try {
     const stripe = stripeServer();

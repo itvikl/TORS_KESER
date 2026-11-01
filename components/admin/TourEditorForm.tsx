@@ -581,7 +581,7 @@ export default function TourEditorForm({
                   }
                 />
               </Field>
-              <Field label="Deposit / person" {...req("depositAmount")}>
+              <Field label="Deposit / person" hint="0 = no deposit required">
                 <input
                   type="number"
                   min={0}
