@@ -6,6 +6,7 @@ import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/
 import { saveStaffMember } from "@/lib/actions/staff";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { Staff } from "@/lib/types";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 const BLANK: Staff = { staffId: "", name: "", role: "guide", bio: undefined, photo: undefined };
 
@@ -56,7 +57,7 @@ export default function StaffMemberForm({
 
   return (
     <div className="max-w-xl space-y-4 rounded-xl border border-line bg-white p-6">
-      <Field label="Name" error={errors.name}>
+      <Field label="Name" required error={errors.name}>
         <input
           value={draft.name}
           onChange={(e) => set("name", e.target.value)}
@@ -123,16 +124,21 @@ export default function StaffMemberForm({
 
 function Field({
   label,
+  required,
   error,
   children,
 }: {
   label: string;
+  required?: boolean;
   error?: string[];
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       <div className="mt-1.5">{children}</div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}
     </div>

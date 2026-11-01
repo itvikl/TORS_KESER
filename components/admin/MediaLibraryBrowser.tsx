@@ -448,6 +448,7 @@ function FolderGrid({
         <button
           type="submit"
           disabled={disabled || !newName.trim()}
+          title={!newName.trim() ? "Type a category name first" : undefined}
           className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-40"
         >
           + Create category
@@ -629,6 +630,7 @@ function AssignSelect({
     <select
       value=""
       disabled={disabled || categories.length === 0}
+      title={categories.length === 0 ? "Create a category first" : undefined}
       onChange={(e) => e.target.value && onAssign(e.target.value)}
       className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-navy disabled:opacity-60"
     >

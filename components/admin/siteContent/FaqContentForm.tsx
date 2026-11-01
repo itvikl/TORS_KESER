@@ -58,7 +58,7 @@ export default function FaqContentForm({ initialContent }: { initialContent: Sit
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         <TextField
-          label="Title"
+          label="Title" required
           value={draft.title}
           onChange={(v) => setDraft((d) => ({ ...d, title: v }))}
           error={errors.title}
@@ -87,12 +87,12 @@ export default function FaqContentForm({ initialContent }: { initialContent: Sit
               </div>
               <div className="mt-2 space-y-2">
                 <TextField
-                  label="Question"
+                  label="Question" required
                   value={item.question}
                   onChange={(v) => updateItem(item.itemId, { question: v })}
                 />
                 <TextAreaField
-                  label="Answer"
+                  label="Answer" required
                   value={item.answer}
                   onChange={(v) => updateItem(item.itemId, { answer: v })}
                   rows={3}

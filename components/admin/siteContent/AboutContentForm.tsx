@@ -57,19 +57,19 @@ export default function AboutContentForm({ initialContent }: { initialContent: S
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
-        <TextField
+        <TextField required
           label="Eyebrow"
           value={draft.eyebrow}
           onChange={(v) => setDraft((d) => ({ ...d, eyebrow: v }))}
           error={errors.eyebrow}
         />
-        <TextField
+        <TextField required
           label="Title"
           value={draft.title}
           onChange={(v) => setDraft((d) => ({ ...d, title: v }))}
           error={errors.title}
         />
-        <TextField
+        <TextField required
           label="Lede (subtitle)"
           value={draft.lede}
           onChange={(v) => setDraft((d) => ({ ...d, lede: v }))}
@@ -92,12 +92,12 @@ export default function AboutContentForm({ initialContent }: { initialContent: S
                 </button>
               </div>
               <div className="mt-2 space-y-2">
-                <TextField
+                <TextField required
                   label="Heading"
                   value={section.heading}
                   onChange={(v) => updateSection(section.sectionId, { heading: v })}
                 />
-                <TextAreaField
+                <TextAreaField required
                   label="Body"
                   value={section.body}
                   onChange={(v) => updateSection(section.sectionId, { body: v })}

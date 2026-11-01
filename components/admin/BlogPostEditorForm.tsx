@@ -7,6 +7,7 @@ import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveBlogPost } from "@/lib/actions/blog";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { BlogPost } from "@/lib/types";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 const BLANK_POST: BlogPost = {
   postId: "",
@@ -103,14 +104,14 @@ export default function BlogPostEditorForm({
     <div className="max-w-2xl space-y-6">
       <Section title="Post">
         <div className="space-y-4">
-          <Field label="Title" error={errors.title}>
+          <Field label="Title" required error={errors.title}>
             <input
               value={draft.title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             />
           </Field>
-          <Field label="Slug" hint="/blog/…" error={errors.slug}>
+          <Field label="Slug" required hint="/blog/…" error={errors.slug}>
             <input
               value={draft.slug}
               onChange={(e) => {
@@ -120,7 +121,7 @@ export default function BlogPostEditorForm({
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             />
           </Field>
-          <Field label="Body" error={errors.body}>
+          <Field label="Body" required error={errors.body}>
             <textarea
               value={draft.body}
               onChange={(e) => set("body", e.target.value)}
@@ -206,18 +207,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Field({
   label,
+  required,
   hint,
   error,
   children,
 }: {
   label: string;
+  required?: boolean;
   hint?: string;
   error?: string[];
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       {hint && <p className="mt-0.5 text-xs text-ink-muted">{hint}</p>}
       <div className="mt-1.5">{children}</div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}

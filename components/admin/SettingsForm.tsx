@@ -5,6 +5,7 @@ import { useFormDirty, useToast } from "@/components/admin/feedback/AdminFeedbac
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveSettings, type SaveSettingsState } from "@/lib/actions/settings";
 import type { SiteSettings } from "@/lib/types";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 const initialState: SaveSettingsState = { ok: true };
 
@@ -31,7 +32,7 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
     <form action={formAction} {...formProps} className="max-w-xl space-y-4 rounded-xl border border-line bg-white p-6">
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Phone" name="phone" defaultValue={settings.phone} error={errors.phone} />
+        <Field label="Phone" required name="phone" defaultValue={settings.phone} error={errors.phone} />
         <Field label="Alternate phone" name="phoneAlt" defaultValue={settings.phoneAlt} error={errors.phoneAlt} />
         <Field label="Email" name="email" type="email" defaultValue={settings.email} error={errors.email} />
       </div>
@@ -88,12 +89,14 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
 
 function Field({
   label,
+  required,
   name,
   type = "text",
   defaultValue,
   error,
 }: {
   label: string;
+  required?: boolean;
   name: string;
   type?: string;
   defaultValue?: string;
@@ -103,6 +106,7 @@ function Field({
     <div>
       <label className="block text-sm font-medium text-ink" htmlFor={name}>
         {label}
+        {required && <RequiredMark />}
       </label>
       <input
         id={name}

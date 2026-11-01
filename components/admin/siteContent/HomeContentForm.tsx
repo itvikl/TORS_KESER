@@ -53,11 +53,11 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-6">
         <FieldGroup title="Hero">
-          <TextField label="Eyebrow" value={draft.heroEyebrow} onChange={(v) => set("heroEyebrow", v)} error={errors.heroEyebrow} />
-          <TextField label="Title — line 1" value={draft.heroTitleLine1} onChange={(v) => set("heroTitleLine1", v)} error={errors.heroTitleLine1} />
-          <TextField label="Title — highlighted line" value={draft.heroTitleHighlight} onChange={(v) => set("heroTitleHighlight", v)} error={errors.heroTitleHighlight} />
-          <TextAreaField label="Subtitle" value={draft.heroSubtitle} onChange={(v) => set("heroSubtitle", v)} rows={2} error={errors.heroSubtitle} />
-          <TextField label="Primary button" value={draft.heroPrimaryCta} onChange={(v) => set("heroPrimaryCta", v)} error={errors.heroPrimaryCta} />
+          <TextField required label="Eyebrow" value={draft.heroEyebrow} onChange={(v) => set("heroEyebrow", v)} error={errors.heroEyebrow} />
+          <TextField required label="Title — line 1" value={draft.heroTitleLine1} onChange={(v) => set("heroTitleLine1", v)} error={errors.heroTitleLine1} />
+          <TextField required label="Title — highlighted line" value={draft.heroTitleHighlight} onChange={(v) => set("heroTitleHighlight", v)} error={errors.heroTitleHighlight} />
+          <TextAreaField required label="Subtitle" value={draft.heroSubtitle} onChange={(v) => set("heroSubtitle", v)} rows={2} error={errors.heroSubtitle} />
+          <TextField required label="Primary button" value={draft.heroPrimaryCta} onChange={(v) => set("heroPrimaryCta", v)} error={errors.heroPrimaryCta} />
         </FieldGroup>
 
         <FieldGroup title="Trust signals">
@@ -67,12 +67,12 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
                 Card {index + 1}
               </p>
               <div className="space-y-2">
-                <TextField
+                <TextField required
                   label="Title"
                   value={draft.trustSignals[index].title}
                   onChange={(v) => setTrustSignal(index, { title: v })}
                 />
-                <TextAreaField
+                <TextAreaField required
                   label="Body"
                   value={draft.trustSignals[index].body}
                   onChange={(v) => setTrustSignal(index, { body: v })}
@@ -84,11 +84,11 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
         </FieldGroup>
 
         <FieldGroup title="Closing call-to-action">
-          <TextField label="Heading" value={draft.ctaHeading} onChange={(v) => set("ctaHeading", v)} error={errors.ctaHeading} />
-          <TextField label="Heading — highlighted part" value={draft.ctaHeadingHighlight} onChange={(v) => set("ctaHeadingHighlight", v)} error={errors.ctaHeadingHighlight} />
-          <TextAreaField label="Body" value={draft.ctaBody} onChange={(v) => set("ctaBody", v)} rows={3} error={errors.ctaBody} />
-          <TextField label="Primary button" value={draft.ctaPrimaryButton} onChange={(v) => set("ctaPrimaryButton", v)} error={errors.ctaPrimaryButton} />
-          <TextField label="Secondary button" value={draft.ctaSecondaryButton} onChange={(v) => set("ctaSecondaryButton", v)} error={errors.ctaSecondaryButton} />
+          <TextField required label="Heading" value={draft.ctaHeading} onChange={(v) => set("ctaHeading", v)} error={errors.ctaHeading} />
+          <TextField required label="Heading — highlighted part" value={draft.ctaHeadingHighlight} onChange={(v) => set("ctaHeadingHighlight", v)} error={errors.ctaHeadingHighlight} />
+          <TextAreaField required label="Body" value={draft.ctaBody} onChange={(v) => set("ctaBody", v)} rows={3} error={errors.ctaBody} />
+          <TextField required label="Primary button" value={draft.ctaPrimaryButton} onChange={(v) => set("ctaPrimaryButton", v)} error={errors.ctaPrimaryButton} />
+          <TextField required label="Secondary button" value={draft.ctaSecondaryButton} onChange={(v) => set("ctaSecondaryButton", v)} error={errors.ctaSecondaryButton} />
         </FieldGroup>
 
         <SaveBar saving={saving} dirty={isDirty} onSave={handleSave} />

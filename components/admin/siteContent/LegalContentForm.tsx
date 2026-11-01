@@ -45,13 +45,13 @@ export default function LegalContentForm({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
-        <TextField
+        <TextField required
           label="Title"
           value={draft.title}
           onChange={(v) => setDraft((d) => ({ ...d, title: v }))}
           error={errors.title}
         />
-        <TextAreaField
+        <TextAreaField required
           label="Body text"
           value={draft.body}
           onChange={(v) => setDraft((d) => ({ ...d, body: v }))}

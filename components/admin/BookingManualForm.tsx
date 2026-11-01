@@ -14,6 +14,7 @@ import {
 } from "@/lib/types";
 import { calculatePriceBreakdown, formatUsd } from "@/lib/pricing";
 import { createManualBooking } from "@/lib/actions/bookings";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 interface TravelerDraft {
   firstName: string;
@@ -172,7 +173,7 @@ export default function BookingManualForm({
               ))}
             </select>
           </Field>
-          <Field label="Departure" error={errors.departureId}>
+          <Field label="Departure" required error={errors.departureId}>
             <select
               value={departureId}
               onChange={(e) => setDepartureId(e.target.value)}
@@ -218,8 +219,8 @@ export default function BookingManualForm({
                 Traveler {index + 1} · {traveler.occupancy}
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <TextField label="First name" value={traveler.firstName} onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
-                <TextField label="Last name" value={traveler.lastName} onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
+                <TextField label="First name" required value={traveler.firstName} onChange={(v) => updateTraveler(index, { firstName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
+                <TextField label="Last name" required value={traveler.lastName} onChange={(v) => updateTraveler(index, { lastName: sanitizeName(v) })} maxLength={NAME_MAX_LENGTH} />
                 <TextField label="Date of birth" type="date" value={traveler.dob} onChange={(v) => updateTraveler(index, { dob: v })} />
                 <TextField label="Passport number" value={traveler.passport} onChange={(v) => updateTraveler(index, { passport: sanitizePassport(v) })} maxLength={PASSPORT_MAX_LENGTH} />
                 <TextField label="Dietary needs" value={traveler.dietary} onChange={(v) => updateTraveler(index, { dietary: v })} />
@@ -231,8 +232,8 @@ export default function BookingManualForm({
 
       <Section title="Contact & status">
         <div className="grid gap-4 sm:grid-cols-2">
-          <TextField label="Contact name" value={contactName} onChange={(v) => setContactName(sanitizeName(v))} maxLength={NAME_MAX_LENGTH} />
-          <TextField label="Email" type="email" value={contactEmail} onChange={setContactEmail} />
+          <TextField label="Contact name" required value={contactName} onChange={(v) => setContactName(sanitizeName(v))} maxLength={NAME_MAX_LENGTH} />
+          <TextField label="Email" required type="email" value={contactEmail} onChange={setContactEmail} />
           <TextField label="Phone" type="tel" value={contactPhone} onChange={(v) => setContactPhone(sanitizePhone(v))} maxLength={PHONE_MAX_LENGTH} inputMode="tel" />
           <Field label="Contact preference">
             <select
@@ -266,14 +267,23 @@ export default function BookingManualForm({
         </div>
       )}
 
-      <button
-        type="button"
-        disabled={saving || !departureId}
-        onClick={handleSave}
-        className="rounded-lg bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-60"
-      >
-        {saving ? "Saving…" : "Create booking"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={saving || !departureId}
+          title={!departureId ? "Choose a departure date first" : undefined}
+          aria-describedby={!departureId ? "booking-blocked-reason" : undefined}
+          onClick={handleSave}
+          className="rounded-lg bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Create booking"}
+        </button>
+        {!departureId && (
+          <p id="booking-blocked-reason" className="text-xs font-medium text-terracotta-dark">
+            Choose a departure date to create the booking.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -289,18 +299,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Field({
   label,
+  required,
   hint,
   error,
   children,
 }: {
   label: string;
+  required?: boolean;
   hint?: string;
   error?: string[];
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       {hint && <p className="mt-0.5 text-xs text-ink-muted">{hint}</p>}
       <div className="mt-1.5">{children}</div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}
@@ -339,6 +354,7 @@ function NumberField({
 
 function TextField({
   label,
+  required,
   value,
   onChange,
   type = "text",
@@ -346,6 +362,7 @@ function TextField({
   inputMode,
 }: {
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   type?: string;
@@ -353,7 +370,7 @@ function TextField({
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   return (
-    <Field label={label}>
+    <Field label={label} required={required}>
       <input
         type={type}
         value={value}

@@ -19,6 +19,7 @@ import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
+import RequiredMark from "@/components/admin/RequiredMark";
 import { DEFAULT_CANCELLATION_POLICY_TEXT } from "@/lib/cancellationPolicy";
 import { formatUsd, singleSupplementOf } from "@/lib/pricing";
 
@@ -859,16 +860,6 @@ function Section({
   );
 }
 
-function RequiredMark() {
-  return (
-    <>
-      <span aria-hidden="true" className="ms-0.5 text-terracotta">
-        *
-      </span>
-      <span className="sr-only"> (required to publish)</span>
-    </>
-  );
-}
 
 function Field({
   label,

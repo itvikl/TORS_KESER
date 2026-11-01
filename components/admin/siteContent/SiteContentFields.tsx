@@ -1,21 +1,27 @@
 "use client";
 
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 export function TextField({
   label,
+  required,
   value,
   onChange,
   error,
 }: {
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   error?: string[];
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       <input
         type="text"
         value={value}
@@ -29,12 +35,14 @@ export function TextField({
 
 export function TextAreaField({
   label,
+  required,
   value,
   onChange,
   rows = 3,
   error,
 }: {
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   rows?: number;
@@ -42,7 +50,10 @@ export function TextAreaField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}

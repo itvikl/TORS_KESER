@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { saveDeparture, type BalancePaymentLink } from "@/lib/actions/departures";
+import RequiredMark from "@/components/admin/RequiredMark";
 import {
   availableSeats,
   type BookingAssurance,
@@ -179,7 +180,7 @@ export default function DepartureEditorForm({
 
       <div className="space-y-4 rounded-xl border border-line bg-white p-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Start date" error={errors.startDate}>
+          <Field label="Start date" required error={errors.startDate}>
             <input
               type="date"
               value={draft.startDate}
@@ -191,7 +192,7 @@ export default function DepartureEditorForm({
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             />
           </Field>
-          <Field label="End date" error={errors.endDate}>
+          <Field label="End date" required error={errors.endDate}>
             <input
               type="date"
               value={draft.endDate}
@@ -202,7 +203,7 @@ export default function DepartureEditorForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Maximum capacity" error={errors.capacityTotal}>
+          <Field label="Maximum capacity" required error={errors.capacityTotal}>
             <input
               type="number"
               min={0}
@@ -300,18 +301,23 @@ export default function DepartureEditorForm({
 
 function Field({
   label,
+  required,
   hint,
   error,
   children,
 }: {
   label: string;
+  required?: boolean;
   hint?: string;
   error?: string[];
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       {hint && <p className="mt-0.5 text-xs text-ink-muted">{hint}</p>}
       <div className="mt-1.5">{children}</div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}

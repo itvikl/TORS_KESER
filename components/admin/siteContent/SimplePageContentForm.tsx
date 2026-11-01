@@ -52,7 +52,7 @@ export default function SimplePageContentForm({
           error={errors.eyebrow}
         />
         <TextField
-          label="Title"
+          label="Title" required
           value={draft.title}
           onChange={(v) => setDraft((d) => ({ ...d, title: v }))}
           error={errors.title}

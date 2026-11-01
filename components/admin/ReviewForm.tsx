@@ -6,6 +6,7 @@ import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/
 import { saveReview } from "@/lib/actions/reviews";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import type { Review, Tour } from "@/lib/types";
+import RequiredMark from "@/components/admin/RequiredMark";
 
 const BLANK: Review = {
   reviewId: "",
@@ -70,7 +71,7 @@ export default function ReviewForm({
 
   return (
     <div className="max-w-2xl space-y-4 rounded-xl border border-line bg-white p-6">
-      <Field label="Tour" error={errors.tourId}>
+      <Field label="Tour" required error={errors.tourId}>
         <select
           value={draft.tourId}
           onChange={(e) => set("tourId", e.target.value)}
@@ -85,7 +86,7 @@ export default function ReviewForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Customer name" error={errors.customerName}>
+        <Field label="Customer name" required error={errors.customerName}>
           <input
             value={draft.customerName}
             onChange={(e) => set("customerName", e.target.value)}
@@ -127,7 +128,7 @@ export default function ReviewForm({
         </p>
       </Field>
 
-      <Field label="Review text" error={errors.body}>
+      <Field label="Review text" required error={errors.body}>
         <textarea
           value={draft.body}
           onChange={(e) => set("body", e.target.value)}
@@ -176,16 +177,21 @@ export default function ReviewForm({
 
 function Field({
   label,
+  required,
   error,
   children,
 }: {
   label: string;
+  required?: boolean;
   error?: string[];
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink">{label}</label>
+      <label className="block text-sm font-medium text-ink">
+        {label}
+        {required && <RequiredMark />}
+      </label>
       <div className="mt-1.5">{children}</div>
       {error && <p className="mt-1 text-xs text-terracotta-dark">{error[0]}</p>}
     </div>

@@ -47,13 +47,13 @@ export default function ContactContentForm({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
-        <TextField
+        <TextField required
           label="Title"
           value={draft.title}
           onChange={(v) => setDraft((d) => ({ ...d, title: v }))}
           error={errors.title}
         />
-        <TextField
+        <TextField required
           label="Lede (subtitle)"
           value={draft.lede}
           onChange={(v) => setDraft((d) => ({ ...d, lede: v }))}
