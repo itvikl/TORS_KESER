@@ -164,6 +164,24 @@ export default function TourEditorForm({
   const cleaned = useMemo(() => cleanTour(draft), [draft]);
   const checklist = useMemo(() => getPublishChecklist(cleaned), [cleaned]);
   const readyToPublish = useMemo(() => isReadyToPublish(cleaned), [cleaned]);
+  const missing = useMemo(() => checklist.filter((item) => !item.ok), [checklist]);
+  // Set when someone clicks Publish while it is blocked: from then on every
+  // missing field says so, instead of the button silently doing nothing.
+  const [showMissing, setShowMissing] = useState(false);
+
+  /** Props for a field the publish checklist requires: asterisk, id to scroll to, and the "missing" flag. */
+  function req(key: string) {
+    return { required: true, fieldKey: key, flagged: showMissing && missing.some((item) => item.key === key) };
+  }
+
+  function handlePublishClick() {
+    if (readyToPublish) {
+      handleSave("published");
+      return;
+    }
+    setShowMissing(true);
+    document.getElementById(`field-${missing[0].key}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   function postPreview() {
     if (!frameReady.current) return;
@@ -328,14 +346,14 @@ export default function TourEditorForm({
 
         <div className="space-y-8">
           <Section title="Basics">
-            <Field label="Title" error={errors.title}>
+            <Field label="Title" {...req("title")} error={errors.title}>
               <input
                 className={inputClass}
                 value={draft.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
               />
             </Field>
-            <Field label="Slug" hint="/tours/…" error={errors.slug}>
+            <Field label="Slug" hint="/tours/…" {...req("slug")} error={errors.slug}>
               <input
                 className={inputClass}
                 value={draft.slug}
@@ -345,7 +363,7 @@ export default function TourEditorForm({
                 }}
               />
             </Field>
-            <Field label="Summary" error={errors.summary}>
+            <Field label="Summary" {...req("summary")} error={errors.summary}>
               <textarea
                 className={inputClass}
                 rows={2}
@@ -364,6 +382,7 @@ export default function TourEditorForm({
             <Field
               label="Countries"
               hint="Ctrl/Cmd-click to select multiple"
+              {...req("countries")}
               error={errors.countries}
             >
               <select
@@ -442,7 +461,7 @@ export default function TourEditorForm({
           </Section>
 
           <Section title="Photos">
-            <Field label="Hero image URL" error={errors.heroImage}>
+            <Field label="Hero image URL" {...req("heroImage")} error={errors.heroImage}>
               <div className="flex items-start gap-3">
                 <input
                   className={inputClass}
@@ -494,7 +513,7 @@ export default function TourEditorForm({
 
           <Section title="Pricing & policy">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Price / person (double)">
+              <Field label="Price / person (double)" {...req("pricePerPersonDouble")}>
                 <input
                   type="number"
                   min={0}
@@ -540,7 +559,7 @@ export default function TourEditorForm({
                   }
                 />
               </Field>
-              <Field label="Deposit / person">
+              <Field label="Deposit / person" {...req("depositAmount")}>
                 <input
                   type="number"
                   min={0}
@@ -590,7 +609,7 @@ export default function TourEditorForm({
                 onChange={(e) => setKashrut("title", e.target.value)}
               />
             </Field>
-            <Field label="Supervision level" error={errors["kashrutDetails.supervisionLevel"]}>
+            <Field label="Supervision level" {...req("supervisionLevel")} error={errors["kashrutDetails.supervisionLevel"]}>
               <input
                 className={inputClass}
                 value={draft.kashrutDetails.supervisionLevel}
@@ -671,7 +690,7 @@ export default function TourEditorForm({
             />
           </Section>
 
-          <Section title="Itinerary">
+          <Section title="Itinerary" {...req("itinerary")}>
             <div className="space-y-4">
               {draft.itineraryDays.map((day, index) => (
                 <ItineraryDayEditor
@@ -722,24 +741,36 @@ export default function TourEditorForm({
             )}
             {isDirty && <span className="ms-2"><UnsavedIndicator /></span>}
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => handleSave("draft")}
-              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
-            >
-              Save draft
-            </button>
-            <button
-              type="button"
-              disabled={saving || !readyToPublish}
-              title={!readyToPublish ? "Complete the checklist above to publish." : undefined}
-              onClick={() => handleSave("published")}
-              className="rounded-lg bg-olive px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-40"
-            >
-              {saving ? "Saving…" : "Publish"}
-            </button>
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => handleSave("draft")}
+                className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
+              >
+                Save draft
+              </button>
+              {/* aria-disabled rather than disabled: a blocked click scrolls to the first missing field instead of doing nothing. */}
+              <button
+                type="button"
+                disabled={saving}
+                aria-disabled={!readyToPublish}
+                aria-describedby={!readyToPublish ? "publish-blocked-reason" : undefined}
+                title={!readyToPublish ? `Can't publish yet — missing: ${missing.map((m) => m.label).join(", ")}` : undefined}
+                onClick={handlePublishClick}
+                className={`rounded-lg bg-olive px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-40 ${
+                  readyToPublish ? "hover:opacity-90" : "cursor-not-allowed opacity-40"
+                }`}
+              >
+                {saving ? "Saving…" : "Publish"}
+              </button>
+            </div>
+            {!readyToPublish && (
+              <p id="publish-blocked-reason" className="max-w-md text-right text-xs font-medium text-terracotta-dark">
+                Can&apos;t publish yet — missing: {missing.map((m) => m.label).join(", ")}.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -800,12 +831,42 @@ export default function TourEditorForm({
 const inputClass =
   "w-full rounded-lg border border-line bg-white px-3.5 py-2 text-[15px] text-ink outline-none focus:border-navy";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  required,
+  fieldKey,
+  flagged,
+}: {
+  title: string;
+  children: React.ReactNode;
+  required?: boolean;
+  fieldKey?: string;
+  flagged?: boolean;
+}) {
   return (
-    <section className="rounded-xl border border-line bg-white p-5">
-      <h2 className="mb-4 text-base font-bold text-ink">{title}</h2>
+    <section
+      id={fieldKey ? `field-${fieldKey}` : undefined}
+      className={`rounded-xl border bg-white p-5 ${flagged ? "border-terracotta" : "border-line"}`}
+    >
+      <h2 className="mb-4 text-base font-bold text-ink">
+        {title}
+        {required && <RequiredMark />}
+      </h2>
       <div className="space-y-4">{children}</div>
+      {flagged && <p className="mt-3 text-xs font-medium text-terracotta-dark">Required to publish</p>}
     </section>
+  );
+}
+
+function RequiredMark() {
+  return (
+    <>
+      <span aria-hidden="true" className="ms-0.5 text-terracotta">
+        *
+      </span>
+      <span className="sr-only"> (required to publish)</span>
+    </>
   );
 }
 
@@ -813,20 +874,37 @@ function Field({
   label,
   hint,
   error,
+  required,
+  fieldKey,
+  flagged,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string[];
+  /** Needed before the tour can be published — shown with an asterisk. */
+  required?: boolean;
+  /** Anchor id (`field-<fieldKey>`) the Publish button scrolls to when this is missing. */
+  fieldKey?: string;
+  /** Required and still empty after a blocked Publish click. */
+  flagged?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <label className="mb-1.5 flex items-baseline justify-between text-sm font-medium text-ink">
-        {label}
+    <div id={fieldKey ? `field-${fieldKey}` : undefined}>
+      <label
+        className={`mb-1.5 flex items-baseline justify-between text-sm font-medium ${
+          flagged ? "text-terracotta-dark" : "text-ink"
+        }`}
+      >
+        <span>
+          {label}
+          {required && <RequiredMark />}
+        </span>
         {hint && <span className="text-xs font-normal text-ink-muted">{hint}</span>}
       </label>
       {children}
+      {flagged && <p className="mt-1 text-xs font-medium text-terracotta-dark">Required to publish</p>}
       {error?.map((message) => (
         <p key={message} className="mt-1 text-xs font-medium text-terracotta-dark">
           {message}
