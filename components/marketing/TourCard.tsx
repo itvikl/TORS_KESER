@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Departure, Tour } from "@/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
+import { focusPosition } from "@/lib/imageFocus";
 
 export default function TourCard({
   tour,
@@ -39,6 +40,7 @@ export default function TourCard({
             alt={tour.title}
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
             loading={eager ? "eager" : "lazy"}
+            objectPosition={focusPosition(tour.imageFocus, image)}
             className="object-cover transition duration-700 group-hover:scale-110"
           />
           <div className="absolute left-4 top-4 rounded-full border border-[var(--color-border-ice)] bg-[var(--color-surface)] px-4 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-mist)] backdrop-blur-lg">

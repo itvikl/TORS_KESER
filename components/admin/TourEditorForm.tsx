@@ -19,6 +19,8 @@ import { saveTour } from "@/lib/actions/tours";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import PdfUploadButton from "@/components/admin/PdfUploadButton";
 import ImageField, { ImageGalleryField } from "@/components/admin/ImageField";
+import ImageFocusDialog from "@/components/admin/ImageFocusDialog";
+import { withImageFocus } from "@/lib/imageFocus";
 import { useConfirm, useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import RequiredMark from "@/components/admin/RequiredMark";
@@ -98,6 +100,7 @@ function cleanTour(tour: Tour): Tour {
   return {
     ...tour,
     gallery: clean(tour.gallery),
+    imageFocus: (tour.imageFocus ?? []).filter((f) => f.url === tour.heroImage || tour.gallery.includes(f.url)),
     themeTags: clean(tour.themeTags),
     inclusions: clean(tour.inclusions),
     exclusions: clean(tour.exclusions),
@@ -160,6 +163,8 @@ export default function TourEditorForm({
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const toast = useToast();
+  // The photo whose crop focus is being chosen (opens the picker dialog).
+  const [focusUrl, setFocusUrl] = useState<string | null>(null);
   const confirm = useConfirm();
   const { isDirty, markSaved } = useDirtyDraft(draft);
 
@@ -526,11 +531,18 @@ export default function TourEditorForm({
                 shape="wide"
                 value={draft.heroImage || undefined}
                 onChange={(url) => set("heroImage", url ?? "")}
+                focusOf={(url) => draft.imageFocus?.find((f) => f.url === url)}
+                onSetFocus={setFocusUrl}
               />
             </Field>
             <div>
               <p className="mb-1.5 text-sm font-medium text-ink">Gallery</p>
-              <ImageGalleryField values={draft.gallery} onChange={(urls) => set("gallery", urls)} />
+              <ImageGalleryField
+                values={draft.gallery}
+                onChange={(urls) => set("gallery", urls)}
+                focusOf={(url) => draft.imageFocus?.find((f) => f.url === url)}
+                onSetFocus={setFocusUrl}
+              />
             </div>
           </Section>
 
@@ -876,6 +888,15 @@ export default function TourEditorForm({
           </div>
         </div>
       </div>
+
+      {focusUrl && (
+        <ImageFocusDialog
+          src={focusUrl}
+          value={draft.imageFocus?.find((f) => f.url === focusUrl)}
+          onChange={(point) => set("imageFocus", withImageFocus(draft.imageFocus, focusUrl, point))}
+          onClose={() => setFocusUrl(null)}
+        />
+      )}
 
       {/* Preview column */}
       <div className="xl:sticky xl:top-6 xl:self-start">

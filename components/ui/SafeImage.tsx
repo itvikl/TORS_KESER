@@ -16,6 +16,7 @@ export default function SafeImage({
   sizes = "100vw",
   priority,
   loading,
+  objectPosition,
 }: {
   src: string;
   alt: string;
@@ -25,6 +26,8 @@ export default function SafeImage({
   priority?: boolean;
   /** "eager" for pictures in or near the first screen; the default (lazy) waits until they scroll close. */
   loading?: "eager" | "lazy";
+  /** CSS object-position: which part of the photo stays in view when it is cropped (default: the center). */
+  objectPosition?: string;
 }) {
   // Tracks *which* src failed, not just "failed" — in the admin live preview
   // the same instance gets a new src when a photo is picked, and a boolean
@@ -41,6 +44,7 @@ export default function SafeImage({
       sizes={sizes}
       priority={priority}
       loading={priority ? undefined : loading}
+      style={objectPosition ? { objectPosition } : undefined}
       className={className}
       onError={() => setFailedSrc(src)}
     />

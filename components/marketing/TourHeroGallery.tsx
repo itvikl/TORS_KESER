@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import SafeImage from "@/components/ui/SafeImage";
+import { focusPosition } from "@/lib/imageFocus";
+import type { ImageFocus } from "@/lib/types";
 
 const SIDE_TILES = 3;
 
@@ -12,6 +14,7 @@ export default function TourHeroGallery({
   badge,
   countries,
   durationDays,
+  focus,
 }: {
   images: string[];
   alt: string;
@@ -19,6 +22,8 @@ export default function TourHeroGallery({
   badge: string;
   countries: string[];
   durationDays: number;
+  /** The tour's per-photo crop focus (Tour.imageFocus). */
+  focus?: ImageFocus[];
 }) {
   // Deduped: a tour's hero image is often repeated in its gallery.
   const safe = images.length ? Array.from(new Set(images)) : ["/placeholder.svg"];
@@ -45,6 +50,7 @@ export default function TourHeroGallery({
           alt={alt}
           sizes="(min-width: 768px) 66vw, 100vw"
           priority
+          objectPosition={focusPosition(focus, main)}
           className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e1a]/80 via-transparent to-transparent" />
@@ -82,6 +88,7 @@ export default function TourHeroGallery({
                   alt=""
                   sizes="33vw"
                   loading="eager"
+                  objectPosition={focusPosition(focus, src)}
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {isLast && extraCount > 0 && (
@@ -108,7 +115,7 @@ export default function TourHeroGallery({
               aria-label={`Show photo ${safe.indexOf(src) + 1} of ${safe.length}: ${alt}`}
               className="relative h-24 flex-1 cursor-pointer overflow-hidden rounded-lg"
             >
-              <SafeImage src={src} alt="" sizes="33vw" loading="eager" className="object-cover" />
+              <SafeImage src={src} alt="" sizes="33vw" loading="eager" objectPosition={focusPosition(focus, src)} className="object-cover" />
             </button>
           ))}
         </div>

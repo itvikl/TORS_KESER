@@ -115,6 +115,7 @@ export default function TourPageView({
         badge={badge}
         countries={tour.countries}
         durationDays={tour.durationDays}
+        focus={tour.imageFocus}
       />
 
       <TourSectionNav sections={sections} />

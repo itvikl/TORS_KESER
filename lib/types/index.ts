@@ -65,6 +65,13 @@ export interface TourDocument {
   fileName: string;
 }
 
+/** The important part of a tour photo, as percent from its top-left corner — the crop keeps it in view. */
+export interface ImageFocus {
+  url: string;
+  x: number;
+  y: number;
+}
+
 export interface TourPricing {
   pricePerPersonDouble: number;
   /** Flat per-person price for a private (single-occupancy) room — not an add-on over the double rate. */
@@ -112,6 +119,8 @@ export interface Tour {
   infoCards?: TourInfoCard[];
   /** PDFs offered for download on the tour page, in display order. */
   documents?: TourDocument[];
+  /** Per-photo crop focus, set in the admin tour editor. A photo without an entry is cropped around its center. */
+  imageFocus?: ImageFocus[];
   pricing: TourPricing;
   kashrutDetails: KashrutDetails;
   itineraryDays: ItineraryDay[];

@@ -27,6 +27,12 @@ export const TourInfoCardSchema = z.object({
   items: z.array(z.string()),
 });
 
+export const ImageFocusSchema = z.object({
+  url: z.string().min(1),
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+});
+
 export const TourDocumentSchema = z.object({
   documentId: z.string().min(1),
   title: z.string().trim().min(1, { error: "Give each PDF a title." }).max(120),
@@ -64,6 +70,7 @@ export const TourInputSchema = z.object({
   importantToKnow: z.array(z.string()).optional(),
   infoCards: z.array(TourInfoCardSchema).optional(),
   documents: z.array(TourDocumentSchema).optional(),
+  imageFocus: z.array(ImageFocusSchema).optional(),
   pricing: z.object({
     pricePerPersonDouble: z.number().min(0),
     pricePerPersonSingle: z.number().min(0),
