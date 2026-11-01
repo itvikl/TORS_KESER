@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveBlogPost } from "@/lib/actions/blog";
-import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import ImageField from "@/components/admin/ImageField";
 import type { BlogPost } from "@/lib/types";
 import RequiredMark from "@/components/admin/RequiredMark";
 
@@ -130,17 +130,7 @@ export default function BlogPostEditorForm({
             />
           </Field>
           <Field label="Hero image">
-            <div className="flex items-center gap-3">
-              {draft.heroImage && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={draft.heroImage} alt="" className="h-16 w-16 rounded-lg object-cover" />
-              )}
-              <ImageUploadButton
-                label={draft.heroImage ? "Replace image" : "Upload image"}
-                folder="blog"
-                onUploaded={(urls) => set("heroImage", urls[0])}
-              />
-            </div>
+            <ImageField folder="blog" value={draft.heroImage} onChange={(url) => set("heroImage", url)} />
           </Field>
           <Field label="Tags" hint="One per line">
             <textarea

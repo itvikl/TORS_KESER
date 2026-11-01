@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import { saveOffer } from "@/lib/actions/offers";
-import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import ImageField from "@/components/admin/ImageField";
 import type { SpecialOffer, Tour } from "@/lib/types";
 import RequiredMark from "@/components/admin/RequiredMark";
 
@@ -97,17 +97,7 @@ export default function OfferEditorForm({
             />
           </Field>
           <Field label="Image">
-            <div className="flex items-center gap-3">
-              {draft.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={draft.image} alt="" className="h-16 w-16 rounded-lg object-cover" />
-              )}
-              <ImageUploadButton
-                label={draft.image ? "Replace image" : "Upload image"}
-                folder="offers"
-                onUploaded={(urls) => set("image", urls[0])}
-              />
-            </div>
+            <ImageField folder="offers" value={draft.image} onChange={(url) => set("image", url)} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Related tour">

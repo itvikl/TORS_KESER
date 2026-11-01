@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDirtyDraft, useGuardedNavigate, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { saveStaffMember } from "@/lib/actions/staff";
-import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import ImageField from "@/components/admin/ImageField";
 import type { Staff } from "@/lib/types";
 import RequiredMark from "@/components/admin/RequiredMark";
 
@@ -97,17 +97,7 @@ export default function StaffMemberForm({
         />
       </Field>
       <Field label="Photo">
-        <div className="flex items-center gap-3">
-          {draft.photo && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={draft.photo} alt="" className="h-16 w-16 rounded-full object-cover" />
-          )}
-          <ImageUploadButton
-            label={draft.photo ? "Replace photo" : "Upload photo"}
-            folder="staff"
-            onUploaded={(urls) => set("photo", urls[0])}
-          />
-        </div>
+        <ImageField shape="round" noun="photo" folder="staff" value={draft.photo} onChange={(url) => set("photo", url)} />
       </Field>
 
       <button

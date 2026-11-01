@@ -16,9 +16,9 @@ import type {
 import { COUNTRIES } from "@/lib/countries";
 import { getPublishChecklist, isReadyToPublish } from "@/lib/validation/tourChecklist";
 import { saveTour } from "@/lib/actions/tours";
-import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import DuplicateTourButton from "@/components/admin/DuplicateTourButton";
 import PdfUploadButton from "@/components/admin/PdfUploadButton";
+import ImageField, { ImageGalleryField } from "@/components/admin/ImageField";
 import { useConfirm, useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
 import RequiredMark from "@/components/admin/RequiredMark";
@@ -521,53 +521,16 @@ export default function TourEditorForm({
           </Section>
 
           <Section title="Photos">
-            <Field label="Hero image URL" {...req("heroImage")} error={errors.heroImage}>
-              <div className="flex items-start gap-3">
-                <input
-                  className={inputClass}
-                  value={draft.heroImage}
-                  onChange={(e) => set("heroImage", e.target.value)}
-                />
-                <ImageUploadButton
-                  label="Upload"
-                  onUploaded={([url]) => set("heroImage", url)}
-                />
-              </div>
-              {draft.heroImage && (
-                // eslint-disable-next-line @next/next/no-img-element -- admin preview thumbnail, not public-facing content
-                <img
-                  src={draft.heroImage}
-                  alt=""
-                  className="mt-2 h-24 w-40 rounded-lg object-cover"
-                />
-              )}
+            <Field label="Hero image" {...req("heroImage")} error={errors.heroImage}>
+              <ImageField
+                shape="wide"
+                value={draft.heroImage || undefined}
+                onChange={(url) => set("heroImage", url ?? "")}
+              />
             </Field>
             <div>
-              <ListTextarea
-                label="Gallery image URLs (one per line)"
-                value={draft.gallery}
-                onChange={(v) => set("gallery", v)}
-              />
-              <div className="mt-2 flex items-center gap-3">
-                <ImageUploadButton
-                  label="Upload gallery images"
-                  multiple
-                  onUploaded={(urls) => set("gallery", [...draft.gallery, ...urls])}
-                />
-              </div>
-              {draft.gallery.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {draft.gallery.map((src, index) => (
-                    // eslint-disable-next-line @next/next/no-img-element -- admin preview thumbnail, not public-facing content
-                    <img
-                      key={`${src}-${index}`}
-                      src={src}
-                      alt=""
-                      className="h-16 w-16 rounded-md object-cover"
-                    />
-                  ))}
-                </div>
-              )}
+              <p className="mb-1.5 text-sm font-medium text-ink">Gallery</p>
+              <ImageGalleryField values={draft.gallery} onChange={(urls) => set("gallery", urls)} />
             </div>
           </Section>
 
