@@ -3,7 +3,7 @@ import PageHeader from "@/components/marketing/PageHeader";
 import TourCard from "@/components/marketing/TourCard";
 import { getSpecialOffers } from "@/lib/data/offers";
 import { getDeparturesForTour, getSpecialOfferTours } from "@/lib/data/tours";
-import { hasBookableDeparture, isDeparturePlanned } from "@/lib/departureAvailability";
+import { hasBookableDeparture, pickNextDeparture } from "@/lib/departureAvailability";
 import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default async function SpecialOffersPage() {
         const departures = await getDeparturesForTour(tour.tourId);
         return {
           tour,
-          nextDeparture: departures.find(isDeparturePlanned),
+          nextDeparture: pickNextDeparture(departures),
           image: tour.heroImage || tour.gallery[0] || "",
           soldOut: !hasBookableDeparture(departures),
         };

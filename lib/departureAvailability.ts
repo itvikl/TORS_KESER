@@ -24,6 +24,20 @@ export function isDepartureBookable(departure: Departure): boolean {
   );
 }
 
+/**
+ * The date a tour card should advertise: the soonest planned departure that a
+ * customer can still register for. If the very next date is full but a later
+ * one has room, the later one is shown — advertising a full date sends visitors
+ * to a dead end. When nothing has room it falls back to the soonest planned
+ * date (the card is flagged sold out separately).
+ */
+export function pickNextDeparture(departures: Departure[]): Departure | undefined {
+  const planned = departures
+    .filter(isDeparturePlanned)
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  return planned.find(isDepartureBookable) ?? planned[0];
+}
+
 export function hasPlannedDeparture(departures: Departure[]): boolean {
   return departures.some(isDeparturePlanned);
 }

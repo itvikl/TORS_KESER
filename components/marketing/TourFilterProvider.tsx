@@ -13,7 +13,12 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Departure, Tour } from "@/lib/types";
 import type { CountryOption } from "@/lib/data/tours";
-import { hasBookableDeparture, isDeparturePlanned } from "@/lib/departureAvailability";
+import {
+  hasBookableDeparture,
+  isDepartureBookable,
+  isDeparturePlanned,
+  pickNextDeparture,
+} from "@/lib/departureAvailability";
 import { smoothScrollTo } from "@/lib/smoothScroll";
 
 /** Id of the DestinationSearch root, so results and "Change Search" can scroll to each other. */
@@ -66,17 +71,21 @@ function monthKey(iso: string): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-/** A tour "matches" a set of months if it has a planned departure starting in one of them. */
+/**
+ * A tour "matches" a set of months if it has a planned departure starting in one of them.
+ * Of those, the soonest one with room is returned (else the soonest, if all are full).
+ */
 function matchingDeparture(
   departures: Departure[],
   months: string[]
 ): Departure | undefined {
   const wanted = new Set(months);
 
-  return departures.find((departure) => {
-    if (!isDeparturePlanned(departure)) return false;
-    return wanted.size === 0 || wanted.has(monthKey(departure.startDate));
-  });
+  const inMonths = departures.filter(
+    (departure) =>
+      isDeparturePlanned(departure) && (wanted.size === 0 || wanted.has(monthKey(departure.startDate)))
+  );
+  return inMonths.find(isDepartureBookable) ?? inMonths[0];
 }
 
 /**
@@ -182,7 +191,7 @@ export function TourFilterProvider({
     if (!hasMonthFilter) {
       return inCountry.map(({ tour, departures, image }) => ({
         tour,
-        nextDeparture: departures[0],
+        nextDeparture: pickNextDeparture(departures),
         image,
         soldOut: !hasBookableDeparture(departures),
       }));
