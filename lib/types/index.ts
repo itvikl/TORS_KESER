@@ -344,6 +344,8 @@ export interface SiteContentTrustSignal {
 }
 
 export interface SiteContentHome {
+  /** Hero background photo (URL) — editable in Admin → Site content → Home; falls back to the original photo. */
+  heroImage: string;
   heroEyebrow: string;
   heroTitleLine1: string;
   heroTitleHighlight: string;

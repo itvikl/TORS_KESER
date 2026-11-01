@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
+import ImageUploadButton from "@/components/admin/ImageUploadButton";
+import RequiredMark from "@/components/admin/RequiredMark";
+import { DEFAULT_HOME_HERO_IMAGE } from "@/lib/homeHero";
 import HomeHeroContent from "@/components/marketing/HomeHeroContent";
 import HomeTrustSignals from "@/components/marketing/HomeTrustSignals";
 import HomeCtaSection from "@/components/marketing/HomeCtaSection";
@@ -53,6 +56,39 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-6">
         <FieldGroup title="Hero">
+          <div>
+            <label className="block text-sm font-medium text-ink">
+              Background image
+              <RequiredMark />
+            </label>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              A wide landscape photo, at least 1920px across. The title sits over the middle of it, so
+              avoid busy detail there.
+            </p>
+            <div className="mt-2 flex flex-wrap items-start gap-3">
+              {draft.heroImage && (
+                // eslint-disable-next-line @next/next/no-img-element -- admin preview thumbnail, not public-facing content
+                <img src={draft.heroImage} alt="Current hero image" className="h-24 w-40 rounded-lg object-cover" />
+              )}
+              <div className="space-y-2">
+                <ImageUploadButton
+                  label="Upload image"
+                  folder="site"
+                  onUploaded={([url]) => url && set("heroImage", url)}
+                />
+                {draft.heroImage !== DEFAULT_HOME_HERO_IMAGE && (
+                  <button
+                    type="button"
+                    onClick={() => set("heroImage", DEFAULT_HOME_HERO_IMAGE)}
+                    className="text-xs font-semibold text-ink-muted underline hover:text-ink"
+                  >
+                    Use the original image
+                  </button>
+                )}
+              </div>
+            </div>
+            {errors.heroImage && <p className="mt-1 text-xs text-terracotta-dark">{errors.heroImage[0]}</p>}
+          </div>
           <TextField required label="Eyebrow" value={draft.heroEyebrow} onChange={(v) => set("heroEyebrow", v)} error={errors.heroEyebrow} />
           <TextField required label="Title — line 1" value={draft.heroTitleLine1} onChange={(v) => set("heroTitleLine1", v)} error={errors.heroTitleLine1} />
           <TextField required label="Title — highlighted line" value={draft.heroTitleHighlight} onChange={(v) => set("heroTitleHighlight", v)} error={errors.heroTitleHighlight} />
@@ -96,7 +132,15 @@ export default function HomeContentForm({ initialContent }: { initialContent: Si
 
       <PreviewFrame>
         <div className="-m-6 space-y-10 py-10">
-          <div className="px-6 text-center">
+          {/* The chosen photo behind the hero text, darkened like the real page, so the pick can be judged before saving. */}
+          <div
+            className="px-6 py-10 text-center"
+            style={{
+              backgroundImage: `linear-gradient(rgba(10,14,26,0.45), rgba(10,14,26,0.8)), url("${draft.heroImage}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
             <HomeHeroContent content={draft} interactive={false} />
           </div>
           <div className="px-6">

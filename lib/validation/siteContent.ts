@@ -6,6 +6,7 @@ const TrustSignalInputSchema = z.object({
 });
 
 export const SiteContentHomeInputSchema = z.object({
+  heroImage: z.string().min(1, { error: "Choose a hero image." }),
   heroEyebrow: z.string().min(1, { error: "Required." }),
   heroTitleLine1: z.string().min(1, { error: "Required." }),
   heroTitleHighlight: z.string().min(1, { error: "Required." }),

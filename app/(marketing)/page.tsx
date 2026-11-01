@@ -17,6 +17,7 @@ import {
 import { getSiteContent } from "@/lib/data/siteContent";
 import { getLatestBlogPosts } from "@/lib/data/blog";
 import { isDeparturePlanned } from "@/lib/departureAvailability";
+import { DEFAULT_HOME_HERO_IMAGE } from "@/lib/homeHero";
 import { bySortOrder } from "@/lib/tourSort";
 import {
   HOME_TOURS_CACHE_TAG,
@@ -37,9 +38,6 @@ export const metadata: Metadata = {
 // HTML instead of running every Firestore read first. The ?country=/?month=
 // filter is applied in the browser by TourFilterProvider.
 export const revalidate = 60;
-
-const HERO_IMAGE =
-  "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Fhome-hero-a18f8b00.jpg?alt=media&token=e03feebc-914d-423c-8b8b-bd7d3761658c";
 
 const FEATURED_IMAGES = [
   "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Ffeatured-1-7205ff78.jpg?alt=media&token=360c4321-21b6-4372-8d2f-4045624ae212",
@@ -108,7 +106,7 @@ export default async function HomePage() {
             {/* The LCP element — next/image serves it resized and as AVIF/WebP
                 (the source JPEG is ~490KB), and priority preloads it. */}
             <Image
-              src={HERO_IMAGE}
+              src={content.heroImage || DEFAULT_HOME_HERO_IMAGE}
               alt="Luxury travel destination with dramatic coastal views"
               fill
               priority

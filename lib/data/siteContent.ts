@@ -1,5 +1,6 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
+import { DEFAULT_HOME_HERO_IMAGE } from "@/lib/homeHero";
 import type {
   SiteContentAbout,
   SiteContentContact,
@@ -20,6 +21,7 @@ const COLLECTION = "siteContent";
  */
 export const SITE_CONTENT_DEFAULTS = {
   home: {
+    heroImage: DEFAULT_HOME_HERO_IMAGE,
     heroEyebrow: "Travel the World the Jewish Way",
     heroTitleLine1: "Kosher tours to places you've",
     heroTitleHighlight: "wanted to see",
