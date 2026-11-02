@@ -22,3 +22,9 @@ export function resendClient(): Resend {
 export function emailFrom(): string {
   return process.env.EMAIL_FROM ?? "Keshertours <onboarding@resend.dev>";
 }
+
+/** Where customer replies go (EMAIL_REPLY_TO) — spread into an emails.send() call. */
+export function emailReplyTo(): { replyTo?: string } {
+  const replyTo = process.env.EMAIL_REPLY_TO?.trim();
+  return replyTo ? { replyTo } : {};
+}

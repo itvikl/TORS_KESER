@@ -118,6 +118,12 @@ env:
     availability:
       - RUNTIME
 
+  # Where customers' replies to confirmation / receipt emails go.
+  - variable: EMAIL_REPLY_TO
+    value: keshertours@verizon.net
+    availability:
+      - RUNTIME
+
   # New-booking / new-lead alerts, comma-separated.
   - variable: ADMIN_NOTIFY_EMAIL
     value: keshertours@verizon.net

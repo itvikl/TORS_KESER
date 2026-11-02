@@ -1,6 +1,6 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
-import { emailFrom, resendClient } from "@/lib/email/resend";
+import { emailFrom, emailReplyTo, resendClient } from "@/lib/email/resend";
 import { bookingConfirmationEmail } from "@/lib/email/templates/bookingConfirmation";
 import { bookingNotificationEmail, leadNotificationEmail } from "@/lib/email/templates/adminNotifications";
 import { paymentReceiptEmail } from "@/lib/email/templates/paymentReceipt";
@@ -66,6 +66,7 @@ export async function sendBookingConfirmationEmail(booking: Booking): Promise<vo
       subject,
       html,
       text,
+      ...emailReplyTo(),
     });
   } catch (err) {
     console.error(`Failed to send booking confirmation email for ${booking.bookingId}:`, err);
@@ -118,6 +119,7 @@ export async function sendPaymentReceiptEmail(input: PaymentReceiptInput): Promi
       subject,
       html,
       text,
+      ...emailReplyTo(),
     });
   } catch (err) {
     console.error(`Failed to send payment receipt email for ${booking.bookingId}:`, err);
