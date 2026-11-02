@@ -120,7 +120,7 @@ env:
 
   # New-booking / new-lead alerts, comma-separated.
   - variable: ADMIN_NOTIFY_EMAIL
-    value: zsondhelm@gmail.com
+    value: keshertours@verizon.net
     availability:
       - RUNTIME
 
