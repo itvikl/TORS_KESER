@@ -6,6 +6,7 @@ import { requireAdminRole } from "@/lib/auth/dal";
 import { adminDb } from "@/lib/firebase/admin";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
+import { revalidateAllTourPages } from "@/lib/revalidatePrerendered";
 import type { ContentCollection } from "@/lib/media/assets";
 
 /**
@@ -28,9 +29,9 @@ async function countBookings(field: "tourId" | "departureId", id: string): Promi
   return (await db().collection("bookings").where(field, "==", id).count().get()).data().count;
 }
 
-/** All public tour pages read reviews/guides, so changes there refresh the tour route as a whole. */
-function revalidateTourPages() {
-  revalidatePath("/tours/[slug]", "page");
+/** All public tour pages read reviews/guides, so changes there refresh every tour page. */
+function revalidateTourPages(): Promise<void> {
+  return revalidateAllTourPages();
 }
 
 export async function deleteTour(tourId: string): Promise<DeleteResult> {
@@ -81,7 +82,7 @@ export async function deleteDeparture(departureId: string, tourId: string): Prom
   await db().collection("departures").doc(departureId).delete();
   revalidatePath(`/admin/tours/${tourId}/departures`);
   revalidatePath("/admin/tours");
-  revalidateTourPages();
+  await revalidateTourPages();
   updateTag(HOME_TOURS_CACHE_TAG);
   return { ok: true };
 }
@@ -127,7 +128,7 @@ export async function deleteReview(reviewId: string): Promise<DeleteResult> {
   await syncContentMediaSafely("reviews", reviewId);
   revalidatePath("/admin/reviews");
   revalidatePath("/testimonials");
-  revalidateTourPages();
+  await revalidateTourPages();
   return { ok: true };
 }
 
@@ -147,6 +148,6 @@ export async function deleteStaffMember(staffId: string): Promise<DeleteResult> 
   await syncContentMediaSafely("staff", staffId);
 
   revalidatePath("/admin/staff/team");
-  revalidateTourPages();
+  await revalidateTourPages();
   return { ok: true };
 }

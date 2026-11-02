@@ -19,6 +19,7 @@ import {
 import { isReadyToPublish } from "@/lib/validation/tourChecklist";
 import type { Tour, TourStatus } from "@/lib/types";
 import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
+import { revalidateAllTourPages } from "@/lib/revalidatePrerendered";
 
 export type SaveTourResult =
   | { ok: true; tourId: string }
@@ -68,7 +69,7 @@ export async function archiveTour(tourId: string): Promise<void> {
   await archiveTourDoc(tourId);
   revalidatePath("/admin/tours");
   // The public page now redirects (archived) instead of rendering — drop its cached copy.
-  revalidatePath("/tours/[slug]", "page");
+  await revalidateAllTourPages();
   updateTag(HOME_TOURS_CACHE_TAG);
 }
 
@@ -79,7 +80,7 @@ export async function setTourStatus(tourId: string, status: TourStatus): Promise
   revalidatePath(`/admin/tours/${tourId}`);
   // Publishing/archiving flips the public page between rendering and
   // redirecting — drop the cached copy so the change shows immediately.
-  revalidatePath("/tours/[slug]", "page");
+  await revalidateAllTourPages();
   updateTag(HOME_TOURS_CACHE_TAG);
 }
 

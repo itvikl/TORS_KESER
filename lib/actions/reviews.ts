@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { requireAdminSession } from "@/lib/auth/dal";
+import { revalidateAllTourPages } from "@/lib/revalidatePrerendered";
 import { ReviewInputSchema } from "@/lib/validation/review";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import {
@@ -35,7 +36,7 @@ export async function saveReview(input: unknown, reviewId?: string): Promise<Sav
   revalidatePath("/admin/reviews");
   revalidatePath(`/admin/reviews/${savedId}`);
   revalidatePath("/testimonials"); // approved reviews render there
-  revalidatePath("/tours/[slug]", "page"); // …and on their destination's tour pages
+  await revalidateAllTourPages(); // …and on their destination's tour pages
 
   return { ok: true, reviewId: savedId };
 }
@@ -45,7 +46,7 @@ export async function setReviewStatus(reviewId: string, status: Review["status"]
   await setReviewStatusDoc(reviewId, status);
   revalidatePath("/admin/reviews");
   revalidatePath("/testimonials");
-  revalidatePath("/tours/[slug]", "page");
+  await revalidateAllTourPages();
 }
 
 /** Destination photo on /testimonials; pass no image to go back to the default (the most-reviewed tour's hero). */

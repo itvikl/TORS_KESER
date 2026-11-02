@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { saveSiteContent } from "@/lib/data/siteContent";
 import { HOME_CONTENT_CACHE_TAG } from "@/lib/data/homeCacheTags";
+import { revalidateAllBlogPostPages, revalidateAllTourPages } from "@/lib/revalidatePrerendered";
 import {
   SiteContentAboutInputSchema,
   SiteContentContactInputSchema,
@@ -88,9 +89,9 @@ export async function saveTourPageContent(input: unknown): Promise<SaveSiteConte
   const parsed = copyInputSchema(TOUR_PAGE_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("tour-page", parsed.data as TourPageCopy);
-  revalidatePath("/tours/[slug]", "page");
-  // The availability wording is also shown on the booking form's date step.
-  revalidatePath("/tours/[slug]/book", "page");
+  // The booking form's date step also shows the availability wording, but
+  // that page renders per request, so it needs no revalidation.
+  await revalidateAllTourPages();
   return { ok: true };
 }
 
@@ -99,8 +100,7 @@ export async function saveBookingContent(input: unknown): Promise<SaveSiteConten
   const parsed = copyInputSchema(BOOKING_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("booking", parsed.data as BookingCopy);
-  revalidatePath("/tours/[slug]/book", "page");
-  revalidatePath("/tours/[slug]/book/success", "page");
+  // Nothing to revalidate: the booking and payment-received pages render per request.
   return { ok: true };
 }
 
@@ -111,7 +111,7 @@ export async function saveBlogContent(input: unknown): Promise<SaveSiteContentRe
   await saveSiteContent("blog", parsed.data as BlogCopy);
   revalidatePath("/");
   revalidatePath("/blog");
-  revalidatePath("/blog/[slug]", "page");
+  await revalidateAllBlogPostPages();
   return { ok: true };
 }
 
