@@ -183,6 +183,7 @@ export default function BookingManualForm({
               {tourDepartures.map((d) => (
                 <option key={d.departureId} value={d.departureId}>
                   {new Date(d.startDate).toLocaleDateString("en-US", {
+                    timeZone: "UTC",
                     month: "long",
                     day: "numeric",
                     year: "numeric",

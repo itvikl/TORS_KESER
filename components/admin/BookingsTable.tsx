@@ -46,6 +46,7 @@ export default function BookingsTable({ rows }: { rows: AdminBookingRow[] }) {
                   <td className="px-4 py-3 text-ink-muted">
                     {departure
                       ? new Date(departure.startDate).toLocaleDateString("en-US", {
+                          timeZone: "UTC",
                           month: "short",
                           day: "numeric",
                           year: "numeric",

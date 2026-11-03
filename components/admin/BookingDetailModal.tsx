@@ -28,7 +28,7 @@ const STATUS_LABELS: Record<BookingStatus, string> = {
 };
 
 function formatDateRange(startIso: string, endIso: string) {
-  const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric", year: "numeric" };
+  const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" };
   return `${new Date(startIso).toLocaleDateString("en-US", opts)} – ${new Date(endIso).toLocaleDateString("en-US", opts)}`;
 }
 

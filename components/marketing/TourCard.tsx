@@ -65,6 +65,7 @@ export default function TourCard({
             <div className="text-xs font-semibold text-[var(--color-slate)]">
               {nextDeparture
                 ? `Departs ${new Date(nextDeparture.startDate).toLocaleDateString("en-US", {
+                    timeZone: "UTC",
                     month: "short",
                     day: "numeric",
                   })}`

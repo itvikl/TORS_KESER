@@ -66,12 +66,14 @@ export default async function TourDeparturesBookingsPage({
                       <NewBookingsBadge count={newCount} />
                       <span>
                         {new Date(departure.startDate).toLocaleDateString("en-US", {
+                          timeZone: "UTC",
                           month: "short",
                           day: "numeric",
                           year: "numeric",
                         })}{" "}
                         –{" "}
                         {new Date(departure.endDate).toLocaleDateString("en-US", {
+                          timeZone: "UTC",
                           month: "short",
                           day: "numeric",
                         })}

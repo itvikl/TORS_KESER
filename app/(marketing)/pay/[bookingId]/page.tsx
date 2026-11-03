@@ -71,6 +71,7 @@ async function PaymentSummary({
       <p className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--color-ice)]">{tour.title}</p>
       <h2 className="mt-2 font-display text-2xl font-bold text-[var(--color-mist)] sm:text-3xl">
         {new Date(departure.startDate).toLocaleDateString("en-US", {
+          timeZone: "UTC",
           month: "long",
           day: "numeric",
           year: "numeric",

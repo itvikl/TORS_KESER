@@ -430,6 +430,7 @@ export default function TourPageView({
                     <div className="min-w-0 space-y-1">
                       <p className="text-[var(--color-mist)]">
                         {new Date(dep.startDate).toLocaleDateString("en-US", {
+                          timeZone: "UTC",
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -569,6 +570,7 @@ function GuideCard({ guide, ledDates, leadingLabel }: { guide: Staff; ledDates: 
           {ledDates
             .map((dep) =>
               new Date(dep.startDate).toLocaleDateString("en-US", {
+                timeZone: "UTC",
                 month: "short",
                 day: "numeric",
                 year: "numeric",

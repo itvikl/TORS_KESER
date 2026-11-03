@@ -245,6 +245,7 @@ export default function BookingForm({
                         className="accent-[var(--color-ice)]"
                       />
                       {new Date(d.startDate).toLocaleDateString("en-US", {
+                        timeZone: "UTC",
                         month: "long",
                         day: "numeric",
                         year: "numeric",
@@ -485,6 +486,7 @@ export default function BookingForm({
               <Row
                 label={copy.reviewDeparture}
                 value={new Date(departure.startDate).toLocaleDateString("en-US", {
+                  timeZone: "UTC",
                   month: "long",
                   day: "numeric",
                   year: "numeric",

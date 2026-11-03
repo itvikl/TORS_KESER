@@ -77,12 +77,14 @@ export default async function TourDeparturesPage({
                 <tr key={departure.departureId} className="align-middle">
                   <td className="px-4 py-3 text-ink">
                     {new Date(departure.startDate).toLocaleDateString("en-US", {
+                      timeZone: "UTC",
                       month: "short",
                       day: "numeric",
                       year: "numeric",
                     })}{" "}
                     –{" "}
                     {new Date(departure.endDate).toLocaleDateString("en-US", {
+                      timeZone: "UTC",
                       month: "short",
                       day: "numeric",
                     })}

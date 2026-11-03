@@ -38,7 +38,7 @@ export async function buildBookingsWorkbook(
       contactName: booking.contactName,
       contactEmail: booking.contactEmail,
       contactPhone: booking.contactPhone ?? "",
-      departureDate: departure ? new Date(departure.startDate).toLocaleDateString("en-US") : "",
+      departureDate: departure ? new Date(departure.startDate).toLocaleDateString("en-US", { timeZone: "UTC" }) : "",
       travelerCount: booking.travelerCount,
       status: STATUS_LABELS[booking.status] ?? booking.status,
       deposit: booking.depositAmount,

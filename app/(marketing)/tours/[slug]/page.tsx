@@ -21,7 +21,12 @@ import { SITE_URL } from "@/lib/siteUrl";
 // scripts/migrate/) never go through a server action, so nothing calls
 // revalidatePath for them. An hourly ISR window means those edits appear
 // without a redeploy; admin-UI edits still bust the cache immediately.
-export const revalidate = 3600;
+//
+// Kept short because Google's CDN in front of App Hosting holds its own copy
+// for s-maxage and ignores revalidatePath, so an admin edit (a moved departure
+// date) would otherwise show the old version to some visitors for up to this
+// long. See node_modules/next/dist/docs/01-app/02-guides/cdn-caching.md.
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const tours = await getAllTours();

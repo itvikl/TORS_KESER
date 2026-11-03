@@ -56,7 +56,7 @@ async function findBalancePaymentLinks(departureId: string): Promise<BalancePaym
 /** startDate minus `days`, as a YYYY-MM-DD string (same date-only format as startDate/endDate). */
 function subtractDays(isoDate: string, days: number): string {
   const date = new Date(isoDate);
-  date.setDate(date.getDate() - days);
+  date.setUTCDate(date.getUTCDate() - days);
   return date.toISOString().slice(0, 10);
 }
 
