@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
 import JsonLd from "@/components/seo/JsonLd";
 import {
-  getAllTours,
   getArchivedTourRedirectPath,
   getDeparturesForTour,
   getGuidesForDepartures,
@@ -15,23 +14,12 @@ import { getSiteContent } from "@/lib/data/siteContent";
 import { withoutBrandSuffix } from "@/lib/seoTitle";
 import { SITE_URL } from "@/lib/siteUrl";
 
-// Tour pages are prerendered (generateStaticParams below), and without this
-// they would stay frozen at build time forever — s-maxage=31536000. Photos
-// and copy edited straight in Firestore (e.g. the legacy-image backfills in
-// scripts/migrate/) never go through a server action, so nothing calls
-// revalidatePath for them. An hourly ISR window means those edits appear
-// without a redeploy; admin-UI edits still bust the cache immediately.
-//
-// Kept short because Google's CDN in front of App Hosting holds its own copy
-// for s-maxage and ignores revalidatePath, so an admin edit (a moved departure
-// date) would otherwise show the old version to some visitors for up to this
-// long. See node_modules/next/dist/docs/01-app/02-guides/cdn-caching.md.
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const tours = await getAllTours();
-  return tours.map((tour) => ({ slug: tour.slug }));
-}
+// Rendered on every request, never cached. Departure dates, seats and the
+// downloadable PDFs are live data staff change in the admin, and Google's CDN
+// in front of App Hosting keeps its own copy of any cacheable page for
+// s-maxage and ignores revalidatePath, so a cached page showed some visitors
+// an old departure date or an old PDF. A tour page is one small Firestore read.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
