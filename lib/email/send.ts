@@ -214,6 +214,8 @@ export async function sendLeadNotificationEmail(lead: Lead): Promise<void> {
       country: lead.country,
       destination: lead.destination,
       groupSize: lead.groupSize,
+      travelStartDate: lead.travelStartDate,
+      travelEndDate: lead.travelEndDate,
       tourTitle,
       message: lead.message,
       adminUrl: `${SITE_URL}/admin/leads/${lead.leadId}`,

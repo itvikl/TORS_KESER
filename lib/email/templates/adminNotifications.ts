@@ -91,6 +91,8 @@ export interface LeadNotificationData {
   country?: string;
   destination?: string;
   groupSize?: number;
+  travelStartDate?: string;
+  travelEndDate?: string;
   tourTitle?: string;
   message?: string;
   adminUrl: string;
@@ -110,6 +112,8 @@ export function leadNotificationEmail(data: LeadNotificationData): EmailContent 
     ["Tour", data.tourTitle],
     ["Destination", data.destination],
     ["Group size", data.groupSize !== undefined ? String(data.groupSize) : undefined],
+    ["Travel from", data.travelStartDate],
+    ["Travel until", data.travelEndDate],
   ];
   const shown = fields.filter((f): f is [string, string] => Boolean(f[1]));
 

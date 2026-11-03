@@ -65,6 +65,20 @@ export default function LeadForm({ tours, lead }: { tours: Tour[]; lead?: Lead }
           defaultValue={lead?.groupSize?.toString()}
           error={errors.groupSize}
         />
+        <Field
+          label="Travel from"
+          name="travelStartDate"
+          type="date"
+          defaultValue={lead?.travelStartDate}
+          error={errors.travelStartDate}
+        />
+        <Field
+          label="Travel until"
+          name="travelEndDate"
+          type="date"
+          defaultValue={lead?.travelEndDate}
+          error={errors.travelEndDate}
+        />
       </div>
 
       <div>

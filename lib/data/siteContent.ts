@@ -167,7 +167,7 @@ When you register for a tour, we collect:
 - Dietary requirements, and any health or mobility information you tell us about so that we can arrange suitable services.
 - Whether you prefer to complete payment online or by a call from our team.
 
-When you contact us through the Website (contact form, custom tour request, or tour inquiry), we collect the details you submit, such as your name, email address, phone number, country, message, destination of interest, and group size.
+When you contact us through the Website (contact form, custom tour request, or tour inquiry), we collect the details you submit, such as your name, email address, phone number, country, message, destination of interest, group size, and preferred travel dates.
 
 Payment information. Card payments are entered into a secure payment form provided by Stripe, Inc. ("Stripe"). Your card number goes directly to Stripe and is not stored on our servers. We keep a record of each payment, including the amount, date, status, and a Stripe reference number.
 

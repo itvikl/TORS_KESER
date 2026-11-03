@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitCustomTourLead, type LeadFormState } from "@/lib/actions/leads";
 
 const initialState: LeadFormState = { ok: false, errors: {} };
 
 export default function CustomTourForm() {
   const [state, formAction, pending] = useActionState(submitCustomTourLead, initialState);
+  const [travelStartDate, setTravelStartDate] = useState("");
+  const [travelEndDate, setTravelEndDate] = useState("");
 
   if (state.ok) {
     return (
@@ -48,6 +50,40 @@ export default function CustomTourForm() {
           />
           {errors.groupSize && (
             <p className="mt-1 text-xs text-[var(--color-danger-text)]">{errors.groupSize[0]}</p>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-slate)]" htmlFor="travelStartDate">
+            Travel from
+          </label>
+          <input
+            id="travelStartDate"
+            name="travelStartDate"
+            type="date"
+            value={travelStartDate}
+            max={travelEndDate || undefined}
+            onChange={(e) => setTravelStartDate(e.target.value)}
+            className="glacier-field mt-1.5 w-full"
+          />
+          {errors.travelStartDate && (
+            <p className="mt-1 text-xs text-[var(--color-danger-text)]">{errors.travelStartDate[0]}</p>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-slate)]" htmlFor="travelEndDate">
+            Travel until
+          </label>
+          <input
+            id="travelEndDate"
+            name="travelEndDate"
+            type="date"
+            value={travelEndDate}
+            min={travelStartDate || undefined}
+            onChange={(e) => setTravelEndDate(e.target.value)}
+            className="glacier-field mt-1.5 w-full"
+          />
+          {errors.travelEndDate && (
+            <p className="mt-1 text-xs text-[var(--color-danger-text)]">{errors.travelEndDate[0]}</p>
           )}
         </div>
       </div>

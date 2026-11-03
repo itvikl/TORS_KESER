@@ -85,6 +85,8 @@ const EDITABLE_LEAD_FIELDS = [
   "message",
   "destination",
   "groupSize",
+  "travelStartDate",
+  "travelEndDate",
   "tourId",
   "status",
   "notes",

@@ -275,6 +275,9 @@ export interface Lead {
   message?: string;
   destination?: string;
   groupSize?: number;
+  /** Requested travel window, as YYYY-MM-DD. Either end may be missing. */
+  travelStartDate?: string;
+  travelEndDate?: string;
   source: LeadSource;
   status: "new" | "contacted" | "converted" | "closed";
   /** Staff-only notes (follow-ups, what was discussed) — never shown to the customer. */
