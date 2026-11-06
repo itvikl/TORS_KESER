@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { saveSiteContent } from "@/lib/data/siteContent";
 import { HOME_CONTENT_CACHE_TAG } from "@/lib/data/homeCacheTags";
 import { revalidateAllBlogPostPages, revalidateAllTourPages } from "@/lib/revalidatePrerendered";
@@ -39,7 +39,7 @@ export type SaveSiteContentResult =
   | { ok: false; errors: Record<string, string[] | undefined> };
 
 export async function saveHomeContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentHomeInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("home", parsed.data as SiteContentHome);
@@ -49,7 +49,7 @@ export async function saveHomeContent(input: unknown): Promise<SaveSiteContentRe
 }
 
 export async function saveAboutContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentAboutInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("about", parsed.data as SiteContentAbout);
@@ -58,7 +58,7 @@ export async function saveAboutContent(input: unknown): Promise<SaveSiteContentR
 }
 
 export async function saveCustomToursContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentSimplePageInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("custom-tours", parsed.data as SiteContentSimplePage);
@@ -67,7 +67,7 @@ export async function saveCustomToursContent(input: unknown): Promise<SaveSiteCo
 }
 
 export async function saveSpecialOffersContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentSimplePageInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("special-offers", parsed.data as SiteContentSimplePage);
@@ -76,7 +76,7 @@ export async function saveSpecialOffersContent(input: unknown): Promise<SaveSite
 }
 
 export async function saveTestimonialsContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = copyInputSchema(TESTIMONIALS_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("testimonials", parsed.data as TestimonialsCopy);
@@ -85,7 +85,7 @@ export async function saveTestimonialsContent(input: unknown): Promise<SaveSiteC
 }
 
 export async function saveTourPageContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = copyInputSchema(TOUR_PAGE_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("tour-page", parsed.data as TourPageCopy);
@@ -96,7 +96,7 @@ export async function saveTourPageContent(input: unknown): Promise<SaveSiteConte
 }
 
 export async function saveBookingContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = copyInputSchema(BOOKING_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("booking", parsed.data as BookingCopy);
@@ -105,7 +105,7 @@ export async function saveBookingContent(input: unknown): Promise<SaveSiteConten
 }
 
 export async function saveBlogContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = copyInputSchema(BLOG_COPY_SECTIONS).safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("blog", parsed.data as BlogCopy);
@@ -116,7 +116,7 @@ export async function saveBlogContent(input: unknown): Promise<SaveSiteContentRe
 }
 
 export async function saveFaqContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentFaqInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("faq", parsed.data as SiteContentFaq);
@@ -125,7 +125,7 @@ export async function saveFaqContent(input: unknown): Promise<SaveSiteContentRes
 }
 
 export async function saveContactContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentContactInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("contact", parsed.data as SiteContentContact);
@@ -134,7 +134,7 @@ export async function saveContactContent(input: unknown): Promise<SaveSiteConten
 }
 
 export async function saveLegalPrivacyContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentLegalInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("legal-privacy", parsed.data as SiteContentLegal);
@@ -143,7 +143,7 @@ export async function saveLegalPrivacyContent(input: unknown): Promise<SaveSiteC
 }
 
 export async function saveLegalTermsContent(input: unknown): Promise<SaveSiteContentResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const parsed = SiteContentLegalInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, errors: zodIssuesToFieldErrors(parsed.error.issues) };
   await saveSiteContent("legal-terms", parsed.data as SiteContentLegal);

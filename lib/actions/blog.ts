@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { BlogPostInputSchema } from "@/lib/validation/blogPost";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import { createBlogPostDoc, isBlogSlugTaken, updateBlogPostDoc } from "@/lib/data/admin/blog";
@@ -12,7 +12,7 @@ export type SaveBlogPostResult =
   | { ok: false; errors: Record<string, string[] | undefined> };
 
 export async function saveBlogPost(input: unknown, postId?: string): Promise<SaveBlogPostResult> {
-  await requireAdminSession();
+  await requireContentSession();
 
   const parsed = BlogPostInputSchema.safeParse(input);
   if (!parsed.success) {

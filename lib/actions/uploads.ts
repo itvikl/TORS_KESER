@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { adminStorage } from "@/lib/firebase/admin";
 import { recordUploadedImage } from "@/lib/data/admin/mediaLibrary";
 import { PASSPORT_SCANS_PREFIX } from "@/lib/passportScans";
@@ -24,7 +24,8 @@ export type UploadImageResult = { ok: true; url: string } | { ok: false; error: 
  * namespaces the storage path per admin category (tours, reviews, blog, ...).
  */
 export async function uploadImage(formData: FormData, folder = "tours"): Promise<UploadImageResult> {
-  await requireAdminSession();
+  // Open to SEO admins too — blog, site content and the image library upload images.
+  await requireContentSession();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -151,7 +152,7 @@ export type UploadTourPdfResult =
  * leading bytes must say "PDF": the browser-reported type is client-controlled.
  */
 export async function uploadTourPdf(formData: FormData): Promise<UploadTourPdfResult> {
-  await requireAdminSession();
+  await requireContentSession(); // tours are open to SEO admins
 
   const file = formData.get("file");
   if (!(file instanceof File)) {

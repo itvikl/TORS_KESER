@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import BlogPostEditorForm from "@/components/admin/BlogPostEditorForm";
 import { getBlogPostByIdAdmin } from "@/lib/data/admin/blog";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDelete } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteBlogPost } from "@/lib/actions/deletions";
 
@@ -24,7 +25,7 @@ export default async function EditBlogPostPage({
   const { postId } = await params;
   const post = await getBlogPostByIdAdmin(postId);
   if (!post) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDelete((await getAdminSession())?.role, "blogPost");
 
   return (
     <div>

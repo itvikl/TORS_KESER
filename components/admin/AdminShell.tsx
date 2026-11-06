@@ -2,6 +2,7 @@ import Link from "next/link";
 import BrandLogo from "@/components/marketing/BrandLogo";
 import SignOutButton from "@/components/admin/SignOutButton";
 import AdminFeedbackProvider from "@/components/admin/feedback/AdminFeedbackProvider";
+import { canAccessAdminPath, roleLabel, type AdminRole } from "@/lib/auth/roles";
 
 const NAV_SECTIONS: {
   title: string;
@@ -33,17 +34,27 @@ const NAV_SECTIONS: {
       { label: "Team", href: "/admin/staff/team" },
       { label: "Admin accounts", href: "/admin/staff/accounts" },
       { label: "Settings", href: "/admin/settings" },
+      { label: "My account", href: "/admin/account" },
     ],
   },
 ];
 
 export default function AdminShell({
   email,
+  role,
   children,
 }: {
   email: string | null;
+  role: AdminRole;
   children: React.ReactNode;
 }) {
+  // Only what this role can open (lib/auth/roles.ts) — e.g. Admin accounts is
+  // hidden unless you're a developer or super admin.
+  const sections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => canAccessAdminPath(role, item.href)),
+  })).filter((section) => section.items.length > 0);
+
   return (
     <AdminFeedbackProvider>
       <div className="flex min-h-screen bg-sand-warm">
@@ -52,7 +63,7 @@ export default function AdminShell({
             <BrandLogo className="h-9 w-auto object-contain" href="/admin" />
           </div>
           <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-            {NAV_SECTIONS.map((section) => (
+            {sections.map((section) => (
               <div key={section.title}>
                 <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
                   {section.title}
@@ -85,10 +96,15 @@ export default function AdminShell({
           </nav>
           <div className="border-t border-line px-4 py-4">
             {email && (
-              <p className="mb-2 truncate text-xs text-ink-muted" title={email}>
+              <Link
+                href="/admin/account"
+                className="mb-2 block truncate text-xs text-ink-muted hover:text-ink hover:underline"
+                title={`${email} — My account`}
+              >
                 {email}
-              </p>
+              </Link>
             )}
+            <p className="mb-2 text-xs font-medium text-ink-muted">{roleLabel(role)}</p>
             <SignOutButton />
           </div>
         </aside>

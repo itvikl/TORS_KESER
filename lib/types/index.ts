@@ -24,7 +24,7 @@ export type BookingStatus =
   | "refunded";
 export type PaymentType = "deposit" | "balance" | "full" | "refund";
 export type LeadSource = "contact" | "custom" | "evergreen" | "manual";
-export type UserRole = "customer" | "staff" | "admin";
+export type UserRole = "customer" | import("@/lib/auth/roles").AdminRole;
 export type StaffRole = "guide" | "kashrutSupervisor";
 
 /** A labeled row on a tour-page info card, e.g. "Supervision" → "Local Rabbinate". */

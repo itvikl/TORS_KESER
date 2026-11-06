@@ -5,6 +5,7 @@ import { getDepartureByIdAdmin } from "@/lib/data/admin/departures";
 import { getAllStaffAdmin } from "@/lib/data/admin/staff";
 import DepartureEditorForm from "@/components/admin/DepartureEditorForm";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDeleteContent } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteDeparture } from "@/lib/actions/deletions";
 
@@ -30,7 +31,7 @@ export default async function EditDeparturePage({
     getAllStaffAdmin(),
   ]);
   if (!tour || !departure || departure.tourId !== tourId) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDeleteContent((await getAdminSession())?.role);
 
   return (
     <div>

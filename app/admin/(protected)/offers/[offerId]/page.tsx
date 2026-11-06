@@ -4,6 +4,7 @@ import OfferEditorForm from "@/components/admin/OfferEditorForm";
 import { getOfferByIdAdmin } from "@/lib/data/admin/offers";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDeleteContent } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteOffer } from "@/lib/actions/deletions";
 
@@ -25,7 +26,7 @@ export default async function EditOfferPage({
   const { offerId } = await params;
   const [offer, tours] = await Promise.all([getOfferByIdAdmin(offerId), getAllToursAdmin()]);
   if (!offer) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDeleteContent((await getAdminSession())?.role);
 
   tours.sort((a, b) => a.title.localeCompare(b.title));
 

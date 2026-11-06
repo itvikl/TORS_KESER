@@ -4,6 +4,7 @@ import SeoPageEditorForm from "@/components/admin/SeoPageEditorForm";
 import { getSeoPageByIdAdmin } from "@/lib/data/admin/seoPages";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDelete } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteSeoPage } from "@/lib/actions/deletions";
 
@@ -25,7 +26,7 @@ export default async function EditSeoPagePage({
   const { pageId } = await params;
   const [page, tours] = await Promise.all([getSeoPageByIdAdmin(pageId), getAllToursAdmin()]);
   if (!page) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDelete((await getAdminSession())?.role, "seoPage");
 
   tours.sort((a, b) => a.title.localeCompare(b.title));
 

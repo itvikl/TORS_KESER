@@ -4,17 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import { addAdminAccount } from "@/lib/actions/adminUsers";
-import type { UserRole } from "@/lib/types";
+import { ROLE_LABELS, type AdminRole } from "@/lib/auth/roles";
 
 /**
  * "Add account": creates the login when the email has none yet (password
  * required), otherwise just sets the role on the existing login.
  */
-export default function AdminUserRoleForm() {
+export default function AdminUserRoleForm({ roles }: { roles: AdminRole[] }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Extract<UserRole, "staff" | "admin">>("staff");
+  const [role, setRole] = useState<AdminRole>(roles.includes("staff") ? "staff" : roles[0]);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
   const toast = useToast();
@@ -37,7 +37,7 @@ export default function AdminUserRoleForm() {
       setErrors(result.errors);
       toast.error({
         title: "Account not saved",
-        description: result.errors.email?.[0] ?? result.errors.password?.[0] ?? "Please check the details and try again.",
+        description: result.errors.email?.[0] ?? result.errors.password?.[0] ?? result.errors.role?.[0] ?? "Please check the details and try again.",
       });
       return;
     }
@@ -49,7 +49,7 @@ export default function AdminUserRoleForm() {
             description: `Account created for ${email}. Share the password with them — they sign in at /admin/login.`,
             duration: 8000,
           }
-        : { title: "Access updated", description: `${email} already had a login — their access is now set to ${role}.` }
+        : { title: "Access updated", description: `${email} already had a login — their access is now set to ${ROLE_LABELS[role]}.` }
     );
     setEmail("");
     setPassword("");
@@ -101,11 +101,14 @@ export default function AdminUserRoleForm() {
           <select
             id="role"
             value={role}
-            onChange={(e) => setRole(e.target.value as "staff" | "admin")}
-            className="mt-1.5 w-36 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
+            onChange={(e) => setRole(e.target.value as AdminRole)}
+            className="mt-1.5 w-40 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
           >
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
+            {roles.map((r) => (
+              <option key={r} value={r}>
+                {ROLE_LABELS[r]}
+              </option>
+            ))}
           </select>
         </div>
         <button

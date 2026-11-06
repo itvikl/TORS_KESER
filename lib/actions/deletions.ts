@@ -2,7 +2,8 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
-import { requireAdminRole } from "@/lib/auth/dal";
+import { requireAdminRole, requireContentSession, requireDeleteRight } from "@/lib/auth/dal";
+import { canDeleteTour } from "@/lib/auth/roles";
 import { adminDb } from "@/lib/firebase/admin";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
 import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
@@ -35,7 +36,7 @@ function revalidateTourPages(): Promise<void> {
 }
 
 export async function deleteTour(tourId: string): Promise<DeleteResult> {
-  await requireAdminRole();
+  const session = await requireContentSession();
 
   const bookings = await countBookings("tourId", tourId);
   if (bookings > 0) {
@@ -47,7 +48,13 @@ export async function deleteTour(tourId: string): Promise<DeleteResult> {
 
   const tourSnap = await db().collection("tours").doc(tourId).get();
   if (!tourSnap.exists) return { ok: false, error: "Tour not found." };
-  const slug = (tourSnap.data() as { slug?: string }).slug;
+  const { slug, status } = tourSnap.data() as { slug?: string; status?: string };
+  if (!canDeleteTour(session.role, status)) {
+    return {
+      ok: false,
+      error: status === "published" ? "This tour is live — only an admin can delete it." : "You can't delete tours.",
+    };
+  }
 
   // Its departure dates go with it; SEO pages stop listing it.
   const [departures, seoPages] = await Promise.all([
@@ -88,7 +95,7 @@ export async function deleteDeparture(departureId: string, tourId: string): Prom
 }
 
 export async function deleteBlogPost(postId: string): Promise<DeleteResult> {
-  await requireAdminRole();
+  await requireDeleteRight("blogPost");
   const slug = ((await db().collection("blogPosts").doc(postId).get()).data() as { slug?: string } | undefined)?.slug;
   await deleteContentDoc("blogPosts", postId);
   await syncContentMediaSafely("blogPosts", postId);
@@ -109,7 +116,7 @@ export async function deleteOffer(offerId: string): Promise<DeleteResult> {
 }
 
 export async function deleteSeoPage(pageId: string): Promise<DeleteResult> {
-  await requireAdminRole();
+  await requireDeleteRight("seoPage");
   await deleteContentDoc("seoLandingPages", pageId);
   revalidatePath("/admin/seo-pages");
   return { ok: true };

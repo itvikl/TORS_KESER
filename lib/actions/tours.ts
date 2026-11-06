@@ -3,7 +3,9 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { syncContentMediaSafely } from "@/lib/data/admin/mediaLibrary";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession, type AdminSession } from "@/lib/auth/dal";
+import { canTakeTourOffline } from "@/lib/auth/roles";
+import { getTourByIdAdmin } from "@/lib/data/admin/tours";
 import { TourInputSchema } from "@/lib/validation/tour";
 import { singleSupplementOf } from "@/lib/pricing";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
@@ -32,8 +34,21 @@ export type SaveTourResult =
  * Next.js Server Actions can be invoked as plain async functions from
  * client code, not only through forms.
  */
+/**
+ * Tours are open to SEO admins too (lib/auth/roles.ts), except taking a live
+ * tour offline — otherwise "can't delete a live tour" could be sidestepped by
+ * archiving it first. Throws for the void actions; saveTour returns an error.
+ */
+async function isTakingLiveTourOffline(session: AdminSession, tourId: string | undefined, next: TourStatus) {
+  if (!tourId || next === "published" || canTakeTourOffline(session.role)) return false;
+  const current = await getTourByIdAdmin(tourId);
+  return current?.status === "published";
+}
+
+const OFFLINE_ERROR = "Only an admin can unpublish or archive a live tour.";
+
 export async function saveTour(input: unknown, tourId?: string): Promise<SaveTourResult> {
-  await requireAdminSession();
+  const session = await requireContentSession();
 
   const parsed = TourInputSchema.safeParse(input);
   if (!parsed.success) {
@@ -47,6 +62,10 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
   // could take bookings it can't charge for).
   if (data.status === "published" && !isReadyToPublish(data as unknown as Tour)) {
     return { ok: false, errors: { status: ["A published tour must have everything on the publish checklist."] } };
+  }
+
+  if (await isTakingLiveTourOffline(session, tourId, data.status)) {
+    return { ok: false, errors: { status: [OFFLINE_ERROR] } };
   }
 
   if (await isSlugTaken(data.slug, tourId)) {
@@ -65,7 +84,8 @@ export async function saveTour(input: unknown, tourId?: string): Promise<SaveTou
 }
 
 export async function archiveTour(tourId: string): Promise<void> {
-  await requireAdminSession();
+  const session = await requireContentSession();
+  if (await isTakingLiveTourOffline(session, tourId, "archived")) throw new Error(OFFLINE_ERROR);
   await archiveTourDoc(tourId);
   revalidatePath("/admin/tours");
   // The public page now redirects (archived) instead of rendering — drop its cached copy.
@@ -74,7 +94,8 @@ export async function archiveTour(tourId: string): Promise<void> {
 }
 
 export async function setTourStatus(tourId: string, status: TourStatus): Promise<void> {
-  await requireAdminSession();
+  const session = await requireContentSession();
+  if (await isTakingLiveTourOffline(session, tourId, status)) throw new Error(OFFLINE_ERROR);
   await setTourStatusDoc(tourId, status);
   revalidatePath("/admin/tours");
   revalidatePath(`/admin/tours/${tourId}`);
@@ -85,7 +106,7 @@ export async function setTourStatus(tourId: string, status: TourStatus): Promise
 }
 
 export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: boolean }> {
-  await requireAdminSession();
+  await requireContentSession();
   await setTourSortOrders(orderedTourIds);
   revalidatePath("/admin/tours");
   revalidatePath("/");
@@ -95,7 +116,7 @@ export async function reorderTours(orderedTourIds: string[]): Promise<{ ok: bool
 
 /** Creates a draft copy of a tour (content only, no departures) and opens it in the editor. */
 export async function duplicateTour(tourId: string): Promise<{ ok: false; error: string }> {
-  await requireAdminSession();
+  await requireContentSession();
   const newTourId = await duplicateTourDoc(tourId);
   if (!newTourId) return { ok: false, error: "Tour not found." };
   await syncContentMediaSafely("tours", newTourId);

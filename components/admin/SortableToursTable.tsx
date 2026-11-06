@@ -34,7 +34,17 @@ interface TourRowData {
   capacity: UpcomingCapacity;
 }
 
-export default function SortableToursTable({ rows: initialRows }: { rows: TourRowData[] }) {
+/**
+ * `limited` = SEO admin (lib/auth/roles.ts): no departure-dates link, and no
+ * archiving of live tours (they could then delete them).
+ */
+export default function SortableToursTable({
+  rows: initialRows,
+  limited = false,
+}: {
+  rows: TourRowData[];
+  limited?: boolean;
+}) {
   const [rows, setRows] = useState(initialRows);
   // Re-sync when the server sends fresh rows (router.refresh after archive,
   // revalidation after duplicate) — useState alone would keep the stale list.
@@ -154,7 +164,7 @@ export default function SortableToursTable({ rows: initialRows }: { rows: TourRo
               >
                 <tbody className="divide-y divide-line">
                   {visibleRows.map(({ tour, capacity }) => (
-                    <SortableTourRow key={tour.tourId} tour={tour} capacity={capacity} dragDisabled={isFiltered} />
+                    <SortableTourRow key={tour.tourId} tour={tour} capacity={capacity} dragDisabled={isFiltered} limited={limited} />
                   ))}
                 </tbody>
               </SortableContext>
@@ -166,7 +176,12 @@ export default function SortableToursTable({ rows: initialRows }: { rows: TourRo
   );
 }
 
-function SortableTourRow({ tour, capacity, dragDisabled }: TourRowData & { dragDisabled: boolean }) {
+function SortableTourRow({
+  tour,
+  capacity,
+  dragDisabled,
+  limited,
+}: TourRowData & { dragDisabled: boolean; limited: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: tour.tourId,
     // Reordering saves the full list order, so it only makes sense on the unfiltered list.
@@ -233,10 +248,12 @@ function SortableTourRow({ tour, capacity, dragDisabled }: TourRowData & { dragD
       <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-1">
           <IconLink href={`/admin/tours/${tour.tourId}/preview`} icon="eye" label="Preview" newTab />
-          <IconLink href={`/admin/tours/${tour.tourId}/departures`} icon="calendar" label="Departure dates" />
+          {!limited && (
+            <IconLink href={`/admin/tours/${tour.tourId}/departures`} icon="calendar" label="Departure dates" />
+          )}
           <IconLink href={`/admin/tours/${tour.tourId}`} icon="edit" label="Edit" />
           <DuplicateTourButton tourId={tour.tourId} variant="link" />
-          {tour.status !== "archived" && (
+          {tour.status !== "archived" && !(limited && tour.status === "published") && (
             <ArchiveTourButton tourId={tour.tourId} title={tour.title} />
           )}
         </div>

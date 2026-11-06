@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
-import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { canAccessAdminPath, isAdminRole, SEO_ADMIN_HOME } from "@/lib/auth/roles";
 import { EMAIL_MFA_COOKIE_NAME, passesAdmin2fa } from "@/lib/auth/secondFactor";
 import { getArchivedTourRedirectPath, getTourBySlug } from "@/lib/data/tours";
 
@@ -66,8 +67,14 @@ export default async function proxy(request: NextRequest) {
 
   try {
     const decoded = await adminAuth().verifySessionCookie(sessionCookie);
-    if (!ADMIN_ROLES.includes(decoded.role) || !passesAdmin2fa(decoded, request.cookies.get(EMAIL_MFA_COOKIE_NAME)?.value)) {
+    if (!isAdminRole(decoded.role) || !passesAdmin2fa(decoded, request.cookies.get(EMAIL_MFA_COOKIE_NAME)?.value)) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+    // Role-based page access (lib/auth/roles.ts): SEO admins only reach the
+    // content/SEO sections; Admin accounts is for developers/super admins.
+    if (!canAccessAdminPath(decoded.role, request.nextUrl.pathname)) {
+      const home = decoded.role === "seo_admin" ? SEO_ADMIN_HOME : "/admin";
+      return NextResponse.redirect(new URL(home, request.url));
     }
   } catch {
     return NextResponse.redirect(new URL("/admin/login", request.url));

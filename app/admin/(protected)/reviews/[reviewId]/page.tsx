@@ -4,6 +4,7 @@ import ReviewForm from "@/components/admin/ReviewForm";
 import { getAllReviewsAdmin, getReviewByIdAdmin } from "@/lib/data/admin/reviews";
 import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDeleteContent } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteReview } from "@/lib/actions/deletions";
 
@@ -29,7 +30,7 @@ export default async function EditReviewPage({
     getAllReviewsAdmin(),
   ]);
   if (!review) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDeleteContent((await getAdminSession())?.role);
   tours.sort((a, b) => a.title.localeCompare(b.title));
 
   return (

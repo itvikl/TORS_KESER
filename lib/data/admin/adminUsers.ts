@@ -24,7 +24,7 @@ export async function getTwoFactorUidsAdmin(uids: string[]): Promise<Set<string>
 
 /**
  * Reads from the Firestore users/{userId} mirror (kept in sync with the
- * Firebase Auth custom claim by updateUserRole / scripts/set-user-role.ts)
+ * Firebase Auth custom claim by lib/actions/adminUsers.ts / scripts/set-user-role.ts)
  * rather than Auth's listUsers(), which would require paging through every
  * account just to filter down to admin/staff.
  */

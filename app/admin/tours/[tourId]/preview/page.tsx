@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import TourPageView from "@/components/marketing/TourPageView";
 import { getTourByIdAdmin } from "@/lib/data/admin/tours";
 import { getDeparturesForTour, getGuidesForDepartures } from "@/lib/data/tours";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = { title: "Preview", robots: { index: false, follow: false } };
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Preview", robots: { index: false, fo
  * the "Not Published" note), reading the last-saved draft. Deliberately
  * outside app/admin/(protected) so it renders without the admin sidebar
  * chrome — it should look like the real page, not an admin screen.
- * requireAdminSession() here is the auth check (proxy.ts also covers
+ * requireContentSession() here is the auth check (proxy.ts also covers
  * everything under /admin, but this route fetches Firestore data itself,
  * so it re-verifies per the Next.js auth guide's defense-in-depth guidance).
  */
@@ -23,7 +23,7 @@ export default async function TourFullPreviewPage({
 }: {
   params: Promise<{ tourId: string }>;
 }) {
-  await requireAdminSession();
+  await requireContentSession(); // SEO admins edit tours too
 
   const { tourId } = await params;
   const tour = await getTourByIdAdmin(tourId);

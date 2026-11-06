@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import {
   createMediaCategoryDoc,
   deleteMediaCategoryDoc,
@@ -29,18 +29,18 @@ function cleanName(name: string): string | null {
 
 /** Feeds MediaLibraryBrowser — fetched on open rather than passed down from every page that has an image field. */
 export async function listMediaCategories(): Promise<MediaCategoryList> {
-  await requireAdminSession();
+  await requireContentSession();
   return listMediaCategoryDocs();
 }
 
 /** One page of images, newest first; the browser asks for the next page as the user scrolls. */
 export async function listMediaPage(categoryId: string, cursor?: string | null): Promise<MediaPage> {
-  await requireAdminSession();
+  await requireContentSession();
   return listMediaPageDocs(categoryId, cursor);
 }
 
 export async function createMediaCategory(name: string): Promise<MediaCategoryResult> {
-  await requireAdminSession();
+  await requireContentSession();
   const clean = cleanName(name);
   if (!clean) return { ok: false, error: "Enter a category name (up to 60 characters)." };
 
@@ -56,7 +56,7 @@ export async function renameMediaCategory(
   categoryId: string,
   name: string
 ): Promise<MediaCategoryResult> {
-  await requireAdminSession();
+  await requireContentSession();
   if (isCountryCategoryId(categoryId)) {
     return { ok: false, error: "Country categories are named after the country." };
   }
@@ -71,7 +71,7 @@ export async function renameMediaCategory(
 }
 
 export async function deleteMediaCategory(categoryId: string): Promise<{ ok: boolean }> {
-  await requireAdminSession();
+  await requireContentSession();
   if (isCountryCategoryId(categoryId)) return { ok: false };
   await deleteMediaCategoryDoc(categoryId);
   return { ok: true };
@@ -83,7 +83,7 @@ export async function setImagesCategory(
   categoryId: string,
   assigned: boolean
 ): Promise<{ ok: boolean }> {
-  await requireAdminSession();
+  await requireContentSession();
   const validUrls = urls.filter((url) => /^https:\/\//.test(url)).slice(0, 200);
   if (validUrls.length === 0 || !(await mediaCategoryExists(categoryId))) return { ok: false };
 
@@ -95,7 +95,7 @@ export async function setImagesCategory(
 export async function deleteUnusedImages(
   urls: string[]
 ): Promise<{ ok: true; deleted: number; inUse: number }> {
-  await requireAdminSession();
+  await requireContentSession();
   const result = await deleteUnusedImageDocs(urls.slice(0, 200));
   return { ok: true, ...result };
 }

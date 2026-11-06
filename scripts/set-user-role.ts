@@ -4,25 +4,28 @@ config({ path: ".env.local" });
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { ADMIN_ROLES, isAdminRole } from "../lib/auth/roles";
 
 /**
  * Bootstraps admin/staff access by setting a Firebase Auth custom claim
  * (read by proxy.ts and lib/auth/dal.ts) and mirroring the role onto the
  * user's Firestore doc (PRD section 8 users/{userId}.role).
  *
- * There's no admin UI for staff management yet (PRD FR-30) — this script is
- * the only way to grant the first admin account access to /admin.
+ * Day to day, developers and super admins manage roles on Admin accounts
+ * (/admin/staff/accounts). This script is for bootstrapping the first
+ * developer/super admin, or recovering if nobody can manage accounts.
+ * Roles: developer, super_admin, admin, staff, seo_admin (lib/auth/roles.ts).
  *
- * Run with: npm run set-role -- someone@example.com admin
+ * Run with: npm run set-role -- someone@example.com super_admin
  */
 async function main() {
   const [email, role] = process.argv.slice(2);
 
   if (!email || !role) {
-    throw new Error("Usage: npm run set-role -- <email> <staff|admin>");
+    throw new Error(`Usage: npm run set-role -- <email> <${ADMIN_ROLES.join("|")}>`);
   }
-  if (role !== "staff" && role !== "admin") {
-    throw new Error(`Invalid role "${role}" — must be "staff" or "admin".`);
+  if (!isAdminRole(role)) {
+    throw new Error(`Invalid role "${role}" — must be one of: ${ADMIN_ROLES.join(", ")}.`);
   }
 
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
@@ -41,14 +44,16 @@ async function main() {
   const db = getFirestore(app);
 
   const user = await auth.getUserByEmail(email);
-  await auth.setCustomUserClaims(user.uid, { role });
+  await auth.setCustomUserClaims(user.uid, { ...user.customClaims, role });
+  // Ends their current sessions so the new permissions apply right away.
+  await auth.revokeRefreshTokens(user.uid);
   await db.collection("users").doc(user.uid).set(
     { email: user.email, role },
     { merge: true }
   );
 
   console.log(`Set role "${role}" for ${email} (${user.uid}).`);
-  console.log("They must sign out and back in for the new claim to take effect.");
+  console.log("Their current sessions were ended — they sign in again to get the new role.");
 }
 
 main().catch((err) => {

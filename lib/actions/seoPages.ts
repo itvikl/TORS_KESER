@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { SeoPageInputSchema } from "@/lib/validation/seoPage";
 import { zodIssuesToFieldErrors } from "@/lib/validation/zodErrors";
 import { createSeoPageDoc, isSeoSlugTaken, updateSeoPageDoc } from "@/lib/data/admin/seoPages";
@@ -11,7 +11,7 @@ export type SaveSeoPageResult =
   | { ok: false; errors: Record<string, string[] | undefined> };
 
 export async function saveSeoPage(input: unknown, pageId?: string): Promise<SaveSeoPageResult> {
-  await requireAdminSession();
+  await requireContentSession();
 
   const parsed = SeoPageInputSchema.safeParse(input);
   if (!parsed.success) {

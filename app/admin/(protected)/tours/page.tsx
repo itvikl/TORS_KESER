@@ -6,6 +6,8 @@ import { isDeparturePlanned } from "@/lib/departureAvailability";
 import { bySortOrder } from "@/lib/tourSort";
 import { availableSeats, type Departure } from "@/lib/types";
 import SortableToursTable, { type UpcomingCapacity } from "@/components/admin/SortableToursTable";
+import { getAdminSession } from "@/lib/auth/dal";
+import { canTakeTourOffline } from "@/lib/auth/roles";
 
 export const metadata: Metadata = { title: "Tours" };
 
@@ -19,6 +21,7 @@ function upcomingCapacity(departures: Departure[]): UpcomingCapacity {
 }
 
 export default async function AdminToursPage() {
+  const limited = !canTakeTourOffline((await getAdminSession())?.role);
   const tours = await getAllToursAdmin();
   tours.sort(bySortOrder);
 
@@ -51,7 +54,7 @@ export default async function AdminToursPage() {
           No tours yet. Create the first one to get started.
         </p>
       ) : (
-        <SortableToursTable rows={rows} />
+        <SortableToursTable rows={rows} limited={limited} />
       )}
     </div>
   );

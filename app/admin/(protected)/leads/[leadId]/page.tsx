@@ -6,6 +6,7 @@ import { getAllToursAdmin } from "@/lib/data/admin/tours";
 import LeadForm from "@/components/admin/LeadForm";
 import { LEAD_SOURCE_LABELS } from "@/lib/leadLabels";
 import { getAdminSession } from "@/lib/auth/dal";
+import { canDeleteContent } from "@/lib/auth/roles";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteLead } from "@/lib/actions/deletions";
 
@@ -23,7 +24,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ leadI
   const { leadId } = await params;
   const [lead, tours] = await Promise.all([getLeadByIdAdmin(leadId), getAllToursAdmin()]);
   if (!lead) notFound();
-  const isAdmin = (await getAdminSession())?.role === "admin";
+  const isAdmin = canDeleteContent((await getAdminSession())?.role);
   tours.sort((a, b) => a.title.localeCompare(b.title));
 
   const formatDate = (iso: string) =>

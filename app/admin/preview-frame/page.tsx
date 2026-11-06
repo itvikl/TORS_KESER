@@ -1,8 +1,8 @@
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import { getSiteContent } from "@/lib/data/siteContent";
 import PreviewFrameClient from "./PreviewFrameClient";
 
 export default async function PreviewFramePage() {
-  await requireAdminSession();
+  await requireContentSession(); // SEO admins edit tours too
   return <PreviewFrameClient copy={await getSiteContent("tour-page")} />;
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireContentSession } from "@/lib/auth/dal";
 import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata: Metadata = {
@@ -11,6 +11,12 @@ export default async function ProtectedAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireAdminSession();
-  return <AdminShell email={session.email}>{children}</AdminShell>;
+  // Shared by every admin role; SEO admins are kept to their sections by
+  // proxy.ts, and each page/action re-checks with requireAdminSession().
+  const session = await requireContentSession();
+  return (
+    <AdminShell email={session.email} role={session.role}>
+      {children}
+    </AdminShell>
+  );
 }

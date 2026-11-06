@@ -3,9 +3,17 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebase/admin";
-import { SESSION_COOKIE_NAME, ADMIN_ROLES } from "@/lib/auth/constants";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import {
+  canDelete,
+  canDeleteContent,
+  canManageAccounts,
+  isAdminRole,
+  SEO_ADMIN_HOME,
+  type AdminRole,
+  type SeoDeletableKind,
+} from "@/lib/auth/roles";
 import { EMAIL_MFA_COOKIE_NAME, passesAdmin2fa } from "@/lib/auth/secondFactor";
-import type { UserRole } from "@/lib/types";
 
 /**
  * Data Access Layer for the admin session (PRD section 9: role-based
@@ -17,7 +25,7 @@ import type { UserRole } from "@/lib/types";
 export interface AdminSession {
   uid: string;
   email: string | null;
-  role: UserRole;
+  role: AdminRole;
 }
 
 export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
@@ -27,8 +35,8 @@ export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
 
   try {
     const decoded = await adminAuth().verifySessionCookie(cookieValue, true);
-    const role = (decoded.role as UserRole | undefined) ?? "customer";
-    if (!ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number])) return null;
+    const role: unknown = decoded.role;
+    if (!isAdminRole(role)) return null;
     if (!passesAdmin2fa(decoded, cookieStore.get(EMAIL_MFA_COOKIE_NAME)?.value)) return null;
     return { uid: decoded.uid, email: decoded.email ?? null, role };
   } catch {
@@ -36,21 +44,45 @@ export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
   }
 });
 
-/** Use in admin pages/layouts. Redirects to login when unauthorized. */
-export async function requireAdminSession(): Promise<AdminSession> {
+/**
+ * Any admin role, SEO admins included. Only for the content/SEO sections
+ * (Site Content, Blog, SEO Landing Pages, Image Library, My account) and the
+ * shared admin layout — see SEO_ADMIN_PATHS in lib/auth/roles.ts.
+ */
+export async function requireContentSession(): Promise<AdminSession> {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
   return session;
 }
 
 /**
- * Stricter than requireAdminSession(): also requires role === "admin", not
- * just "staff". Reserved for sensitive actions that affect other users'
- * access (e.g. managing admin/staff accounts) — everything else stays open
- * to both roles.
+ * Every admin role except SEO admin — the default gate for admin pages and
+ * Server Actions. Anything not explicitly opened with requireContentSession()
+ * stays closed to SEO admins.
  */
+export async function requireAdminSession(): Promise<AdminSession> {
+  const session = await requireContentSession();
+  if (session.role === "seo_admin") redirect(SEO_ADMIN_HOME);
+  return session;
+}
+
+/** Deleting content (tours, blog posts, leads…): developer, super admin and admin. */
 export async function requireAdminRole(): Promise<AdminSession> {
-  const session = await requireAdminSession();
-  if (session.role !== "admin") redirect("/admin");
+  const session = await requireContentSession();
+  if (!canDeleteContent(session.role)) redirect("/admin");
+  return session;
+}
+
+/** Deleting a blog post or SEO page: as above, plus SEO admins. */
+export async function requireDeleteRight(kind: SeoDeletableKind): Promise<AdminSession> {
+  const session = await requireContentSession();
+  if (!canDelete(session.role, kind)) redirect("/admin");
+  return session;
+}
+
+/** Seeing and managing admin accounts: developer and super admin only. */
+export async function requireAccountManager(): Promise<AdminSession> {
+  const session = await requireContentSession();
+  if (!canManageAccounts(session.role)) redirect("/admin");
   return session;
 }

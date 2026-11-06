@@ -16,6 +16,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { EMAIL_CODE_INVALID, EMAIL_CODE_SENT, EMAIL_CODE_UNDELIVERABLE } from "@/lib/auth/mfa";
+import { requestAdminPasswordReset } from "@/lib/actions/adminAccount";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink outline-none focus:border-navy";
@@ -32,6 +33,7 @@ const buttonClass =
  */
 type Step =
   | { kind: "password" }
+  | { kind: "forgot" }
   | { kind: "code"; resolver: MultiFactorResolver }
   | { kind: "email"; user: User; sentTo: string }
   | { kind: "enroll"; user: User; secret: TotpSecret; qrDataUrl: string };
@@ -45,14 +47,14 @@ async function createSession(user: User, emailCode?: string): Promise<Response> 
   });
 }
 
-export default function LoginForm() {
+export default function LoginForm({ initialNotice = null }: { initialNotice?: string | null }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>({ kind: "password" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice);
   const [submitting, setSubmitting] = useState(false);
 
   /** Throws on anything but success or a pending emailed code, after signing the Firebase user out. */
@@ -203,6 +205,27 @@ export default function LoginForm() {
     setSubmitting(false);
   }
 
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    const result = await requestAdminPasswordReset(email).catch(() => null);
+    setSubmitting(false);
+    if (!result) {
+      setError("Couldn't send the reset email. Try again in a minute.");
+      return;
+    }
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setPassword("");
+    setStep({ kind: "password" });
+    setNotice(
+      "If that email belongs to an admin account, a password reset link is on its way. Check your inbox (and spam)."
+    );
+  }
+
   function backToPassword() {
     void signOut(auth);
     setStep({ kind: "password" });
@@ -285,6 +308,38 @@ export default function LoginForm() {
     );
   }
 
+  if (step.kind === "forgot") {
+    return (
+      <form onSubmit={handleForgot} className="space-y-5">
+        <p className="text-sm text-ink-muted">
+          Enter your admin email and we&apos;ll send you a link to choose a new password.
+        </p>
+        <div>
+          <label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-ink">
+            Email
+          </label>
+          <input
+            id="reset-email"
+            type="email"
+            required
+            autoFocus
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        {errorBlock}
+        <button type="submit" disabled={submitting} className={buttonClass}>
+          {submitting ? "Sending…" : "Send reset link"}
+        </button>
+        <button type="button" onClick={backToPassword} className="w-full text-sm text-ink-muted hover:text-ink">
+          Back to sign in
+        </button>
+      </form>
+    );
+  }
+
   if (step.kind === "enroll") {
     return (
       <form onSubmit={handleEnroll} className="space-y-5">
@@ -333,9 +388,22 @@ export default function LoginForm() {
         />
       </div>
       <div>
-        <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-ink">
-          Password
-        </label>
+        <div className="mb-1.5 flex items-baseline justify-between gap-2">
+          <label htmlFor="password" className="block text-sm font-medium text-ink">
+            Password
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setNotice(null);
+              setStep({ kind: "forgot" });
+            }}
+            className="text-sm text-ink-muted hover:text-ink hover:underline"
+          >
+            Forgot password?
+          </button>
+        </div>
         <input
           id="password"
           type="password"
