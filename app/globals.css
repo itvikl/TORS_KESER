@@ -146,6 +146,79 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/*
+ * Blog post body — the HTML the admin rich-text editor writes. Used on the
+ * public post page and inside the editor itself, so staff see the same
+ * structure; colors come from the surrounding element.
+ */
+.rich-body {
+  font-size: 15px;
+  line-height: 1.75rem;
+  overflow-wrap: anywhere;
+}
+.rich-body > * + * {
+  margin-top: 1rem;
+}
+.rich-body h2,
+.rich-body h3 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.rich-body h2 {
+  font-size: 1.6rem;
+  margin-top: 2.25rem;
+}
+.rich-body h3 {
+  font-size: 1.25rem;
+  margin-top: 1.75rem;
+}
+.rich-body > :first-child {
+  margin-top: 0;
+}
+.rich-body strong {
+  font-weight: 700;
+}
+.rich-body ul,
+.rich-body ol {
+  padding-left: 1.5rem;
+}
+.rich-body ul {
+  list-style: disc;
+}
+.rich-body ol {
+  list-style: decimal;
+}
+.rich-body li + li {
+  margin-top: 0.35rem;
+}
+.rich-body li > p {
+  margin: 0;
+}
+.rich-body blockquote {
+  border-left: 3px solid var(--rich-accent, var(--color-ice));
+  padding-left: 1rem;
+  font-style: italic;
+}
+.rich-body a {
+  font-weight: 600;
+  color: var(--rich-accent, var(--color-ice));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 1rem;
+}
+.rich-body img.ProseMirror-selectednode {
+  outline: 3px solid var(--rich-accent, var(--color-ice));
+}
+
 /* Glacier glass — lumina-travel / Stitch */
 .glass-panel {
   background: var(--color-surface);

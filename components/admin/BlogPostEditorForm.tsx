@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDirtyDraft, useToast } from "@/components/admin/feedback/AdminFeedbackProvider";
 import UnsavedIndicator from "@/components/admin/feedback/UnsavedIndicator";
-import { saveBlogPost } from "@/lib/actions/blog";
+import { previewBlogBody, saveBlogPost } from "@/lib/actions/blog";
+import BlogPostView from "@/components/marketing/BlogPostView";
+import { fromDateInputValue, toDateInputValue } from "@/lib/blogDate";
 import ImageField from "@/components/admin/ImageField";
 import type { BlogPost } from "@/lib/types";
 import RequiredMark from "@/components/admin/RequiredMark";
+import RichTextEditor from "@/components/admin/RichTextEditor";
+import { bodyToHtml } from "@/lib/blogBody";
 
 const BLANK_POST: BlogPost = {
   postId: "",
@@ -40,11 +44,16 @@ export default function BlogPostEditorForm({
   initialPost?: BlogPost;
 }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<BlogPost>(initialPost ?? BLANK_POST);
+  const [draft, setDraft] = useState<BlogPost>(() =>
+    // Posts saved before the rich editor are plain text — open them as HTML paragraphs.
+    initialPost ? { ...initialPost, body: bodyToHtml(initialPost.body) } : BLANK_POST
+  );
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [savedPostId, setSavedPostId] = useState(postId);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState<{ bodyHtml: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const toast = useToast();
   const { isDirty, markSaved } = useDirtyDraft(draft);
 
@@ -58,6 +67,17 @@ export default function BlogPostEditorForm({
       title: value,
       slug: slugTouched ? prev.slug : slugify(value),
     }));
+  }
+
+  async function openPreview() {
+    setPreviewLoading(true);
+    try {
+      setPreview({ bodyHtml: await previewBlogBody(draft.body) });
+    } catch {
+      toast.error({ title: "Preview failed", description: "Something went wrong on the server — please try again." });
+    } finally {
+      setPreviewLoading(false);
+    }
   }
 
   async function handleSave(status: BlogPost["status"]) {
@@ -121,13 +141,13 @@ export default function BlogPostEditorForm({
               className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
             />
           </Field>
-          <Field label="Body" required error={errors.body}>
-            <textarea
-              value={draft.body}
-              onChange={(e) => set("body", e.target.value)}
-              rows={10}
-              className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
-            />
+          <Field
+            label="Body"
+            required
+            hint="Paste from Word or Google Docs to keep headings, bold, lists and links. Add pictures with the Image button."
+            error={errors.body}
+          >
+            <RichTextEditor value={draft.body} onChange={(html) => set("body", html)} />
           </Field>
           <Field label="Hero image">
             <ImageField folder="blog" value={draft.heroImage} onChange={(url) => set("heroImage", url)} />
@@ -163,7 +183,41 @@ export default function BlogPostEditorForm({
         </div>
       </Section>
 
-      <div className="flex gap-3">
+      <Section title="Publishing">
+        <Field
+          label="Publish date"
+          hint="Shown on the post and used to order the blog. Leave empty to use the day you publish."
+          error={errors.publishedAt}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={toDateInputValue(draft.publishedAt)}
+              onChange={(e) => set("publishedAt", fromDateInputValue(e.target.value))}
+              className="rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
+            />
+            {draft.publishedAt && (
+              <button
+                type="button"
+                onClick={() => set("publishedAt", undefined)}
+                className="text-sm font-medium text-ink-muted underline-offset-2 hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </Field>
+      </Section>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={previewLoading}
+          onClick={openPreview}
+          className="rounded-lg border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-sand-warm disabled:opacity-60"
+        >
+          {previewLoading ? "Opening preview…" : "Preview"}
+        </button>
         <button
           type="button"
           disabled={saving}
@@ -181,6 +235,58 @@ export default function BlogPostEditorForm({
           Publish
         </button>
         {isDirty && <span className="self-center"><UnsavedIndicator /></span>}
+      </div>
+
+      {preview && (
+        <PostPreview
+          post={{
+            ...draft,
+            tags: draft.tags.map((t) => t.trim()).filter(Boolean),
+            // An unpublished post with no date would get today's on publish.
+            publishedAt: draft.publishedAt ?? new Date().toISOString(),
+          }}
+          bodyHtml={preview.bodyHtml}
+          onClose={() => setPreview(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Full-screen view of the unsaved draft, drawn with the public page's own
+ * component. Links work: links to other sites open in a new tab, and links
+ * to our own pages go through the admin's unsaved-changes guard, which asks
+ * before leaving when the draft has unsaved edits.
+ */
+function PostPreview({ post, bodyHtml, onClose }: { post: BlogPost; bodyHtml: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--color-glacier)]" role="dialog" aria-modal aria-label="Post preview">
+      <div className="flex items-center justify-between gap-3 border-b border-line bg-white px-4 py-2.5">
+        <p className="text-sm font-semibold text-ink">
+          Preview <span className="font-normal text-ink-muted">— unsaved changes included; not visible to visitors. Hover a link to see its address.</span>
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg bg-navy px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-navy-light"
+        >
+          Close preview
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto text-[var(--color-mist)]">
+        <BlogPostView post={post} bodyHtml={bodyHtml} backLabel="Back to blog" />
       </div>
     </div>
   );

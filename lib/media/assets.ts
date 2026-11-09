@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { bodyImageUrls } from "@/lib/blogBody";
 import type {
   BlogPost,
   Review,
@@ -150,6 +151,7 @@ export function contentImages(collection: ContentCollection, data: unknown): Con
     case "blogPosts": {
       const post = data as BlogPost;
       add(post.heroImage, `Blog: ${post.title}`);
+      for (const src of bodyImageUrls(post.body ?? "")) add(src, `Blog: ${post.title} — in text`);
       break;
     }
     case "specialOffers": {

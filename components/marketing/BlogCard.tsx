@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { BlogPost } from "@/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
+import { bodyToPlainText } from "@/lib/blogBody";
+import { formatBlogDate } from "@/lib/blogDate";
 
 // Stock placeholder for the handful of migrated posts with no featured
 // image on the old site — same fallback pattern as tour cards
@@ -10,14 +12,9 @@ const FALLBACK_IMAGE =
   "https://firebasestorage.googleapis.com/v0/b/kesertors.firebasestorage.app/o/site%2Fstock%2Fhome-hero-a18f8b00.jpg?alt=media&token=e03feebc-914d-423c-8b8b-bd7d3761658c";
 
 function excerpt(body: string, maxLength = 150): string {
-  const flat = body.replace(/\s+/g, " ").trim();
+  const flat = bodyToPlainText(body).replace(/\s+/g, " ").trim();
   if (flat.length <= maxLength) return flat;
   return flat.slice(0, maxLength).replace(/\s+\S*$/, "") + "…";
-}
-
-function formatDate(iso?: string): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 export default function BlogCard({ post, readMoreLabel }: { post: BlogPost; readMoreLabel: string }) {
@@ -38,7 +35,7 @@ export default function BlogCard({ post, readMoreLabel }: { post: BlogPost; read
       <div className="flex flex-1 flex-col gap-3 p-6">
         {post.publishedAt && (
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-slate)]">
-            {formatDate(post.publishedAt)}
+            {formatBlogDate(post.publishedAt)}
           </span>
         )}
         <h3 className="text-lg font-bold leading-snug text-[var(--color-mist)]">{post.title}</h3>

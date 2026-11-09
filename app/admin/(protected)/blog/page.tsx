@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllBlogPostsAdmin } from "@/lib/data/admin/blog";
 import type { BlogPost } from "@/lib/types";
+import { formatBlogDate } from "@/lib/blogDate";
 import { IconLink } from "@/components/admin/IconAction";
 
 export const metadata: Metadata = { title: "Blog" };
@@ -56,13 +57,7 @@ export default async function AdminBlogPage() {
                     <StatusBadge status={post.status} />
                   </td>
                   <td className="px-4 py-3 text-ink-muted">
-                    {post.publishedAt
-                      ? new Date(post.publishedAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "—"}
+                    {formatBlogDate(post.publishedAt, "short") || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <IconLink href={`/admin/blog/${post.postId}`} icon="edit" label="Edit" />
