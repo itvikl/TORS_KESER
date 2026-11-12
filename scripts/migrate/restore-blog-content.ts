@@ -39,11 +39,18 @@ import type { BlogPost } from "../../lib/types";
  * --commit uploads the images and writes Firestore. Afterwards run
  * scripts/migrate/index-media-library.ts so the image library lists them.
  *
+ * --create-missing also creates posts that exist on the old site but were
+ * never imported (they were published there after the original import),
+ * with their featured image as hero, tags and original publish date.
+ *
  * Run with (react-server condition lets the server-only sanitizer load):
  *   NODE_OPTIONS=--conditions=react-server npx tsx scripts/migrate/restore-blog-content.ts [--commit] [--only=slug]
  */
 
 const COMMIT = process.argv.includes("--commit");
+// Also create posts that exist on the old site but were never imported
+// (published there after the September import), with hero image, tags and date.
+const CREATE_MISSING = process.argv.includes("--create-missing");
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1];
 const UA = "Mozilla/5.0 (compatible; KeshertoursMigration/1.0)";
 const WP_BASE = "https://old.keshertours.com/wp-json/wp/v2";
@@ -54,6 +61,25 @@ const MAX_EDGE = 2000;
 interface WpPost {
   slug: string;
   content: { rendered: string };
+}
+
+interface WpPostFull extends WpPost {
+  date: string;
+  title: { rendered: string };
+  _embedded?: {
+    "wp:featuredmedia"?: { source_url: string }[];
+    "wp:term"?: { taxonomy: string; name: string }[][];
+  };
+}
+
+async function fetchPostFull(slug: string): Promise<WpPostFull> {
+  const res = await fetch(`${WP_BASE}/posts?slug=${encodeURIComponent(slug)}&_embed=1`, {
+    headers: { "User-Agent": UA },
+  });
+  if (!res.ok) throw new Error(`WP post fetch failed (${res.status}): ${slug}`);
+  const [post] = (await res.json()) as WpPostFull[];
+  if (!post) throw new Error(`WP post not found: ${slug}`);
+  return post;
 }
 
 // --- must match scripts/migrate-legacy-blog.ts, to recognise untouched bodies ---
@@ -111,7 +137,7 @@ function mapHref(raw: string, blogSlugs: Set<string>): string | undefined {
   if (!/^https?:$/.test(url.protocol)) return undefined;
   if (!OUR_HOSTS.has(url.hostname)) return url.toString();
 
-  let path = decodeURIComponent(url.pathname)
+  const path = decodeURIComponent(url.pathname)
     .split("/")
     .map((seg) => seg.trim().replace(/\s+/g, "-"))
     .join("/")
@@ -198,8 +224,11 @@ async function main() {
 
   const snap = await db.collection("blogPosts").get();
   const firestorePosts = new Map(snap.docs.map((d) => [(d.data() as BlogPost).slug, { id: d.id, post: d.data() as BlogPost }]));
+  const allWpPosts = await fetchAllPosts();
   const blogSlugs = new Set(firestorePosts.keys());
-  const wpPosts = (await fetchAllPosts()).filter((p) => !ONLY || sanitizeSlug(p.slug) === ONLY);
+  // Posts about to be created are valid /blog/ link targets too.
+  if (CREATE_MISSING) for (const p of allWpPosts) blogSlugs.add(sanitizeSlug(p.slug));
+  const wpPosts = allWpPosts.filter((p) => !ONLY || sanitizeSlug(p.slug) === ONLY);
   console.log(`Old site: ${wpPosts.length} posts. Firestore: ${firestorePosts.size} posts.`);
 
   const notInFirestore: string[] = [];
@@ -208,25 +237,42 @@ async function main() {
   const missingImages: { post: string; src: string }[] = [];
   const droppedLinks: { post: string; href: string }[] = [];
   const internalTargets = new Map<string, Set<string>>();
-  const plans: { slug: string; docId: string; html: string; images: string[]; links: number }[] = [];
+  const plans: {
+    slug: string;
+    docId: string;
+    html: string;
+    images: string[];
+    links: number;
+    /** Set for a post the import missed: written as a new doc. */
+    create?: { title: string; publishedAt: string; tags: string[]; heroSource?: string };
+  }[] = [];
 
   for (const wp of wpPosts) {
     const slug = sanitizeSlug(wp.slug);
     const entry = firestorePosts.get(slug);
+    let create: (typeof plans)[number]["create"];
     if (!entry) {
       notInFirestore.push(slug);
-      continue;
-    }
-    if (isHtmlBody(entry.post.body)) {
-      skippedAlreadyRich.push(slug);
-      continue;
-    }
-    // WordPress rewrote its own domain to old.keshertours.com after the
-    // migration ran, including in visible text — undo that to compare.
-    const asMigrated = wp.content.rendered.replace(/old\.keshertours\.com/g, "keshertours.com");
-    if (htmlToPlainText(asMigrated) !== entry.post.body) {
-      skippedEdited.push(slug);
-      continue;
+      if (!CREATE_MISSING) continue;
+      const full = await fetchPostFull(wp.slug);
+      create = {
+        title: decodeEntities(full.title.rendered.replace(/<[^>]+>/g, "").trim()),
+        publishedAt: full.date,
+        tags: full._embedded?.["wp:term"]?.flat().filter((t) => t.taxonomy === "post_tag").map((t) => t.name) ?? [],
+        heroSource: full._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
+      };
+    } else {
+      if (isHtmlBody(entry.post.body)) {
+        skippedAlreadyRich.push(slug);
+        continue;
+      }
+      // WordPress rewrote its own domain to old.keshertours.com after the
+      // migration ran, including in visible text — undo that to compare.
+      const asMigrated = wp.content.rendered.replace(/old\.keshertours\.com/g, "keshertours.com");
+      if (htmlToPlainText(asMigrated) !== entry.post.body) {
+        skippedEdited.push(slug);
+        continue;
+      }
     }
 
     const $ = cheerio.load(wp.content.rendered);
@@ -269,7 +315,7 @@ async function main() {
     html = sanitizeBlogHtml(html)
       .replace(/old\.keshertours\.com(?!\/wp-content\/)/g, "keshertours.com")
       .replace(/<p>(\s|&nbsp;|<br \/>)*<\/p>/g, "");
-    plans.push({ slug, docId: entry.id, html, images, links });
+    plans.push({ slug, docId: entry?.id ?? slug, html, images, links, create });
   }
 
   console.log(`\nChecking ${internalTargets.size} internal link targets on ${LIVE_SITE}…`);
@@ -281,34 +327,38 @@ async function main() {
 
   if (COMMIT) {
     const uploaded = new Map<string, string>(); // old-site source URL → our bucket URL
-    for (const plan of plans) {
-      for (const source of plan.images) {
-        if (uploaded.has(source)) continue;
-        const res = await fetch(source, { headers: { "User-Agent": UA } });
-        if (!res.ok) throw new Error(`Image download failed (${res.status}): ${source}`);
-        let buffer: Buffer = Buffer.from(await res.arrayBuffer());
-        let contentType = res.headers.get("content-type") || "image/jpeg";
-        let ext = (source.match(/\.([a-z0-9]+)$/i)?.[1] ?? "jpg").toLowerCase();
-        if (contentType !== "image/gif") {
-          const meta = await sharp(buffer).metadata();
-          if (Math.max(meta.width ?? 0, meta.height ?? 0) > MAX_EDGE) {
-            buffer = await sharp(buffer)
-              .rotate()
-              .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside" })
-              .webp({ quality: 85 })
-              .toBuffer();
-            contentType = "image/webp";
-            ext = "webp";
-          }
+    const copyImage = async (source: string, slug: string): Promise<string> => {
+      const done = uploaded.get(source);
+      if (done) return done;
+      const res = await fetch(source, { headers: { "User-Agent": UA } });
+      if (!res.ok) throw new Error(`Image download failed (${res.status}): ${source}`);
+      let buffer: Buffer = Buffer.from(await res.arrayBuffer());
+      let contentType = res.headers.get("content-type") || "image/jpeg";
+      let ext = (source.match(/\.([a-z0-9]+)$/i)?.[1] ?? "jpg").toLowerCase();
+      if (contentType !== "image/gif") {
+        const meta = await sharp(buffer).metadata();
+        if (Math.max(meta.width ?? 0, meta.height ?? 0) > MAX_EDGE) {
+          buffer = await sharp(buffer)
+            .rotate()
+            .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside" })
+            .webp({ quality: 85 })
+            .toBuffer();
+          contentType = "image/webp";
+          ext = "webp";
         }
-        const path = `blog/legacy/${plan.slug}/${randomUUID()}.${ext}`;
-        const token = randomUUID();
-        await bucket.file(path).save(buffer, {
-          contentType,
-          metadata: { metadata: { firebaseStorageDownloadTokens: token } },
-        });
-        uploaded.set(source, storageDownloadUrl(bucket.name, path, token));
       }
+      const path = `blog/legacy/${slug}/${randomUUID()}.${ext}`;
+      const token = randomUUID();
+      await bucket.file(path).save(buffer, {
+        contentType,
+        metadata: { metadata: { firebaseStorageDownloadTokens: token } },
+      });
+      const url = storageDownloadUrl(bucket.name, path, token);
+      uploaded.set(source, url);
+      return url;
+    };
+    for (const plan of plans) {
+      for (const source of plan.images) await copyImage(source, plan.slug);
       let html = plan.html;
       for (const source of new Set(plan.images)) {
         html = html.split(`src="${source.replace(/&/g, "&amp;")}"`).join(`src="${uploaded.get(source)}"`);
@@ -317,8 +367,25 @@ async function main() {
       if (/old\.keshertours\.com|src="https:\/\/keshertours\.com\/wp-content/.test(html)) {
         throw new Error(`Unreplaced old-site image left in ${plan.slug} — aborting before writing it.`);
       }
-      await db.collection("blogPosts").doc(plan.docId).update({ body: html });
-      console.log(`Updated ${plan.slug}: ${plan.links} links, ${plan.images.length} images.`);
+      if (plan.create) {
+        const ref = db.collection("blogPosts").doc(plan.docId);
+        if ((await ref.get()).exists) throw new Error(`Refusing to overwrite existing doc ${plan.docId}.`);
+        const post: BlogPost = {
+          postId: plan.docId,
+          slug: plan.slug,
+          title: plan.create.title,
+          body: html,
+          tags: plan.create.tags,
+          status: "published",
+          publishedAt: plan.create.publishedAt,
+        };
+        if (plan.create.heroSource) post.heroImage = await copyImage(plan.create.heroSource, plan.slug);
+        await ref.set(JSON.parse(JSON.stringify(post)));
+        console.log(`Created ${plan.slug}: ${plan.links} links, ${plan.images.length} images, hero ${post.heroImage ? "yes" : "no"}.`);
+      } else {
+        await db.collection("blogPosts").doc(plan.docId).update({ body: html });
+        console.log(`Updated ${plan.slug}: ${plan.links} links, ${plan.images.length} images.`);
+      }
     }
     console.log(`Uploaded ${uploaded.size} images.`);
   }
