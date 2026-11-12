@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Must stay explicit: Firebase App Hosting's Next.js adapter forces
+    // `unoptimized: true` whenever this is left undefined
+    // (@apphosting/adapter-nextjs overrides.js), which shipped every photo
+    // at full size — a ~1.4MB home hero and a 10s mobile LCP in PageSpeed.
+    unoptimized: false,
+    // Uploads get a fresh UUID path (lib/actions/uploads.ts), so a given URL
+    // never changes content — cache the resized copies for 31 days instead
+    // of re-encoding them every 4 hours on the single App Hosting instance.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       // Admin-uploaded tour photos (lib/actions/uploads.ts).
       { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: "/v0/b/**" },

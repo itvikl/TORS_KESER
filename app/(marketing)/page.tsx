@@ -132,11 +132,13 @@ export default async function HomePage() {
               className="scale-125 object-cover object-center"
             />
             <div
-              className="absolute inset-0 mix-blend-soft-light [animation:aurora-shift_16s_ease-in-out_infinite]"
+              // Twice the hero's width and slid by half via transform (see
+              // aurora-shift in globals.css): the GPU moves it without
+              // repainting the full-screen layer every frame.
+              className="absolute inset-y-0 left-0 w-[200%] mix-blend-soft-light will-change-transform [animation:aurora-shift_16s_ease-in-out_infinite]"
               style={{
                 backgroundImage:
                   "linear-gradient(120deg, rgba(125,211,252,0.5), rgba(200,160,240,0.35), rgba(125,211,252,0.5))",
-                backgroundSize: "200% 200%",
               }}
               aria-hidden="true"
             />

@@ -455,14 +455,16 @@ html[data-theme="light"] .destination-search-select::picker(select) {
   }
 }
 
-/* Slow-drifting aurora tint over the hero photo — echoes the aurora already in the image. */
+/* Slow-drifting aurora tint over the hero photo — echoes the aurora already in the image.
+   Animates transform (compositor-only) on a 200%-wide layer, not background-position,
+   which repainted the whole hero every frame. */
 @keyframes aurora-shift {
   0%,
   100% {
-    background-position: 0% 50%;
+    transform: translateX(0);
   }
   50% {
-    background-position: 100% 50%;
+    transform: translateX(-50%);
   }
 }
 

@@ -91,10 +91,12 @@ export default function FeaturedToursGrid() {
         </p>
       ) : (
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {visible.map(({ tour, nextDeparture, image, soldOut }, index) => (
+          {/* Lazy, not eager: this grid sits below the full-screen home hero,
+              and eager cards were preloaded alongside it — competing with the
+              LCP image for bandwidth on mobile. */}
+          {visible.map(({ tour, nextDeparture, image, soldOut }) => (
             <TourCard
               key={tour.tourId}
-              eager={index < 4}
               tour={tour}
               nextDeparture={nextDeparture}
               image={image}

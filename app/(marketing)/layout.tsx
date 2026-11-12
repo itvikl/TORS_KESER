@@ -1,7 +1,7 @@
 import Header from "@/components/marketing/Header";
 import Footer from "@/components/marketing/Footer";
 import { SitePhoneProvider } from "@/components/marketing/SitePhone";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import DeferredGoogleAnalytics from "@/components/marketing/DeferredGoogleAnalytics";
 import { getSiteSettings } from "@/lib/data/admin/settings";
 import { SITE_URL } from "@/lib/siteUrl";
 
@@ -29,7 +29,7 @@ export default async function MarketingLayout({
         <main className="flex-1">{children}</main>
         <Footer phone={phone} />
       </div>
-      {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
+      {GA_MEASUREMENT_ID && <DeferredGoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </SitePhoneProvider>
   );
 }
