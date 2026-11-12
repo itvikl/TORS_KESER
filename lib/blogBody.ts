@@ -9,6 +9,29 @@ import { parseBodyLinks } from "@/lib/blogLinks";
  * in lib/blogBodySanitize.ts.
  */
 
+/**
+ * Text copied out of AI chat tools and search results often carries links
+ * wrapped in a Google redirect — google.com/search?q=<url> or
+ * google.com/url?q=<url> — and placeholder links ("#", "?q=%23") that go
+ * nowhere. Returns the real address, or null when the link should be
+ * dropped (its text kept). Any other href is returned unchanged.
+ */
+export function cleanLinkHref(href: string): string | null {
+  const trimmed = href.trim();
+  if (!trimmed || trimmed.startsWith("#")) return null;
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    return trimmed; // relative, e.g. /tours/japan
+  }
+  if (!/(^|\.)google\.[a-z.]+$/i.test(url.hostname) || !/^\/(search|url)$/.test(url.pathname)) return trimmed;
+  const target = (url.searchParams.get("q") ?? url.searchParams.get("url") ?? "").trim();
+  if (/^https?:\/\//i.test(target)) return target;
+  if (target.startsWith("/")) return target;
+  return null;
+}
+
 /** Rich bodies always start with a block tag; legacy plain text never does. */
 export function isHtmlBody(body: string): boolean {
   return /^\s*<(p|h[1-6]|ul|ol|blockquote|img|div)[\s>/]/i.test(body);

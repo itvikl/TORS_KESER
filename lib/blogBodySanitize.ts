@@ -1,6 +1,6 @@
 import "server-only";
 import sanitizeHtml from "sanitize-html";
-import { bodyToHtml } from "@/lib/blogBody";
+import { bodyToHtml, cleanLinkHref } from "@/lib/blogBody";
 
 /**
  * The only HTML a blog body may contain — what the admin editor can
@@ -26,7 +26,12 @@ const OPTIONS: sanitizeHtml.IOptions = {
     h5: "h3",
     h6: "h3",
     a: (tagName, attribs) => {
-      const href = attribs.href ?? "";
+      // Google-redirect wrappers are unwrapped; placeholder links ("#") lose
+      // their href here and the bare <a> is unwrapped in sanitizeBlogHtml.
+      // (Renaming the tag to a disallowed one confuses sanitize-html's
+      // closing-tag bookkeeping for the links that follow.)
+      const href = cleanLinkHref(attribs.href ?? "");
+      if (href === null) return { tagName, attribs: {} };
       const external = /^https?:\/\//i.test(href) && !/^https?:\/\/(www\.)?keshertours\.com(\/|$)/i.test(href);
       const attrs: sanitizeHtml.Attributes = external
         ? { href, target: "_blank", rel: "noopener noreferrer" }
@@ -38,7 +43,12 @@ const OPTIONS: sanitizeHtml.IOptions = {
 
 export function sanitizeBlogHtml(html: string): string {
   // sanitize-html keeps relative/empty img srcs; only full https images are real pictures.
-  return sanitizeHtml(html, OPTIONS).replace(/<img(?![^>]*\ssrc="https:\/\/)[^>]*>/gi, "");
+  return (
+    sanitizeHtml(html, OPTIONS)
+      .replace(/<img(?![^>]*\ssrc="https:\/\/)[^>]*>/gi, "")
+      // Links whose href was dropped (placeholders) — keep just their text.
+      .replace(/<a>([\s\S]*?)<\/a>/g, "$1")
+  );
 }
 
 /** Any stored body (rich or legacy plain text) → safe HTML for the page. */

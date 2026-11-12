@@ -8,6 +8,7 @@ import Image from "@tiptap/extension-image";
 import ImageUploadButton from "@/components/admin/ImageUploadButton";
 import { listBlogLinkTargets, type BlogLinkTarget } from "@/lib/actions/blog";
 import { formatBlogDate } from "@/lib/blogDate";
+import { cleanLinkHref } from "@/lib/blogBody";
 
 /**
  * Rich-text editor for blog post bodies: bold, italic, underline, heading
@@ -52,9 +53,7 @@ export default function RichTextEditor({
       attributes: {
         class: "rich-body min-h-[320px] px-4 py-3 text-ink outline-none [--rich-accent:var(--color-navy)]",
       },
-      transformPastedHTML: (html) =>
-        // Word/Docs images arrive as file:// or data: URLs — unusable on the site.
-        html.replace(/<img\b[^>]*>/gi, (tag) => (/\bsrc="https:\/\//i.test(tag) ? tag : "")),
+      transformPastedHTML: cleanPastedHtml,
     },
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? "" : editor.getHTML()),
   });
@@ -112,7 +111,8 @@ function EditorMenus({ editor, imageFolder }: { editor: Editor; imageFolder: str
 
   function applyLink(override?: string) {
     if (!linkEdit) return;
-    const href = (override ?? linkEdit.value).trim();
+    // A pasted Google-redirect address is unwrapped; a placeholder removes the link.
+    const href = cleanLinkHref((override ?? linkEdit.value).trim()) ?? "";
     const chain = editor.chain().focus().setTextSelection({ from: linkEdit.from, to: linkEdit.to });
     setLinkEdit(null);
     if (!href || href === "https://") {
@@ -393,6 +393,27 @@ function ToolButton({
       {children}
     </button>
   );
+}
+
+/**
+ * Pasted HTML, before the editor reads it:
+ *  - images with file:// or data: sources (Word/Docs hand those over) are
+ *    dropped — they can't be shown on the site; use the Image button;
+ *  - Google-redirect links (google.com/search?q=…, common in text copied
+ *    from AI chat tools) are unwrapped to the real address, and
+ *    placeholder links ("#") are removed, keeping their text.
+ */
+function cleanPastedHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("img").forEach((img) => {
+    if (!/^https:\/\//i.test(img.getAttribute("src") ?? "")) img.remove();
+  });
+  doc.querySelectorAll("a").forEach((a) => {
+    const href = cleanLinkHref(a.getAttribute("href") ?? "");
+    if (href === null) a.replaceWith(...Array.from(a.childNodes));
+    else a.setAttribute("href", href);
+  });
+  return doc.body.innerHTML;
 }
 
 function BarButton({
