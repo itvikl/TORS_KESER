@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   defaultBalanceDueDays: 0,
   defaultCompanyCancelDeadlineDays: 0,
   lowSeatsThreshold: 7,
+  adminNotifyEmails: [],
 };
 
 /**

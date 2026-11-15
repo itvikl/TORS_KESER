@@ -331,6 +331,8 @@ export interface SiteSettings {
   defaultCompanyCancelDeadlineDays: number;
   /** At or below this remaining-seats count, customers see the exact number + a "last spots" badge; above it, only a vague "plenty available" message. */
   lowSeatsThreshold: number;
+  /** Staff inboxes for new-booking / new-lead alerts. Empty → falls back to the ADMIN_NOTIFY_EMAIL env var. */
+  adminNotifyEmails?: string[];
 }
 
 /**

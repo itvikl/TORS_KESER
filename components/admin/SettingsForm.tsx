@@ -75,6 +75,26 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-ink" htmlFor="adminNotifyEmails">
+          Booking &amp; lead alert emails
+        </label>
+        <p className="mt-0.5 text-xs text-ink-muted">
+          New-booking and new-lead alerts go to these addresses. Separate several with commas or new lines.
+          Leave empty to use the default address set in the site configuration.
+        </p>
+        <textarea
+          id="adminNotifyEmails"
+          name="adminNotifyEmails"
+          rows={2}
+          defaultValue={(settings.adminNotifyEmails ?? []).join(", ")}
+          className="mt-1.5 w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink"
+        />
+        {errors.adminNotifyEmails && (
+          <p className="mt-1 text-xs text-terracotta-dark">{errors.adminNotifyEmails[0]}</p>
+        )}
+      </div>
+
       <button
         type="submit"
         disabled={pending}

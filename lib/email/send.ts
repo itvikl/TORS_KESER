@@ -1,5 +1,6 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
+import { getSiteSettings } from "@/lib/data/admin/settings";
 import { emailFrom, emailReplyTo, resendClient } from "@/lib/email/resend";
 import { bookingConfirmationEmail } from "@/lib/email/templates/bookingConfirmation";
 import { bookingNotificationEmail, leadNotificationEmail } from "@/lib/email/templates/adminNotifications";
@@ -127,11 +128,17 @@ export async function sendPaymentReceiptEmail(input: PaymentReceiptInput): Promi
 }
 
 /**
- * Staff inbox(es) for new-booking / new-lead alerts — ADMIN_NOTIFY_EMAIL,
- * comma-separated. Until a sending domain is verified in Resend, only the
- * Resend account owner's address will actually receive mail.
+ * Staff inbox(es) for new-booking / new-lead alerts: the list set in Admin →
+ * Settings, or, when that's empty (or can't be read), ADMIN_NOTIFY_EMAIL,
+ * comma-separated.
  */
-function adminNotifyRecipients(): string[] {
+async function adminNotifyRecipients(): Promise<string[]> {
+  try {
+    const { adminNotifyEmails } = await getSiteSettings();
+    if (adminNotifyEmails?.length) return adminNotifyEmails;
+  } catch (err) {
+    console.error("Could not read alert emails from settings; using ADMIN_NOTIFY_EMAIL:", err);
+  }
   return (process.env.ADMIN_NOTIFY_EMAIL ?? "")
     .split(",")
     .map((address) => address.trim())
@@ -143,7 +150,7 @@ export async function sendBookingNotificationEmail(
   booking: Booking,
   travelerNames: string[]
 ): Promise<void> {
-  const to = adminNotifyRecipients();
+  const to = await adminNotifyRecipients();
   if (!process.env.RESEND_API_KEY || to.length === 0) {
     console.warn(
       `Skipping booking notification for ${booking.bookingId}: RESEND_API_KEY or ADMIN_NOTIFY_EMAIL not configured.`
@@ -190,7 +197,7 @@ export async function sendBookingNotificationEmail(
 
 /** Alerts staff that a lead came in from a public form. Best-effort. */
 export async function sendLeadNotificationEmail(lead: Lead): Promise<void> {
-  const to = adminNotifyRecipients();
+  const to = await adminNotifyRecipients();
   if (!process.env.RESEND_API_KEY || to.length === 0) {
     console.warn(
       `Skipping lead notification for ${lead.leadId}: RESEND_API_KEY or ADMIN_NOTIFY_EMAIL not configured.`

@@ -17,6 +17,14 @@ export const SiteSettingsInputSchema = z.object({
   defaultBalanceDueDays: z.coerce.number().int().min(0),
   defaultCompanyCancelDeadlineDays: z.coerce.number().int().min(0),
   lowSeatsThreshold: z.coerce.number().int().min(1),
+  // One field, addresses separated by commas or new lines.
+  adminNotifyEmails: z.preprocess(
+    (v) =>
+      typeof v === "string"
+        ? v.split(/[,;\n]/).map((address) => address.trim()).filter(Boolean)
+        : v,
+    z.array(z.email({ error: "Each address must be a valid email." })).default([])
+  ),
 });
 
 export type SiteSettingsInput = z.infer<typeof SiteSettingsInputSchema>;
