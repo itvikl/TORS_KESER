@@ -136,7 +136,9 @@ function parseTourPage(slug: string, url: string, clicks: number, oldStatus: str
     const dayDescription = [mainPara, collapsedPara].filter(Boolean).join("\n\n");
     if (dayTitle || dayDescription) {
       itineraryDays.push({
-        dayId: String(dayNumber),
+        // Position, not the label's number: legacy pages sometimes repeat "Day N",
+        // and the editor needs unique ids.
+        dayId: String(itineraryDays.length + 1),
         dayNumber,
         title: dayTitle || `Day ${dayNumber}`,
         description: dayDescription,

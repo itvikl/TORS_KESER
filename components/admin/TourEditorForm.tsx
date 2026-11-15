@@ -127,6 +127,21 @@ function cleanTour(tour: Tour): Tour {
   };
 }
 
+/**
+ * Days are edited and keyed by `dayId`, so ids must be unique. Migrated tours took
+ * the id from the legacy "Day N" label, and some legacy pages repeat a number —
+ * editing one such day then changed its twin too. Give any repeat a fresh id
+ * (persisted on the next save).
+ */
+function withUniqueDayIds(days: ItineraryDay[]): ItineraryDay[] {
+  const seen = new Set<string>();
+  return days.map((day) => {
+    if (!day.dayId || seen.has(day.dayId)) day = { ...day, dayId: crypto.randomUUID() };
+    seen.add(day.dayId);
+    return day;
+  });
+}
+
 type Viewport = "desktop" | "tablet" | "mobile";
 const VIEWPORT_WIDTH: Record<Viewport, string> = {
   desktop: "100%",
@@ -153,6 +168,7 @@ export default function TourEditorForm({
       ? withInfoCards({
           ...initialTour,
           cancellationPolicy: initialTour.cancellationPolicy ?? DEFAULT_CANCELLATION_POLICY_TEXT,
+          itineraryDays: withUniqueDayIds(initialTour.itineraryDays),
         })
       : BLANK_TOUR
   );
