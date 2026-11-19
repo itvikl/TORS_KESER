@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import PageHeader from "@/components/marketing/PageHeader";
-import TestimonialCard from "@/components/marketing/TestimonialCard";
+import TestimonialQuote from "@/components/marketing/TestimonialQuote";
 import { getSiteContent } from "@/lib/data/siteContent";
-import { getTestimonialGroups } from "@/lib/data/reviews";
+import { getApprovedReviews } from "@/lib/data/reviews";
+import { destinationSlug, reviewDestination } from "@/lib/testimonials";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getSiteContent("testimonials");
@@ -15,73 +15,39 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Grouped by destination like the old site's testimonial hub, but on one
- * page: destination cards up top jump to their section (#<slug> — the old
- * /testemonials-<slug>/ URLs redirect to the same anchors).
+ * One continuous list of traveler letters — not split by tour or destination.
+ * The old site's /testemonials-<slug>/ URLs redirect to /testimonials#<slug>,
+ * so each destination's first letter carries that id and those links still
+ * land on a relevant quote.
  */
 export default async function TestimonialsPage() {
-  const [content, groups] = await Promise.all([
+  const [content, reviews] = await Promise.all([
     getSiteContent("testimonials"),
-    getTestimonialGroups(),
+    getApprovedReviews(),
   ]);
+
+  const anchored = new Set<string>();
+  const items = reviews.map(({ review, tour }) => {
+    const slug = destinationSlug(reviewDestination(review, tour));
+    const id = anchored.has(slug) ? undefined : slug;
+    anchored.add(slug);
+    return { review, tour, id };
+  });
 
   return (
     <div>
       <PageHeader eyebrow={content.eyebrow || undefined} title={content.title} lede={content.lede || undefined} image={content.heroImage} />
-      {groups.length === 0 ? (
+      {items.length === 0 ? (
         <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:px-8">
           <p className="text-lg leading-8 text-[var(--color-slate)]">
             {content.emptyMessage}
           </p>
         </div>
       ) : (
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-          <nav aria-label="Destinations">
-            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {groups.map((group) => (
-                <li key={group.slug}>
-                  <a
-                    href={`#${group.slug}`}
-                    className="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-[var(--color-glacier)]"
-                  >
-                    {group.image && (
-                      <Image
-                        src={group.image}
-                        alt=""
-                        fill
-                        sizes="(min-width: 1024px) 270px, (min-width: 640px) 30vw, 45vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    )}
-                    <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                    <span className="absolute inset-x-0 bottom-0 p-4">
-                      <span className="block text-lg font-bold leading-tight text-white">
-                        {group.name}
-                      </span>
-                      <span className="mt-0.5 block text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-                        {group.reviews.length} {group.reviews.length === 1 ? content.letterSingular : content.letterPlural}
-                      </span>
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className="mt-16 space-y-16">
-            {groups.map((group) => (
-              <section key={group.slug} id={group.slug} className="scroll-mt-28">
-                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-ice)] sm:text-3xl">
-                  {group.name}
-                </h2>
-                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {group.reviews.map(({ review }) => (
-                    <TestimonialCard key={review.reviewId} review={review} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+        <div className="mx-auto max-w-4xl space-y-8 px-4 py-16 sm:px-6 lg:px-8">
+          {items.map(({ review, tour, id }) => (
+            <TestimonialQuote key={review.reviewId} review={review} tour={tour} id={id} />
+          ))}
         </div>
       )}
     </div>
