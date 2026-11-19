@@ -32,10 +32,21 @@ export function isDepartureBookable(departure: Departure): boolean {
  * date (the card is flagged sold out separately).
  */
 export function pickNextDeparture(departures: Departure[]): Departure | undefined {
+  return pickNextDepartures(departures, 1)[0];
+}
+
+/**
+ * Same rule as pickNextDeparture, but up to `count` dates: the soonest planned
+ * departures that still have room. Full dates are skipped; when nothing has
+ * room it falls back to just the soonest planned date.
+ */
+export function pickNextDepartures(departures: Departure[], count = 2): Departure[] {
   const planned = departures
     .filter(isDeparturePlanned)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  return planned.find(isDepartureBookable) ?? planned[0];
+  const bookable = planned.filter(isDepartureBookable).slice(0, count);
+  if (bookable.length > 0) return bookable;
+  return planned.slice(0, 1);
 }
 
 export function hasPlannedDeparture(departures: Departure[]): boolean {

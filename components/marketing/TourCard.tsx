@@ -3,15 +3,24 @@ import type { Departure, Tour } from "@/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
 import { focusPosition } from "@/lib/imageFocus";
 
+function formatDepartureDate(departure: Departure): string {
+  return new Date(departure.startDate).toLocaleDateString("en-US", {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function TourCard({
   tour,
-  nextDeparture,
+  nextDepartures,
   image,
   soldOut = false,
   eager = false,
 }: {
   tour: Tour;
-  nextDeparture?: Departure;
+  /** Up to two upcoming dates, soonest first; empty shows "Flexible dates". */
+  nextDepartures: Departure[];
   image: string;
   /** Replaces the Special Offer badge — there's nothing left to offer. */
   soldOut?: boolean;
@@ -63,12 +72,8 @@ export default function TourCard({
 
           <div className="mt-auto flex items-center justify-between border-t border-[var(--color-border-hairline-faint)] pt-4">
             <div className="text-xs font-semibold text-[var(--color-slate)]">
-              {nextDeparture
-                ? `Departs ${new Date(nextDeparture.startDate).toLocaleDateString("en-US", {
-                    timeZone: "UTC",
-                    month: "short",
-                    day: "numeric",
-                  })}`
+              {nextDepartures.length > 0
+                ? `Departs ${nextDepartures.map(formatDepartureDate).join(" & ")}`
                 : "Flexible dates"}
             </div>
             <span className="flex items-center gap-1 text-sm font-bold text-[var(--color-ice)] transition-all group-hover:gap-2">

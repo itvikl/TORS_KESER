@@ -13,12 +13,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Departure, Tour } from "@/lib/types";
 import type { CountryOption } from "@/lib/data/tours";
-import {
-  hasBookableDeparture,
-  isDepartureBookable,
-  isDeparturePlanned,
-  pickNextDeparture,
-} from "@/lib/departureAvailability";
+import { hasBookableDeparture, pickNextDepartures } from "@/lib/departureAvailability";
 import { smoothScrollTo } from "@/lib/smoothScroll";
 
 /** Id of the DestinationSearch root, so results and "Change Search" can scroll to each other. */
@@ -34,7 +29,8 @@ export type FeaturedTourItem = {
 
 export type FilteredTourItem = {
   tour: Tour;
-  nextDeparture?: Departure;
+  /** Up to two upcoming dates to advertise on the card; empty means flexible dates. */
+  nextDepartures: Departure[];
   image: string;
   /** No upcoming date has a spot left to book. */
   soldOut: boolean;
@@ -73,19 +69,14 @@ function monthKey(iso: string): string {
 
 /**
  * A tour "matches" a set of months if it has a planned departure starting in one of them.
- * Of those, the soonest one with room is returned (else the soonest, if all are full).
+ * Of those, the two soonest with room are returned (else the soonest, if all are full).
+ * An empty result means the tour doesn't match.
  */
-function matchingDeparture(
-  departures: Departure[],
-  months: string[]
-): Departure | undefined {
+function matchingDepartures(departures: Departure[], months: string[]): Departure[] {
   const wanted = new Set(months);
-
-  const inMonths = departures.filter(
-    (departure) =>
-      isDeparturePlanned(departure) && (wanted.size === 0 || wanted.has(monthKey(departure.startDate)))
+  return pickNextDepartures(
+    departures.filter((departure) => wanted.size === 0 || wanted.has(monthKey(departure.startDate)))
   );
-  return inMonths.find(isDepartureBookable) ?? inMonths[0];
 }
 
 /**
@@ -191,7 +182,7 @@ export function TourFilterProvider({
     if (!hasMonthFilter) {
       return inCountry.map(({ tour, departures, image }) => ({
         tour,
-        nextDeparture: pickNextDeparture(departures),
+        nextDepartures: pickNextDepartures(departures),
         image,
         soldOut: !hasBookableDeparture(departures),
       }));
@@ -199,11 +190,11 @@ export function TourFilterProvider({
 
     const matched: FilteredTourItem[] = [];
     for (const { tour, departures, image } of inCountry) {
-      const departure = matchingDeparture(departures, selectedMonths);
-      if (departure) {
+      const inMonths = matchingDepartures(departures, selectedMonths);
+      if (inMonths.length > 0) {
         matched.push({
           tour,
-          nextDeparture: departure,
+          nextDepartures: inMonths,
           image,
           soldOut: !hasBookableDeparture(departures),
         });

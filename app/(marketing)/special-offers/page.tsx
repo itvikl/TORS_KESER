@@ -3,7 +3,7 @@ import PageHeader from "@/components/marketing/PageHeader";
 import TourCard from "@/components/marketing/TourCard";
 import { getSpecialOffers } from "@/lib/data/offers";
 import { getDeparturesForTour, getSpecialOfferTours } from "@/lib/data/tours";
-import { hasBookableDeparture, pickNextDeparture } from "@/lib/departureAvailability";
+import { hasBookableDeparture, pickNextDepartures } from "@/lib/departureAvailability";
 import { getSiteContent } from "@/lib/data/siteContent";
 
 export const metadata: Metadata = {
@@ -26,13 +26,13 @@ export default async function SpecialOffersPage() {
         const departures = await getDeparturesForTour(tour.tourId);
         return {
           tour,
-          nextDeparture: pickNextDeparture(departures),
+          nextDepartures: pickNextDepartures(departures),
           image: tour.heroImage || tour.gallery[0] || "",
           soldOut: !hasBookableDeparture(departures),
         };
       })
     )
-  ).filter(({ nextDeparture }) => nextDeparture);
+  ).filter(({ nextDepartures }) => nextDepartures.length > 0);
 
   const isEmpty = offers.length === 0 && tours.length === 0;
 
@@ -70,11 +70,11 @@ export default async function SpecialOffersPage() {
 
             {tours.length > 0 && (
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {tours.map(({ tour, nextDeparture, image, soldOut }) => (
+                {tours.map(({ tour, nextDepartures, image, soldOut }) => (
                   <TourCard
                     key={tour.tourId}
                     tour={tour}
-                    nextDeparture={nextDeparture}
+                    nextDepartures={nextDepartures}
                     image={image}
                     soldOut={soldOut}
                   />

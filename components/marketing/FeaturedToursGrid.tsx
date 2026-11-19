@@ -94,11 +94,11 @@ export default function FeaturedToursGrid() {
           {/* Lazy, not eager: this grid sits below the full-screen home hero,
               and eager cards were preloaded alongside it — competing with the
               LCP image for bandwidth on mobile. */}
-          {visible.map(({ tour, nextDeparture, image, soldOut }) => (
+          {visible.map(({ tour, nextDepartures, image, soldOut }) => (
             <TourCard
               key={tour.tourId}
               tour={tour}
-              nextDeparture={nextDeparture}
+              nextDepartures={nextDepartures}
               image={image}
               soldOut={soldOut}
             />
