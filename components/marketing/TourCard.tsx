@@ -70,13 +70,25 @@ export default function TourCard({
             {tour.summary}
           </p>
 
-          <div className="mt-auto flex items-center justify-between border-t border-[var(--color-border-hairline-faint)] pt-4">
-            <div className="text-xs font-semibold text-[var(--color-slate)]">
-              {nextDepartures.length > 0
-                ? `Departs ${nextDepartures.map(formatDepartureDate).join(" & ")}`
-                : "Flexible dates"}
+          {/* gap keeps the dates off "View Details" on narrow cards; each date
+              stays on one line ("Jun 14" never splits) and the link never wraps. */}
+          <div className="mt-auto flex items-center justify-between gap-4 border-t border-[var(--color-border-hairline-faint)] pt-4">
+            <div className="min-w-0 text-xs font-semibold leading-5 text-[var(--color-slate)]">
+              {nextDepartures.length > 0 ? (
+                <>
+                  Departs{" "}
+                  {nextDepartures.map((departure, i) => (
+                    <span key={departure.departureId} className="whitespace-nowrap">
+                      {i > 0 && "& "}
+                      {formatDepartureDate(departure)}{" "}
+                    </span>
+                  ))}
+                </>
+              ) : (
+                "Flexible dates"
+              )}
             </div>
-            <span className="flex items-center gap-1 text-sm font-bold text-[var(--color-ice)] transition-all group-hover:gap-2">
+            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-bold text-[var(--color-ice)] transition-all group-hover:gap-2">
               View Details <span aria-hidden="true">→</span>
             </span>
           </div>
