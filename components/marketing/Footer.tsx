@@ -10,7 +10,6 @@ const COLUMNS = [
   {
     title: "Destinations",
     links: [
-      { href: "/?country=Israel#featured-tours", label: "Israel" },
       { href: "/?country=Italy#featured-tours", label: "Italy" },
       { href: "/?country=Costa%20Rica#featured-tours", label: "Costa Rica" },
       { href: "/?country=Morocco#featured-tours", label: "Morocco" },
@@ -28,12 +27,31 @@ const COLUMNS = [
   },
 ];
 
-export default function Footer({ phone }: { phone: string }) {
+export default function Footer({
+  phone,
+  tours,
+}: {
+  phone: string;
+  /** Top published tours in admin order (see getFooterTours). */
+  tours: { slug: string; title: string }[];
+}) {
+  const columns =
+    tours.length > 0
+      ? [
+          COLUMNS[0],
+          {
+            title: "Popular Tours",
+            links: tours.map((t) => ({ href: `/tours/${t.slug}`, label: t.title })),
+          },
+          ...COLUMNS.slice(1),
+        ]
+      : COLUMNS;
+
   return (
     <footer className="border-t border-[var(--color-border-hairline-faint)] bg-[var(--color-glacier)] transition-colors">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-          <div className="col-span-2 sm:col-span-1">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <BrandLogo className="h-12 w-auto object-contain" />
             <p className="mt-3 text-sm text-[var(--color-slate)]">
               Travel the world the Jewish way.
@@ -46,7 +64,7 @@ export default function Footer({ phone }: { phone: string }) {
             </a>
           </div>
 
-          {COLUMNS.map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-slate)]">
                 {col.title}

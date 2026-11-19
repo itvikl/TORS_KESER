@@ -3,6 +3,7 @@ import Footer from "@/components/marketing/Footer";
 import { SitePhoneProvider } from "@/components/marketing/SitePhone";
 import DeferredGoogleAnalytics from "@/components/marketing/DeferredGoogleAnalytics";
 import { getSiteSettings } from "@/lib/data/admin/settings";
+import { getFooterTours } from "@/lib/data/tours";
 import { SITE_URL } from "@/lib/siteUrl";
 
 /**
@@ -20,14 +21,14 @@ export default async function MarketingLayout({
   children: React.ReactNode;
 }) {
   // One read of Admin -> Settings feeds every phone number on the site.
-  const { phone } = await getSiteSettings();
+  const [{ phone }, footerTours] = await Promise.all([getSiteSettings(), getFooterTours(5)]);
 
   return (
     <SitePhoneProvider phone={phone}>
       <div className="flex min-h-full flex-1 flex-col bg-[var(--color-glacier)] text-[var(--color-mist)] selection:bg-[var(--color-ice)]/30 transition-colors">
         <Header phone={phone} />
         <main className="flex-1">{children}</main>
-        <Footer phone={phone} />
+        <Footer phone={phone} tours={footerTours} />
       </div>
       {GA_MEASUREMENT_ID && <DeferredGoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </SitePhoneProvider>

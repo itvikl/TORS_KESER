@@ -3,7 +3,9 @@ import type { Departure, Staff, Tour } from "@/lib/types";
 import { availableSeats } from "@/lib/types";
 import { isDepartureBookable, isDeparturePlanned } from "@/lib/departureAvailability";
 import { adminDb } from "@/lib/firebase/admin";
+import { unstable_cache } from "next/cache";
 import { bySortOrder } from "@/lib/tourSort";
+import { HOME_TOURS_CACHE_TAG } from "@/lib/data/homeCacheTags";
 
 /**
  * Firestore-backed data layer for tours/departures. Reads go through the
@@ -155,3 +157,18 @@ export async function getGuidesForDepartures(departures: Departure[]): Promise<S
   const docs = await adminDb().getAll(...refs);
   return docs.filter((doc) => doc.exists).map((doc) => doc.data() as Staff);
 }
+
+/**
+ * The first few published tours in admin drag-and-drop order, for the site
+ * footer. The footer renders on every public page, so this is cached and
+ * shares the home grid's tag — admin tour edits/reorders refresh both.
+ */
+export const getFooterTours = unstable_cache(
+  async (limit: number): Promise<Pick<Tour, "slug" | "title">[]> =>
+    (await getAllTours())
+      .sort(bySortOrder)
+      .slice(0, limit)
+      .map(({ slug, title }) => ({ slug, title })),
+  ["footer-tours"],
+  { revalidate: 60, tags: [HOME_TOURS_CACHE_TAG] }
+);
